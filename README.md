@@ -1,3 +1,74 @@
+<!-- SIUSER-REPO-GUIDE:START -->
+## Repository Guide
+
+### What This Repository Does
+
+跨平台 AI 对话与 AI 网关客户端（fork）：轻量高性能的桌面 AI 聊天入口。
+
+English summary: Forked cross-platform AI chat and gateway desktop client for lightweight high-performance conversations.
+
+### Online Entry Points
+
+- GitHub repository: https://github.com/siuserxiaowei/AQBot
+- Live / GitHub Pages: https://app.aqbot.top
+- Default branch: `main`
+- Primary language: `Rust`
+- Repository type: fork / reference repository
+
+### How To Read / Learn This Repository
+
+1. 先读本 README，确认项目目标、在线入口和本地运行方式。
+2. 打开上方 Live / GitHub Pages 链接，先从最终效果理解项目。
+3. 查看 `package.json` 的 scripts，确认开发、构建和预览命令。
+4. 如果要修改内容，先小范围改动，再运行本 README 中的验证命令。
+
+### Clone This Repository
+
+```bash
+git clone https://github.com/siuserxiaowei/AQBot.git
+cd AQBot
+```
+
+### Run Or View Locally
+
+```bash
+npm install
+npm run dev
+npm run build
+npm test
+```
+
+### Repository Map
+
+| Path | Purpose |
+| --- | --- |
+| `README.md` | 项目入口说明，先读这里。 |
+| `package.json` | Node/前端项目配置和常用脚本。 |
+| `index.html` | 静态站首页或页面入口。 |
+| `src/` | 主要源码目录。 |
+| `public/` | 公开静态资源。 |
+| `scripts/` | 构建、同步、生成或维护脚本。 |
+| `.github/` | GitHub Actions、Issue/PR 模板等自动化配置。 |
+| `LICENSE` | 项目文件。 |
+| `README-AR.md` | 项目文件。 |
+| `README-DE.md` | 项目文件。 |
+| `README-EN.md` | 项目文件。 |
+| `README-ES.md` | 项目文件。 |
+
+### Maintenance Notes
+
+- Keep this README in sync when the project purpose, live link, or run commands change.
+- Prefer small, focused commits when changing code, data, or generated pages.
+- Run the relevant build or validation command before publishing changes.
+- If this is a generated/static archive, update the source data first, then regenerate the public files.
+
+### Privacy And Safety
+
+- Do not commit API keys, tokens, passwords, cookies, private URLs, or internal account data.
+- Keep private source material out of public GitHub Pages output unless it has been explicitly cleared for publication.
+- When in doubt, run a quick secret scan such as `rg -n "token|secret|password|access_key|authorization"` before pushing.
+<!-- SIUSER-REPO-GUIDE:END -->
+
 **简体中文** | [繁體中文](./README-ZH-TW.md) | [English](./README-EN.md) | [日本語](./README-JA.md) | [한국어](./README-KO.md) | [Français](./README-FR.md) | [Deutsch](./README-DE.md) | [Español](./README-ES.md) | [Русский](./README-RU.md) | [हिन्दी](./README-HI.md) | [العربية](./README-AR.md)
 
 [![AQBot](https://socialify.git.ci/AQBot-Desktop/AQBot/image?description=1&font=JetBrains+Mono&forks=1&issues=1&logo=https%3A%2F%2Fgithub.com%2FAQBot-Desktop%2FAQBot%2Fblob%2Fmain%2Fsrc%2Fassets%2Fimage%2Flogo.png%3Fraw%3Dtrue&name=1&owner=1&pattern=Floating+Cogs&pulls=1&stargazers=1&theme=Auto)](https://github.com/AQBot-Desktop/AQBot)
