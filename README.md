@@ -1,3 +1,76 @@
+<!-- SIUSER-REPO-GUIDE:START -->
+## 项目介绍 / Project Introduction
+
+### 中文
+Agent Reach 分叉仓库：为 AI agent 提供跨 Twitter、Reddit、YouTube、GitHub、B 站、小红书等平台的公开信息读取与搜索能力。
+
+### English
+Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.
+
+## 使用方式 / Usage
+
+### 中文
+1. 先创建 Python 虚拟环境并安装依赖。
+2. 从 `README.md`、`scripts/` 或 `examples/` 找到主要入口。
+3. 修改后运行相关测试或脚本，确认输出仍然符合预期。
+
+### English
+1. Create a Python virtual environment and install dependencies first.
+2. Use `README.md`, `scripts/`, or `examples/` to find the main entry point.
+3. After changes, run the relevant tests or scripts to verify the output.
+
+## 入口与元信息 / Entry Points & Metadata
+
+- GitHub 仓库 / Repository: https://github.com/siuserxiaowei/Agent-Reach
+- 默认分支 / Default branch: `main`
+- 主要语言 / Primary language: `Python`
+- 可见性 / Visibility: `public`
+- 仓库类型 / Repository type: `fork`
+
+## 本地运行 / Local Run
+
+```bash
+git clone https://github.com/siuserxiaowei/Agent-Reach.git
+cd Agent-Reach
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+python3 -m pytest
+```
+
+## 仓库结构 / Repository Map
+
+| 路径 / Path | 中文说明 | English |
+| --- | --- | --- |
+| `README.md` | 项目入口说明，先读这里。 | Main project entry point and orientation. |
+| `pyproject.toml` | Python 项目配置。 | Python project configuration. |
+| `docs` | 文档或 GitHub Pages 输出目录。 | Documentation or GitHub Pages output. |
+| `scripts` | 构建、同步、生成或维护脚本。 | Build, sync, generation, or maintenance scripts. |
+| `tests` | 测试用例与验证脚本。 | Tests and validation scripts. |
+| `.github` | GitHub Actions 和协作自动化配置。 | GitHub Actions and collaboration automation. |
+| `LICENSE` | 许可证文件。 | License file. |
+| `agent_reach` | 项目文件或目录。 | Project file or directory. |
+| `config` | 项目文件或目录。 | Project file or directory. |
+| `.env.example` | 项目文件或目录。 | Project file or directory. |
+| `.gitignore` | 项目文件或目录。 | Project file or directory. |
+| `CHANGELOG.md` | 项目文件或目录。 | Project file or directory. |
+
+## 维护备注 / Maintenance Notes
+
+- 中文：当项目目标、在线入口、运行命令或目录结构变化时，同步更新本说明。
+- English: Keep this guide updated when the project purpose, live link, run commands, or structure changes.
+- 中文：修改代码、数据或生成页面后，优先运行相关构建、测试或校验命令。
+- English: After changing code, data, or generated pages, run the relevant build, test, or validation command.
+
+## 安全与隐私 / Safety & Privacy
+
+- 中文：不要提交 API key、token、密码、cookie、私有链接或内部账号资料。
+- English: Do not commit API keys, tokens, passwords, cookies, private URLs, or internal account data.
+- 中文：公开 GitHub Pages 前，确认资料已脱敏并允许公开。
+- English: Before publishing GitHub Pages output, confirm the material is redacted and cleared for public release.
+<!-- SIUSER-REPO-GUIDE:END -->
+
+
 <h1 align="center">👁️ Agent Reach</h1>
 
 <p align="center">
