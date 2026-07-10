@@ -3,6 +3,7 @@ import { filterSources, getSourceById } from "./state.js";
 export function renderApp(context) {
   bindSearch(context);
   bindSort(context);
+  bindClearFilters(context);
   renderFilters(context);
   renderStatusFilters(context);
   renderMetrics(context);
@@ -35,6 +36,18 @@ function bindSort({ state, elements, actions }) {
 
   elements.sortSelect.onchange = (event) => {
     actions.onSortChange(event.target.value);
+  };
+}
+
+function bindClearFilters({ state, elements, actions }) {
+  if (!elements.clearFilters) return;
+
+  const filtersAreActive =
+    state.category !== "全部" || state.status !== "all" || state.query.trim() !== "" || state.sort !== "priority";
+
+  elements.clearFilters.hidden = !filtersAreActive;
+  elements.clearFilters.onclick = () => {
+    actions.onClearFilters();
   };
 }
 

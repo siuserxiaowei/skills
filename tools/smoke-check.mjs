@@ -127,6 +127,9 @@ try {
   const h1 = await page.locator("h1").innerText();
   assert(h1 === "AI Agent 架构阅读台", `Unexpected h1: "${h1}".`);
 
+  const privateResearchLinks = await page.locator('a[href*="vi8r050ecuz.feishu.cn"]').count();
+  assert(privateResearchLinks === 0, "The public page must not expose the private Feishu research document.");
+
   const initialCardCount = await countCards(page);
   assert(initialCardCount === sources.length, `Expected ${sources.length} source cards, found ${initialCardCount}.`);
 
@@ -135,6 +138,11 @@ try {
 
   await checkSearch(page, "MCP", 2);
   await checkSearch(page, "HR", 8);
+
+  await page.click("[data-clear-filters]");
+  assert(await page.inputValue("#searchInput") === "", "Clearing filters should reset the search input.");
+  assert(await page.locator("#sortSelect").inputValue() === "priority", "Clearing filters should restore recommended sorting.");
+  assert(await countCards(page) === sources.length, "Clearing filters should restore every source card.");
 
   await page.setViewportSize({ width: 390, height: 900 });
   await page.fill("#searchInput", "");

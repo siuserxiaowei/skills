@@ -25,6 +25,7 @@ const elements = {
   progressCount: document.querySelector("#progressCount"),
   collectionCards: document.querySelector("#collectionCards"),
   sourcesSection: document.querySelector("#sources"),
+  clearFilters: document.querySelector("[data-clear-filters]"),
 };
 
 const actions = {
@@ -42,6 +43,13 @@ const actions = {
   },
   onSortChange(sort) {
     state.sort = sort;
+    render();
+  },
+  onClearFilters() {
+    state.category = "全部";
+    state.status = "all";
+    state.query = "";
+    state.sort = "priority";
     render();
   },
   onSelectSource(id) {
