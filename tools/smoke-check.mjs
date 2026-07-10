@@ -151,6 +151,17 @@ try {
   const privateResearchLinks = await page.locator('a[href*="vi8r050ecuz.feishu.cn"]').count();
   assert(privateResearchLinks === 0, "The public page must not expose the private Feishu research document.");
 
+  const contactTargets = {
+    x: "https://x.com/HIT_SZ",
+    wechat: "https://mp.weixin.qq.com/s/oBA6OwoGGelRZKX0AU70Bw",
+    github: "https://github.com/siuserxiaowei/hr-agent-reading-hub",
+  };
+
+  for (const [contact, href] of Object.entries(contactTargets)) {
+    const actualHref = await page.locator(`[data-contact="${contact}"]`).getAttribute("href");
+    assert(actualHref === href, `Unexpected ${contact} contact link: "${actualHref}".`);
+  }
+
   const initialCardCount = await countCards(page);
   assert(initialCardCount === sources.length, `Expected ${sources.length} source cards, found ${initialCardCount}.`);
   assert(sources.length >= 55, `Expected an expanded reading library with at least 55 sources, found ${sources.length}.`);

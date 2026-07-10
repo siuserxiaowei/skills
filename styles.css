@@ -935,6 +935,49 @@ select {
   outline: none;
 }
 
+.site-footer {
+  align-items: end;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin-top: 48px;
+  padding-top: 24px;
+}
+
+.site-footer p:not(.section-kicker) {
+  color: var(--muted);
+  margin: 0;
+}
+
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.contact-links a {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 750;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.contact-links a:hover,
+.contact-links a:focus-visible {
+  border-color: rgba(15, 118, 110, 0.5);
+  color: var(--teal-strong);
+  outline: none;
+}
+
 .empty-state {
   background: #fff;
   border: 1px dashed var(--line);
@@ -1053,6 +1096,15 @@ select {
   }
 
   .candidate-actions {
+    justify-content: flex-start;
+  }
+
+  .site-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .contact-links {
     justify-content: flex-start;
   }
 
