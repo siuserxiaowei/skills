@@ -166,6 +166,10 @@ select {
   max-width: 760px;
 }
 
+.topbar .contact-links {
+  flex: 0 0 auto;
+}
+
 .primary-action,
 .secondary-action,
 .source-link,
@@ -935,21 +939,6 @@ select {
   outline: none;
 }
 
-.site-footer {
-  align-items: end;
-  border-top: 1px solid var(--line);
-  display: flex;
-  gap: 24px;
-  justify-content: space-between;
-  margin-top: 48px;
-  padding-top: 24px;
-}
-
-.site-footer p:not(.section-kicker) {
-  color: var(--muted);
-  margin: 0;
-}
-
 .contact-links {
   display: flex;
   flex-wrap: wrap;
@@ -1097,11 +1086,6 @@ select {
 
   .candidate-actions {
     justify-content: flex-start;
-  }
-
-  .site-footer {
-    align-items: stretch;
-    flex-direction: column;
   }
 
   .contact-links {

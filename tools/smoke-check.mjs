@@ -158,7 +158,8 @@ try {
   };
 
   for (const [contact, href] of Object.entries(contactTargets)) {
-    const actualHref = await page.locator(`[data-contact="${contact}"]`).getAttribute("href");
+    const contactLink = page.locator(`.topbar [data-contact="${contact}"]`);
+    const actualHref = await contactLink.getAttribute("href");
     assert(actualHref === href, `Unexpected ${contact} contact link: "${actualHref}".`);
   }
 
