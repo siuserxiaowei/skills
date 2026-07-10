@@ -862,19 +862,77 @@ select {
 .candidate-list li {
   align-items: center;
   border-bottom: 1px solid var(--soft);
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
-  padding: 12px;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 18px;
 }
 
 .candidate-list li:last-child {
   border-bottom: 0;
 }
 
-.candidate-list span {
+.candidate-copy .tag {
+  margin-bottom: 10px;
+}
+
+.candidate-copy strong {
+  display: block;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.candidate-copy p {
   color: var(--muted);
   font-size: 13px;
+  line-height: 1.6;
+  margin: 8px 0 0;
+}
+
+.candidate-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.candidate-actions button,
+.candidate-link {
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 750;
+  min-height: 38px;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.candidate-actions button {
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.candidate-link {
+  align-items: center;
+  background: var(--teal);
+  color: #fff;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.candidate-actions button:hover,
+.candidate-actions button:focus-visible {
+  border-color: rgba(15, 118, 110, 0.5);
+  color: var(--teal-strong);
+  outline: none;
+}
+
+.candidate-link:hover,
+.candidate-link:focus-visible {
+  background: var(--teal-strong);
+  outline: none;
 }
 
 .empty-state {
@@ -988,6 +1046,14 @@ select {
   .guardrail-grid,
   .onboarding-options {
     grid-template-columns: 1fr;
+  }
+
+  .candidate-list li {
+    grid-template-columns: 1fr;
+  }
+
+  .candidate-actions {
+    justify-content: flex-start;
   }
 
   .hero-art img {

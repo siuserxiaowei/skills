@@ -287,8 +287,33 @@ function renderCourse({ sources, learningPaths, elements, actions }) {
   });
 }
 
-function renderCandidates({ candidates, elements }) {
+function renderCandidates({ candidates, sources, elements, actions }) {
+  if (!elements.candidateList) return;
+
   elements.candidateList.innerHTML = candidates
-    .map((item) => `<li><strong>${item}</strong><span>候选源，未完成正文深读</span></li>`)
+    .map((candidate) => {
+      const source = getSourceById(sources, candidate.sourceId);
+      if (!source) return "";
+
+      return `
+        <li>
+          <div class="candidate-copy">
+            <span class="tag secondary">${candidate.track}</span>
+            <strong>${source.title}</strong>
+            <p>${candidate.description}</p>
+          </div>
+          <div class="candidate-actions">
+            <button type="button" data-candidate-source="${source.id}">查看阅读笔记</button>
+            <a class="candidate-link" data-candidate-link href="${source.url}" target="_blank" rel="noreferrer">打开原文</a>
+          </div>
+        </li>
+      `;
+    })
     .join("");
+
+  elements.candidateList.querySelectorAll("[data-candidate-source]").forEach((button) => {
+    button.addEventListener("click", () => {
+      actions.onJumpSource(button.dataset.candidateSource);
+    });
+  });
 }

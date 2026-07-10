@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { sources } from "../data/sources.js";
+import { candidates } from "../data/taxonomy.js";
 
 const PORT = 5175;
 const HOST = "127.0.0.1";
@@ -152,6 +153,21 @@ try {
 
   const initialCardCount = await countCards(page);
   assert(initialCardCount === sources.length, `Expected ${sources.length} source cards, found ${initialCardCount}.`);
+  assert(sources.length >= 55, `Expected an expanded reading library with at least 55 sources, found ${sources.length}.`);
+
+  const candidateLinks = page.locator("#candidateList [data-candidate-link]");
+  assert(
+    (await candidateLinks.count()) === candidates.length,
+    `Expected ${candidates.length} linked deep-reading resources, found ${await candidateLinks.count()}.`,
+  );
+
+  await page.click(`[data-candidate-source="${candidates[0].sourceId}"]`);
+  const candidateSourceTitle = await page.locator("#readerDetail h3").innerText();
+  const expectedCandidateTitle = sources.find((source) => source.id === candidates[0].sourceId)?.title;
+  assert(
+    candidateSourceTitle === expectedCandidateTitle,
+    `Candidate selection should open "${expectedCandidateTitle}", found "${candidateSourceTitle}".`,
+  );
 
   const heroImageLoaded = await page.locator(".hero-art img").evaluate((image) => image.complete && image.naturalWidth > 0);
   assert(heroImageLoaded, "Hero image did not load.");
