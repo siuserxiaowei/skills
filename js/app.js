@@ -7,6 +7,7 @@ import { renderApp } from "./render.js";
 
 const state = createInitialState(sources);
 const narrowScreenQuery = window.matchMedia("(max-width: 1180px)");
+const onboardingPreferenceKey = "agentArchitectureOnboardingPreference";
 
 const elements = {
   categoryFilters: document.querySelector("#categoryFilters"),
@@ -26,6 +27,12 @@ const elements = {
   collectionCards: document.querySelector("#collectionCards"),
   sourcesSection: document.querySelector("#sources"),
   clearFilters: document.querySelector("[data-clear-filters]"),
+  starterSection: document.querySelector("#starter"),
+  starterSourceButtons: document.querySelectorAll("[data-starter-source]"),
+  onboardingDialog: document.querySelector("#onboardingDialog"),
+  onboardingChoices: document.querySelectorAll("[data-onboarding-choice]"),
+  onboardingOpenButtons: document.querySelectorAll("[data-open-onboarding]"),
+  onboardingDismissButton: document.querySelector("[data-dismiss-onboarding]"),
 };
 
 const actions = {
@@ -82,6 +89,40 @@ const actions = {
     }
     render();
   },
+  onOpenOnboarding() {
+    const dialog = elements.onboardingDialog;
+    if (!dialog || dialog.open) return;
+
+    if (typeof dialog.showModal === "function") {
+      dialog.showModal();
+      return;
+    }
+
+    dialog.setAttribute("open", "");
+  },
+  onCloseOnboarding(preference) {
+    localStorage.setItem(onboardingPreferenceKey, preference);
+
+    const dialog = elements.onboardingDialog;
+    if (!dialog?.open) return;
+
+    if (typeof dialog.close === "function") {
+      dialog.close();
+      return;
+    }
+
+    dialog.removeAttribute("open");
+  },
+  onChooseOnboarding(choice) {
+    this.onCloseOnboarding(choice);
+
+    if (choice === "builder") {
+      this.onJumpSource("openai-developer-quickstart");
+      return;
+    }
+
+    elements.starterSection?.scrollIntoView({ behavior: "smooth" });
+  },
 };
 
 function ensureSelectedSourceIsVisible() {
@@ -132,5 +173,34 @@ function bindViewportShortcuts() {
   }
 }
 
+function bindOnboarding() {
+  elements.starterSourceButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      actions.onJumpSource(button.dataset.starterSource);
+    });
+  });
+
+  elements.onboardingOpenButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      actions.onOpenOnboarding();
+    });
+  });
+
+  elements.onboardingChoices.forEach((button) => {
+    button.addEventListener("click", () => {
+      actions.onChooseOnboarding(button.dataset.onboardingChoice);
+    });
+  });
+
+  elements.onboardingDismissButton?.addEventListener("click", () => {
+    actions.onCloseOnboarding("dismissed");
+  });
+
+  if (!localStorage.getItem(onboardingPreferenceKey)) {
+    actions.onOpenOnboarding();
+  }
+}
+
+bindOnboarding();
 bindViewportShortcuts();
 render();

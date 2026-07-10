@@ -14,6 +14,20 @@ export const agentArchitectureReadSources = [
       "这是非常适合开局的一篇：它会帮你先判断“这个问题到底需不需要 Agent”，避免一上来就堆框架和多智能体。",
   },
   {
+    id: "openai-developer-quickstart",
+    title: "OpenAI Developer Quickstart",
+    platform: "OpenAI",
+    category: "入门总览",
+    url: "https://platform.openai.com/docs/quickstart",
+    status: "verified",
+    priority: "先读",
+    module: "第一个实操",
+    usefulFor: "完成第一次 API 调用，并理解一个最小 Agent 是怎样从指令、模型和工具开始运行的。",
+    focus: ["API Key", "Responses API", "工具调用", "最小示例", "成本意识"],
+    note:
+      "如果你想把概念变成一次真实操作，从这里开始最合适。先只跑通一个小任务，不要急着上多 Agent 或复杂框架；API 调用会产生模型使用费用。",
+  },
+  {
     id: "openai-agents-python",
     title: "OpenAI Agents SDK",
     platform: "OpenAI",
@@ -477,20 +491,6 @@ export const agentArchitectureReadSources = [
     focus: ["HR 重复流程", "保密性", "任务型对话 Agent", "HR 自动化"],
     note:
       "不建议课堂里花太久讲论文，但可以用来证明 HR Agent 不是凭空想象，而是有研究和产品实践共同推动的方向。",
-  },
-  {
-    id: "zhihu-ai-recruiting",
-    title: "面向 HR 的 AI agent：12 个使用场景",
-    platform: "Oracle 中国",
-    category: "招聘自动化",
-    url: "https://www.oracle.com/cn/artificial-intelligence/ai-agents/ai-agents-hr/",
-    status: "verified",
-    priority: "参考",
-    module: "流程拆解",
-    usefulFor: "用企业 HR 场景理解 AI agent 可以覆盖招聘、入职、培训、绩效等环节。",
-    focus: ["岗位说明", "候选人识别", "招聘洞察", "员工支持"],
-    note:
-      "这篇适合作为 HR 场景的业务入口。课程里可以只取招聘相关环节，再落到飞书表结构、状态流转和人工审核点。",
   },
   {
     id: "zhihu-feishu-base-tutorial",

@@ -22,6 +22,7 @@
         </a>
 
         <nav class="nav-stack" aria-label="页面导航">
+          <a href="#starter" class="nav-link">新手起步</a>
           <a href="#sources" class="nav-link active">资料库</a>
           <a href="#course" class="nav-link">学习路线</a>
           <a href="#guardrails" class="nav-link">边界说明</a>
@@ -57,13 +58,53 @@
               这里收纳了 40+ 个已整理来源。公开网页不会整篇转载原文，而是提供阅读摘要、学习用途、重点问题和原文入口，方便你系统理解怎么做一个好的 Agent。
             </p>
             <div class="hero-actions">
-              <a class="primary-action" href="#sources">开始阅读</a>
+              <a class="primary-action" href="#starter">从零开始</a>
               <a class="secondary-action" href="#course">看学习路线</a>
             </div>
           </div>
           <figure class="hero-art">
             <img src="./assets/agent-architecture-concept.png" alt="AI Agent 架构阅读台界面概念图" />
           </figure>
+        </section>
+
+        <section id="starter" class="starter-section" aria-labelledby="starterTitle">
+          <div class="section-heading starter-heading">
+            <div>
+              <p class="section-kicker">给第一次来的你</p>
+              <h2 id="starterTitle">先走完这 3 站，再决定要不要深挖</h2>
+            </div>
+            <button class="secondary-action" type="button" data-open-onboarding>重新选择起点</button>
+          </div>
+          <p class="starter-intro">不用一次读完全部资料。先建立判断标准，再理解工具和上下文，最后完成一个小实践；每一站完成后再进入下一站。</p>
+          <ol class="starter-steps">
+            <li data-beginner-step>
+              <span class="starter-number">01</span>
+              <div>
+                <p class="starter-label">先建立判断</p>
+                <h3>什么任务才真的需要 Agent？</h3>
+                <p>先分清聊天机器人、自动化工作流和 Agent，避免为了“智能”而把简单问题做复杂。</p>
+                <button class="starter-source" type="button" data-starter-source="openai-practical-guide-agents">阅读 Agent 入门总览</button>
+              </div>
+            </li>
+            <li data-beginner-step>
+              <span class="starter-number">02</span>
+              <div>
+                <p class="starter-label">再理解能力边界</p>
+                <h3>工具和上下文为什么决定效果？</h3>
+                <p>先看 Agent 怎样获取资料、调用工具和接收错误反馈，不必急着研究复杂编排。</p>
+                <button class="starter-source" type="button" data-starter-source="anthropic-writing-tools">阅读工具设计入门</button>
+              </div>
+            </li>
+            <li data-beginner-step>
+              <span class="starter-number">03</span>
+              <div>
+                <p class="starter-label">最后做一次小实践</p>
+                <h3>跑通第一个可验证的小任务</h3>
+                <p>用官方最小示例完成一次调用，再回来看框架、记忆和多 Agent，理解会扎实很多。</p>
+                <button class="starter-source" type="button" data-starter-source="openai-developer-quickstart">打开第一个实操</button>
+              </div>
+            </li>
+          </ol>
         </section>
 
         <section class="metrics-row" aria-label="资料统计">
@@ -174,6 +215,25 @@
         </section>
       </main>
     </div>
+
+    <dialog id="onboardingDialog" class="onboarding-dialog" aria-labelledby="onboardingTitle">
+      <div class="onboarding-content">
+        <p class="section-kicker">AI Agent 新手导航</p>
+        <h2 id="onboardingTitle">你想从哪里开始？</h2>
+        <p>先选一个起点。阅读台会把你带到最合适的第一步，不需要先看完全部资料。</p>
+        <div class="onboarding-options">
+          <button class="onboarding-choice" type="button" data-onboarding-choice="beginner">
+            <strong>我想先弄懂 Agent</strong>
+            <span>从概念、边界和真实应用场景开始。</span>
+          </button>
+          <button class="onboarding-choice" type="button" data-onboarding-choice="builder">
+            <strong>我想尽快动手做一个</strong>
+            <span>从官方最小实操开始，再回头补理论。</span>
+          </button>
+        </div>
+        <button class="onboarding-skip" type="button" data-dismiss-onboarding>我先自己看看</button>
+      </div>
+    </dialog>
 
     <script type="module" src="./js/app.js"></script>
   </body>

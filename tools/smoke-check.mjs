@@ -127,6 +127,26 @@ try {
   const h1 = await page.locator("h1").innerText();
   assert(h1 === "AI Agent 架构阅读台", `Unexpected h1: "${h1}".`);
 
+  const onboardingDialog = page.locator("#onboardingDialog");
+  assert(await onboardingDialog.evaluate((dialog) => dialog.open), "New visitors should see the learning-start dialog.");
+  assert(
+    (await page.locator("[data-beginner-step]").count()) === 3,
+    "The beginner route should contain exactly three first-session steps.",
+  );
+
+  await page.click('[data-onboarding-choice="beginner"]');
+  assert(!(await onboardingDialog.evaluate((dialog) => dialog.open)), "Choosing a learning route should close the dialog.");
+
+  await page.click("[data-open-onboarding]");
+  assert(await onboardingDialog.evaluate((dialog) => dialog.open), "Visitors should be able to reopen the learning-start dialog.");
+
+  await page.click('[data-onboarding-choice="builder"]');
+  const selectedSourceTitle = await page.locator("#readerDetail h3").innerText();
+  assert(
+    selectedSourceTitle === "OpenAI Developer Quickstart",
+    `The builder route should select the first practical source, found "${selectedSourceTitle}".`,
+  );
+
   const privateResearchLinks = await page.locator('a[href*="vi8r050ecuz.feishu.cn"]').count();
   assert(privateResearchLinks === 0, "The public page must not expose the private Feishu research document.");
 
