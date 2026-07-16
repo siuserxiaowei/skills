@@ -24,6 +24,11 @@ if /usr/bin/grep -R -n -E '(writeFile|rename|copyFile|rm).*app\.asar' "$ROOT/scr
 fi
 
 "$NODE" "$ROOT/scripts/injector.mjs" --check-payload >/dev/null
+"$NODE" --test "$ROOT/tests"/*.test.mjs
+"$NODE" --test --experimental-test-coverage \
+  --test-coverage-lines=80 --test-coverage-branches=80 --test-coverage-functions=80 \
+  "$ROOT/tests/bugfire-state.test.mjs" "$ROOT/tests/bugfire-state-hardening.test.mjs" \
+  "$ROOT/tests/bugfire-pack.test.mjs" >/dev/null
 
 TMP="$(/usr/bin/mktemp -d /tmp/codex-dream-skin-tests.XXXXXX)"
 trap '/bin/rm -rf "$TMP"' EXIT
@@ -68,7 +73,7 @@ NO_DESKTOP_BACKUP="$TMP/theme-backup-without-desktop.json"
 "$NODE" "$ROOT/scripts/theme-config.mjs" restore "$NO_DESKTOP_CONFIG" "$NO_DESKTOP_BACKUP" >/dev/null
 /usr/bin/cmp -s "$NO_DESKTOP_CONFIG" "$TMP/original-without-desktop.toml"
 
-/usr/bin/env -u HOME /bin/bash -c '. "$1/scripts/common-macos.sh"; [ -n "$HOME" ] && [ "$SKIN_VERSION" = "1.1.2" ]' _ "$ROOT"
+/usr/bin/env -u HOME /bin/bash -c '. "$1/scripts/common-macos.sh"; [ -n "$HOME" ] && [ "$SKIN_VERSION" = "1.2.0-bugfire.1" ]' _ "$ROOT"
 "$ROOT/scripts/doctor-macos.sh" >/dev/null
 
 printf 'PASS: syntax, payload, custom-theme, config round-trips, HOME recovery, signature, and doctor checks.\n'

@@ -30,6 +30,7 @@ release_codex_launchd_job || true
 if [ -f "$STATE_PATH" ]; then
   stop_recorded_injector || true
 fi
+stop_known_injectors
 
 DEBUG_READY="false"
 if verified_cdp_endpoint "$PORT" 2>/dev/null; then

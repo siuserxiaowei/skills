@@ -22,6 +22,7 @@ case "$PORT" in ''|*[!0-9]*) fail "Invalid port: $PORT" ;; esac
 deploy_project() {
   local temporary="$INSTALL_ROOT.installing.$$"
   local previous="$INSTALL_ROOT.previous.$$"
+  local customizer_source=""
   /bin/rm -rf "$temporary"
   /bin/mkdir -p "$temporary"
   /usr/bin/rsync -a \
@@ -30,7 +31,18 @@ deploy_project() {
     --exclude 'release/' \
     --exclude 'runtime/' \
     "$PROJECT_ROOT/" "$temporary/"
+  if [ -d "$PROJECT_ROOT/skills/codex-bugfire-customizer" ]; then
+    customizer_source="$PROJECT_ROOT/skills/codex-bugfire-customizer"
+  elif [ -d "$PROJECT_ROOT/../skills/codex-bugfire-customizer" ]; then
+    customizer_source="$PROJECT_ROOT/../skills/codex-bugfire-customizer"
+  fi
+  if [ -n "$customizer_source" ]; then
+    /bin/mkdir -p "$temporary/skills/codex-bugfire-customizer"
+    /usr/bin/rsync -a --exclude '.DS_Store' \
+      "$customizer_source/" "$temporary/skills/codex-bugfire-customizer/"
+  fi
   /bin/chmod 700 "$temporary"/*.command "$temporary"/scripts/*.sh 2>/dev/null || true
+  /bin/chmod 700 "$temporary"/skills/codex-bugfire-customizer/scripts/*.sh 2>/dev/null || true
   if [ -e "$INSTALL_ROOT" ]; then /bin/mv "$INSTALL_ROOT" "$previous"; fi
   if ! /bin/mv "$temporary" "$INSTALL_ROOT"; then
     [ -e "$previous" ] && /bin/mv "$previous" "$INSTALL_ROOT"

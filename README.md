@@ -1,130 +1,171 @@
-# Codex Dream Skin
+# BUGFIRE「补丁兽」：Codex Desktop 像素桌宠
+
+[English](README.en.md)
+
+**BUGFIRE「补丁兽」是一款运行在 macOS 版 Codex Desktop 里的本地像素桌宠。** 它用“模拟 Build → 发现 Bug → 修复重建 → 喷火升级”的可玩反馈，让 Vibe Coding 的练习过程更有成长感；它不会执行真实构建，也不把宠物等级包装成编程能力认证。
+
+> 当前版本：`1.2.0-bugfire.1` · macOS 首版 · 非 OpenAI 官方产品
+
+![BUGFIRE 补丁兽在 Codex Desktop 首页右下角的像素桌宠浮巢](docs/images/bugfire-home.png)
+
+[使用说明](docs/USAGE.zh-CN.md) · [安全架构](docs/SECURITY-ARCHITECTURE.zh-CN.md) · [隐私说明](docs/PRIVACY.md) · [安全策略](SECURITY.md) · [GEO 分析](GEO-ANALYSIS.md) · [SEO/GEO 发布计划](SEO-PLAN.md) · [macOS 技术说明](macos/README.md)
+
+## 现在可以做自己的补丁兽
+
+项目提供 `Bugfire Pack v1` 和 [`codex-bugfire-customizer`](skills/codex-bugfire-customizer/SKILL.md) Skill。创作者不需要改注入器，只要准备一张背景图和一张 `idle` 宠物图，就能生成同一套模拟 Build、动作反馈、XP、成长卡、任务板和纪念卡系统；另外五张状态图可选，缺失时安全复用 `idle`。
+
+宠物包只接受声明式 JSON 与本地 PNG/JPEG/WebP，不下载远程素材，也不执行包内 JavaScript/CSS。最小上传清单、可选素材、生成命令和分享边界见 [定制指南](docs/CUSTOMIZATION.zh-CN.md)，玩法取舍和同类项目证据见 [调研报告](docs/RESEARCH.md)。
+
+## BUGFIRE 能做什么？
+
+补丁兽常驻 Codex 右下角的 72 px 浮巢，点击后展开宠物舱。首次体验从 `Lv2 · 220/240 XP` 开始：第一次点击 `BUILD · 演示` 会明确失败且不增加 XP；点击“已修复，重新 Build”后，补丁兽喷火消灭 Bug，获得 35 XP 并升到 Lv3。整个流程是本地演示，不读取任务正文、源码、密钥或真实 Shell 输出。
+
+| 关键事实 | 当前实现 |
+| --- | --- |
+| 平台 | macOS + 官方 Codex Desktop |
+| 版本 | `1.2.0-bugfire.1` |
+| Build | 明确标注的本地演示，不执行 Shell |
+| 存档 | `~/Library/Application Support/CodexDreamSkinStudio/bugfire-progress.json`，权限 `0600` |
+| 注入 | 使用仅绑定 `127.0.0.1` 的 Codex CDP；进度同步不另开端口 |
+| 自定义宠物包 | 本地 `bugfire-pack` CLI；背景 + `idle` 图即可起步，五张状态图可选 |
+| 官方应用改动 | 不修改 `.app`、`app.asar` 或代码签名 |
+| 认证性质 | 本地成长纪念，不是能力评估或官方认证 |
+
+### 核心体验
+
+- 原创像素补丁龙与 `idle`、`building`、`bug`、`fire`、`success`、`level-up` 六种状态动画
+- 五级 Vibe 成长路径、成长卡与可导出的 4:5 PNG 赛季纪念证书
+- 任务页自动收起、`Esc` 收起、键盘可操作、窄窗口适配与 `prefers-reduced-motion`
+- 本地原子存档；失败不奖励 XP，修复成功只结算一次
+- 本地编译自定义宠物包：背景、六状态素材、配色、台词、任务板与纪念卡标题
+- 保留 Codex 原生侧栏、项目选择器、任务区、输入框和菜单交互
+- 一键验证、暂停与恢复，不修改官方 `.app`、`app.asar` 或代码签名
+
+![BUGFIRE 在普通 Codex 任务页自动收起并避开原生输入框](docs/images/bugfire-task.png)
+
+## Build 演示是怎样玩的？
+
+| 步骤 | 画面反馈 | XP |
+| --- | --- | ---: |
+| 1. 打开右下角宠物浮巢 | 展开约 320 × 420 px 宠物舱 | 0 |
+| 2. 点击 `BUILD · 演示` | 首次 Build 失败，生成一只 Bug | 0 |
+| 3. 点击“已修复，重新 Build” | 补丁兽喷火，Build 成功 | +35 |
+| 4. 达到升级阈值 | 解锁技能并生成成长卡 | 按当前进度 |
 
 <p align="center">
-  <strong>中文</strong> · <a href="./README.en.md">English</a>
+  <img src="docs/images/bugfire-pet-cabin.png" alt="展开的 BUGFIRE 宠物舱，显示 Lv2、220/240 XP 与模拟 Build 按钮" width="49%">
+  <img src="docs/images/bugfire-build-failed.png" alt="BUGFIRE 首次模拟 Build 失败且不增加 XP" width="49%">
 </p>
 
-<p align="center">
-  <strong>给 Codex 桌面端换一张会呼吸的脸。</strong><br>
-  外部主题 / 换肤工具 · 本机 CDP 注入 · 不改官方安装包
-</p>
+![补丁兽喷火除虫并从 Lv2 升到 Lv3，解锁 BUGFIRE 成长卡](docs/images/bugfire-level-up.png)
 
-<p align="center">
-  一张图，一种心情 · 写代码，也要有氛围感
-</p>
+> 公开截图按画面需要裁剪、覆盖或模糊原生侧栏，并用 `BUGFIRE DEMO` 覆盖真实项目名；任务正文、账户信息和本机路径不作为演示素材。
 
-<p align="center">
-  非 OpenAI 官方产品。不修改 <code>.app</code> / <code>app.asar</code> / WindowsApps。
-</p>
+## 五级成长体系
 
-## 赞助商
+| 等级 | XP | Vibe 阶段 | 技能 |
+| --- | ---: | --- | --- |
+| Lv1 | 0–99 | 会描述 | 灵感火星 |
+| Lv2 | 100–239 | 会搭建 | 结构嗅探 |
+| Lv3 | 240–449 | 会除虫 | BUGFIRE |
+| Lv4 | 450–749 | 会验收 | 测试结界 |
+| Lv5 | 750+ | 会交付 | 发布跃迁 |
 
-<p align="center">
-  <a href="https://passion8.cc/register?aff=TuPe">
-    <img src="docs/images/sponsor-passion8.png" alt="Passion8" height="72">
-  </a>
-</p>
+Lv5 且累计完成 10 次成功 Build、3 次修复重建后，会生成赛季纪念证书。证书固定注明：
 
-<p align="center">
-  <strong>更智能的连接 · 更热爱的创造</strong><br>
-  <sub>热爱驱动 · 无限可能 · Connect AI · Power Creation</sub>
-</p>
+> 个人成长纪念卡，由本地活动生成；非官方认证，不代表专业资格。
 
-<p align="center">
-  感谢 <a href="https://passion8.cc/register?aff=TuPe"><strong>passion8.cc</strong></a> 赞助本项目。<br>
-  满血 AI 中转：官方模型直连，无降智、无套壳；一行配置接入 Codex / Claude Code / Grok。
-</p>
+![BUGFIRE Season 01 本地成长纪念证书功能预览](docs/images/bugfire-certificate.png)
 
-<p align="center">
-  <sub>
-    换肤与 API 配置互相独立，本项目不会自动改写你的模型供应商设置。
-  </sub>
-</p>
+## 如何安装？
 
-## 效果预览
+### 环境要求
 
-一张图，一种心情。下面都是可落地的主题示意效果：
+- macOS
+- 已安装官方 Codex Desktop，并至少启动过一次
+- 不要求全局安装 Node.js；安装器会先验证并使用 Codex 自带的签名 Node.js
 
-<p align="center">
-  <img src="docs/images/gallery/skin-01.jpg" alt="粉系定制" width="900"><br>
-  <sub>粉系定制</sub>
-</p>
+### 双击安装
 
-<p align="center">
-  <img src="docs/images/gallery/skin-02.jpg" alt="财神打工" width="900"><br>
-  <sub>财神打工版</sub>
-</p>
+1. 下载或克隆本仓库。
+2. 双击 [`macos/Install Codex Dream Skin.command`](macos/Install%20Codex%20Dream%20Skin.command)。
+3. 首次启用时，按提示仅重启 Codex 一次。
+4. 打开 Codex，在右下角寻找补丁兽浮巢。
 
-<p align="center">
-  <img src="docs/images/gallery/skin-03.jpg" alt="红白科幻" width="900"><br>
-  <sub>红白科幻</sub>
-</p>
+### 终端安装
 
-<p align="center">
-  <img src="docs/images/gallery/skin-04.jpg" alt="清透定制" width="900"><br>
-  <sub>清透定制</sub>
-</p>
+```bash
+cd macos
+./tests/run-tests.sh
+./scripts/install-dream-skin-macos.sh --no-launch
+~/.codex/codex-dream-skin-studio/scripts/start-dream-skin-macos.sh --prompt-restart
+```
 
-<p align="center">
-  <img src="docs/images/gallery/skin-05.jpg" alt="灵感小宇宙" width="900"><br>
-  <sub>灵感小宇宙</sub>
-</p>
+安装后的主要位置：
 
-<p align="center">
-  <img src="docs/images/gallery/skin-06.jpg" alt="紫夜限定" width="900"><br>
-  <sub>紫夜限定</sub>
-</p>
+| 内容 | 路径 |
+| --- | --- |
+| 引擎 | `~/.codex/codex-dream-skin-studio` |
+| 状态、日志、用户图片 | `~/Library/Application Support/CodexDreamSkinStudio` |
+| 补丁兽进度 | `~/Library/Application Support/CodexDreamSkinStudio/bugfire-progress.json` |
 
-<p align="center">
-  <img src="docs/images/gallery/skin-07.jpg" alt="初音未来" width="900"><br>
-  <sub>初音未来</sub>
-</p>
+完整的操作、验证、故障排查与恢复命令见 [中文使用说明](docs/USAGE.zh-CN.md)。
 
-<p align="center">
-  <img src="docs/images/gallery/skin-08.jpg" alt="舞台黑金" width="900"><br>
-  <sub>舞台黑金</sub>
-</p>
+## 隐私和安全边界
 
-## 它能做什么
+BUGFIRE 运行时依赖一个仅绑定 `127.0.0.1` 的 Codex CDP 端口来注入样式和装饰组件。进度同步复用这条已验证的 renderer 会话，通过一个 `Runtime` binding 完成，不再另开网络端口。存档只记录 schema 版本、宠物/赛季 ID、XP、失败与成功次数、修复成功次数、技能、成长卡、已结算事件 ID 和更新时间。
 
-- **真·可交互**：侧栏、建议卡、项目选择、输入框都是原生控件，不是整窗假截图贴上去
-- **可换图**：换一张喜欢的图，就能变成你的主题
-- **可恢复**：一键还原官方外观
-- **相对安全**：本机回环 CDP 注入，不改官方二进制与签名
+它不会：
 
-## 快速开始
+- 修改官方 Codex 安装包、`app.asar` 或代码签名
+- 读取任务正文、项目源码、API Key、Base URL 或密钥
+- 执行真实 Shell / Build 命令
+- 把演示等级表述为客观编程水平或专业认证
+- 从宠物包下载远程素材，或执行宠物包提供的脚本和样式
 
-仓库内按平台放了现成脚本（实现细节不同，效果都是「主题化 Codex」）：
+CDP 本身权限较高。主题运行期间不要运行来路不明的本机程序；不用时可暂停或完全恢复官方外观。
 
-| 平台 | 目录 | 入口 |
-|------|------|------|
-| Apple Silicon / Intel Mac | [`macos/`](./macos/) | 双击 `Install Codex Dream Skin.command` |
-| Windows | [`windows/`](./windows/) | `scripts/install-dream-skin.ps1` → `start-dream-skin.ps1` |
+## 如何暂停或恢复？
 
-更细的说明：
+暂停皮肤、保留 Codex 运行：
 
-- Mac：[`macos/README.md`](./macos/README.md)
-- Windows：[`windows/SKILL.md`](./windows/SKILL.md)
-- 路径对照：[`docs/platforms.md`](./docs/platforms.md)
-- 项目记录：[`docs/PROJECT.md`](./docs/PROJECT.md)
+```bash
+~/.codex/codex-dream-skin-studio/scripts/pause-dream-skin-macos.sh
+```
 
-## 反馈与贡献
+移除实时注入并恢复安装前的外观设置：
 
-- **Issue：** 请用 [Issue 模板](./.github/ISSUE_TEMPLATE/)（Bug / 功能）；已关闭空白 Issue。提交前建议先跑 Verify / Restore 自检。
-- **PR：** 请按 [PR 模板](./.github/pull_request_template.md) 写清改动，并勾选对应自测（如 `macos/tests/run-tests.sh`、verify / restore）。
+```bash
+~/.codex/codex-dream-skin-studio/scripts/restore-dream-skin-macos.sh \
+  --restore-base-theme --restart-codex
+```
 
-## 安全边界
+也可以双击桌面的 `Codex Dream Skin - Restore.command`。
 
-- CDP 只绑 `127.0.0.1`，主题运行期间勿跑来路不明的本机程序
-- 不修改官方安装目录与代码签名
-- **不会**自动改写 API Key / Base URL；中转与换肤分开
+## 常见问题
 
-## 许可与声明
+### 它会自动运行我的项目 Build 吗？
 
-- 见 [`macos/LICENSE`](./macos/LICENSE)（MIT）与 [`macos/NOTICE.md`](./macos/NOTICE.md)
-- 非 OpenAI 官方产品；Codex 及相关权利归其权利人
-- 效果图中的人物 / IP 形象仅作主题示意；商用或公开再分发请自行确认肖像权与商标授权
+不会。首版只有明确标注的可玩演示，不调用真实 Shell，也不接收项目内容。真实 Build 监听属于后续阶段，必须由用户单独授权允许的命令，并且只消费退出码。
 
----
+### 宠物等级等于我的编程能力吗？
 
-Star 一下，然后挑一张图，把你的 Codex 变成今天想要的样子。
+不等于。等级只反映这套本地演示中的活动进度，目的是提供节奏和纪念感，不是能力测评、职业资格或官方认证。
+
+### 为什么第一次 Build 没有 XP？
+
+这是设计的一部分：失败只生成 Bug；完成“修复重建”后才结算 35 XP。同一个修复事件不会重复奖励。
+
+### 会遮住 Codex 输入框吗？
+
+宠物舱进入任务页会自动收起，浮巢会避开输入区；同时支持 `Esc`、键盘操作、窄窗口和减少动态效果设置。
+
+### 如何确认安装没有修改官方应用？
+
+运行 `doctor-macos.sh --require-live` 与 `verify-dream-skin-macos.sh --reload`。验证脚本会检查官方签名、目标 renderer、注入状态和关键交互区域。
+
+## 来源、许可与声明
+
+本扩展基于 [Codex Dream Skin v1.1.2 的固定提交](https://github.com/Fei-Away/Codex-Dream-Skin/commit/2f038b5322702cfb248d9c7564b56470a389abc2) 制作，BUGFIRE 宠物、成长系统和动画为该独立扩展内容。代码许可见根目录 [`LICENSE`](LICENSE)（MIT），上游归属、运行边界和商标说明见 [`NOTICE.md`](NOTICE.md)。
+
+本项目与 OpenAI 无隶属或背书关系。Codex、OpenAI 及相关商标归其各自权利人所有。

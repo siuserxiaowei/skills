@@ -23,26 +23,31 @@ SRC="$THEMES_ROOT/$THEME_ID"
 [ -d "$SRC" ] || fail "Theme not found: $THEME_ID"
 [ -f "$SRC/theme.json" ] || fail "theme.json missing in $THEME_ID"
 
+ensure_node_runtime
+"$NODE" "$INJECTOR" --check-payload --theme-dir "$SRC" >/dev/null
+
+THEME_NAME="$("$NODE" -e 'try{const t=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.stdout.write(t.name||"")}catch{}' "$SRC/theme.json" 2>/dev/null || true)"
+[ -n "$THEME_NAME" ] || THEME_NAME="$THEME_ID"
+
 progress() {
   printf '%s\n' "$*" >&2
-  /usr/bin/osascript -e "display notification \"$*\" with title \"Codex Dream Skin\"" >/dev/null 2>&1 || true
+  DREAM_SKIN_NOTIFICATION="$*" /usr/bin/osascript \
+    -e 'display notification (system attribute "DREAM_SKIN_NOTIFICATION") with title "Codex Dream Skin"' \
+    >/dev/null 2>&1 || true
 }
+
+if [ "$APPLY_NOW" != "true" ]; then
+  progress "Ready in library: ${THEME_NAME} (active theme unchanged)"
+  exit 0
+fi
 
 progress "Switching..."
 
-/bin/mkdir -p "$THEME_DIR"
-/usr/bin/find "$THEME_DIR" -type f -maxdepth 1 -delete 2>/dev/null || true
-/bin/cp -f "$SRC/"* "$THEME_DIR/" 2>/dev/null || true
-/bin/chmod 600 "$THEME_DIR/"* 2>/dev/null || true
-
-ensure_node_runtime
-THEME_NAME="$("$NODE" -e 'try{const t=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.stdout.write(t.name||"")}catch{}' "$THEME_DIR/theme.json" 2>/dev/null || true)"
-[ -n "$THEME_NAME" ] || THEME_NAME="$THEME_ID"
-
-if [ "$APPLY_NOW" != "true" ]; then
-  progress "Ready: ${THEME_NAME} (not applied)"
-  exit 0
-fi
+# No process may keep reading the active directory while it is replaced. Both
+# helpers revalidate PID start time and exact argv before every signal.
+stop_recorded_injector 2>/dev/null || true
+stop_known_injectors
+activate_theme_from_directory "$SRC"
 
 PORT=9341
 if [ -f "$STATE_PATH" ]; then

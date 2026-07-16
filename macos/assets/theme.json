@@ -1,27 +1,65 @@
 {
   "schemaVersion": 1,
-  "id": "custom-1784123441349",
-  "name": "Dream Skin",
-  "brandSubtitle": "CODEX DREAM SKIN",
-  "tagline": "把喜欢的画面变成可交互的 Codex 工作台。",
-  "projectPrefix": "选择项目 · ",
-  "projectLabel": "◉  选择项目",
-  "statusText": "THEME ONLINE",
-  "quote": "Make something wonderful",
+  "id": "bugfire-season-01",
+  "name": "BUGFIRE · 补丁兽",
+  "brandSubtitle": "PATCH DRAGON · SEASON 01",
+  "tagline": "每一次 Build，都让你的 Vibe Coding 进化。",
+  "projectPrefix": "载入项目 · ",
+  "projectLabel": "▸  选择构建项目",
+  "statusText": "BUGFIRE ONLINE",
+  "quote": "BUILD · BURN BUGS · LEVEL UP",
   "image": "portal-hero.png",
   "colors": {
-    "background": "#F7F4F5",
-    "panel": "#FFFFFF",
-    "panelAlt": "#FFF7F8",
-    "accent": "#E25563",
-    "accentAlt": "#F07A86",
-    "secondary": "#F3A8AF",
-    "highlight": "#C93D4C",
-    "text": "#2B2224",
-    "muted": "#8A7A7D",
-    "line": "rgba(196, 120, 128, .22)"
+    "background": "#050704",
+    "panel": "#0A0E09",
+    "panelAlt": "#11180E",
+    "accent": "#83FF45",
+    "accentAlt": "#C1FF72",
+    "secondary": "#FF7A1A",
+    "highlight": "#FF3D0A",
+    "text": "#F4EFD8",
+    "muted": "#9AA58D",
+    "line": "rgba(131, 255, 69, .26)"
   },
-  "promoTitle": "感谢 Passion8 赞助",
-  "promoSub": "passion8.cc",
-  "promoUrl": "https://passion8.cc/register?aff=TuPe"
+  "pet": {
+    "id": "bugfire-patch-dragon",
+    "name": "补丁兽",
+    "season": "S01 · BUILD TO EVOLVE",
+    "demoReward": 35,
+    "levels": [
+      {
+        "level": 1,
+        "minXp": 0,
+        "stage": "会描述",
+        "skill": "灵感火星"
+      },
+      {
+        "level": 2,
+        "minXp": 100,
+        "stage": "会搭建",
+        "skill": "结构嗅探"
+      },
+      {
+        "level": 3,
+        "minXp": 240,
+        "stage": "会除虫",
+        "skill": "BUGFIRE"
+      },
+      {
+        "level": 4,
+        "minXp": 450,
+        "stage": "会验收",
+        "skill": "测试结界"
+      },
+      {
+        "level": 5,
+        "minXp": 750,
+        "stage": "会交付",
+        "skill": "发布跃迁"
+      }
+    ]
+  },
+  "promoTitle": "BUGFIRE LAB",
+  "promoSub": "本地成长演示 · 非官方认证",
+  "promoUrl": ""
 }

@@ -1,0 +1,79 @@
+# BUGFIRE 安全架构：为什么不修改 Codex.app？
+
+**BUGFIRE 是运行在官方 Codex Desktop 外部的本地桌宠扩展。** 它先验证官方应用及其内置 Node.js 的签名，再通过仅绑定 `127.0.0.1` 的 CDP 向已确认的 Codex renderer 注入 CSS 和桌宠 DOM；它不改 `.app`、`app.asar`、代码签名、模型配置或 API Key。
+
+> 适用版本：`1.2.0-bugfire.1` · 2026-07-16 · 非 OpenAI 官方产品
+
+## 数据流是什么？
+
+```text
+官方 Codex Desktop（签名保持有效）
+        │
+        │ 仅本机 127.0.0.1 CDP；验证进程归属与 renderer URL
+        ▼
+BUGFIRE injector
+        ├── 幂等注入 CSS、背景和桌宠 DOM
+        ├── 保留原生侧栏、项目选择器、任务区与输入框
+        └── 一个 Runtime binding，只接收受限的桌宠事件
+                         │
+                         ▼
+Application Support 本地存档
+schema 校验 · lockf 内核锁 · 原子写入 · 0600 权限
+```
+
+Renderer 只发送 `reset` 或模拟 Build 的 `failed` / `repair-success` 事件。Injector 会限制事件类型、ID、长度和奖励规则，再在跨进程内核锁中重新读取、结算并保存进度。同一事件 ID 只结算一次。
+
+## 会读取哪些数据？
+
+存档只包含宠物与赛季 ID、XP、失败/成功/修复次数、已解锁技能、成长卡、已结算事件 ID 和更新时间。
+
+BUGFIRE 不读取或保存：
+
+- 任务正文、提示词或对话
+- 项目源码、文件名、分支、语言或依赖
+- API Key、Base URL、认证文件或模型供应商配置
+- 真实 Shell 命令、Build 日志或退出码
+
+首版的 `BUILD · 演示` 只驱动本地状态机，不会运行 `npm`、`make`、`xcodebuild` 或其他项目命令。
+
+## CDP 如何被限制？
+
+- 调试地址固定为 `127.0.0.1`，不会绑定 `0.0.0.0` 或局域网地址。
+- 端口必须归属于官方 Codex 主进程或其合法子进程。
+- 只接受预期的 `app://` renderer，不向任意网页注入。
+- Watcher 停止前会核对 PID、启动时间和完整命令行；PID 被复用或进程在 TERM 后变身时不会继续 KILL。
+- 进度同步复用已经验证的 CDP 会话，不新增 HTTP 服务或监听端口。
+
+CDP 即使只在回环地址也拥有较高权限。主题运行期间不要执行来路不明的本机程序；不用时应暂停或 Restore。
+
+## 自定义宠物包为什么不能带脚本？
+
+`Bugfire Pack v1` 只接受声明式 JSON 和本地 PNG/JPEG/WebP。编译器拒绝远程素材、任意 JavaScript/CSS、路径穿越、素材符号链接、越出包目录的父级链接、扩展名伪装、APNG、动画 WebP、超限字节和超限像素。
+
+图片通过 `O_NOFOLLOW` 同一文件句柄读取，并在前后核对 inode、大小和时间戳；Build 写入已经验证的字节，不在校验后重新打开源文件。同一宠物图被多个状态复用时只编码一次。主题切换先在同一文件系统内完整暂存、设置权限并再次验证，再用原子重命名替换活动目录；失败时恢复旧主题。
+
+素材包必须声明使用权。校验降低的是执行与路径风险，不代替版权、肖像权或商标审查。
+
+## 如何完整恢复？
+
+```bash
+~/.codex/codex-dream-skin-studio/scripts/restore-dream-skin-macos.sh \
+  --restore-base-theme --restart-codex
+```
+
+Restore 会停止身份匹配的 watcher，移除注入 DOM、样式、监听器和 Runtime binding，并恢复安装前备份的基础外观设置。官方应用包从始至终不被修改。
+
+## 如何自行核验？
+
+```bash
+cd macos
+./tests/run-tests.sh
+
+~/.codex/codex-dream-skin-studio/scripts/doctor-macos.sh --require-live
+~/.codex/codex-dream-skin-studio/scripts/verify-dream-skin-macos.sh --reload
+/usr/bin/codesign --verify --deep --strict /Applications/ChatGPT.app
+```
+
+`doctor --require-live` 与 `verify --reload` 只有在当前 Codex 由已验证的回环 CDP 会话启动时才应返回 `pass: true`。不要把历史截图或静态测试描述成当前实时验证。
+
+本版本源代码验收为 85/85 测试通过；强制覆盖率为 Lines 88.38%、Branches 84.50%、Functions 80.39%。详细证据见 [QA inventory](../macos/references/qa-inventory.md)、[隐私说明](PRIVACY.md) 与根目录 [安全策略](../SECURITY.md)。

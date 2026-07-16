@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.2.0-bugfire.1 — 2026-07-16
+
+### 新增
+
+- 加入 `Bugfire Pack v1` 编译与校验工具：最小背景 + 宠物两图即可生成可移植桌宠包
+- 支持六状态宠物素材、点击台词、本地任务板、自定义主题色和成长纪念卡标题
+- 加入 `codex-bugfire-customizer` Skill、离线预览、安装脚本与端到端测试
+
+### 安全
+
+- 拒绝目录穿越、symlink、伪图片、远程素材、非法字段和超大素材
+- 校验 PNG/JPEG/WebP 的真实帧尺寸与像素上限，拒绝 APNG、动画 WebP、画布尺寸伪装和多帧 WebP
+- 同一宠物图被多个状态复用时只计数并编码一次，避免 6 倍 payload
+- 宠物包名称以数据而非 AppleScript 源码传给系统通知，阻止元数据注入
+- 主题先完整暂存并校验，再原子切换；失败自动恢复旧主题
+- 任务仅从现有本地聚合数派生，不读取任务正文、源码、文件名、项目名或 Shell 输出
+
+### 桌宠体验
+
+- 加入 BUGFIRE「补丁兽」桌宠舱，保留 Codex 原生侧栏、任务区和输入框交互
+- 加入 Build 失败 → 修复重建 → 喷火升级的本地演示流程与五级 Vibe 成长体系
+- 加入成长卡、赛季纪念证书与 PNG 导出；所有证书均明确标注为非官方个人纪念卡
+- 通过已验证的 CDP Runtime binding 将进度原子保存到 Application Support，不新增网络端口
+
+### 安全与可用性
+
+- 支持 Escape 收起、任务页自动收起、窄窗口和 `prefers-reduced-motion`
+- Restore 会移除全部 BUGFIRE DOM、样式和监听器，不修改官方 `.app`、`app.asar` 或代码签名
+
 ## 1.1.2 — 2026-07-16
 
 ### 修复
@@ -37,11 +66,11 @@
 ### 视觉
 
 - 以原版暗色 portal CSS 为结构底，叠加 light 壳与更薄横幅遮罩，减轻「换图看不清」
-- 示例纯横幅：`docs/images/banner-arina-hashimoto-pure-no-ui.png`（无人机 UI 合成）
+- 历史上游曾附带人物示例横幅；BUGFIRE 独立扩展不再保留或宣传该素材
 
 ### 说明
 
-- `docs/images/gallery/` 仅为效果预览，不要当 `theme` 背景导入
+- 历史上游图库仅作记录；BUGFIRE 对外素材统一使用原创补丁龙与脱敏截图
 
 ---
 

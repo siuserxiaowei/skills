@@ -26,7 +26,7 @@ START_ERROR_LOG="$STATE_ROOT/start-error.log"
 CODEX_APP_JOB_LABEL="com.openai.codex-dream-skin-studio.app"
 INJECTOR_JOB_LABEL="com.openai.codex-dream-skin-studio.injector"
 EXPECTED_CODEX_TEAM_ID="${CODEX_EXPECTED_TEAM_ID:-2DC432GLL2}"
-SKIN_VERSION="1.1.2"
+SKIN_VERSION="1.2.0-bugfire.1"
 
 fail() {
   local message="$*"
@@ -314,61 +314,138 @@ write_state() {
   ' "$STATE_PATH" "$SKIN_VERSION" "$port" "$injector_pid" "$injector_started_at" "$INJECTOR" "$NODE" "$node_ver" "$bundle" "$exe" "$app_ver" "$team" "$PROJECT_ROOT" "$THEME_DIR" "$codex_pid" "$(/usr/bin/uname -m)"
 }
 
+process_matches_snapshot() {
+  local pid="$1"
+  local expected_start="$2"
+  local expected_command="$3"
+  local start_before=""
+  local actual_command=""
+  local start_after=""
+  case "$pid" in ''|*[!0-9]*) return 1 ;; esac
+  [ -n "$expected_start" ] && [ -n "$expected_command" ] || return 1
+
+  start_before="$(process_started_at "$pid")"
+  [ -n "$start_before" ] && [ "$start_before" = "$expected_start" ] || return 1
+  actual_command="$(/bin/ps -p "$pid" -o command= 2>/dev/null || true)"
+  [ -n "$actual_command" ] && [ "$actual_command" = "$expected_command" ] || return 1
+  start_after="$(process_started_at "$pid")"
+  [ -n "$start_after" ] && [ "$start_after" = "$expected_start" ] || return 1
+}
+
+known_injector_command() {
+  local command_line="$1"
+  local prefix="${NODE} ${INJECTOR} --watch --port "
+  local suffix=""
+  local port=""
+  case "$command_line" in
+    "$prefix"*) ;;
+    *) return 1 ;;
+  esac
+  suffix="${command_line#"$prefix"}"
+  port="${suffix%% *}"
+  case "$port" in ''|*[!0-9]*) return 1 ;; esac
+  [ "$port" -ge 1 ] 2>/dev/null && [ "$port" -le 65535 ] 2>/dev/null || return 1
+  [ "$suffix" = "$port --theme-dir $THEME_DIR" ]
+}
+
+known_injector_snapshot() {
+  local pid="$1"
+  local start_before=""
+  local command_line=""
+  local start_after=""
+  case "$pid" in ''|*[!0-9]*) return 1 ;; esac
+
+  start_before="$(process_started_at "$pid")"
+  [ -n "$start_before" ] || return 1
+  command_line="$(/bin/ps -p "$pid" -o command= 2>/dev/null || true)"
+  known_injector_command "$command_line" || return 1
+  start_after="$(process_started_at "$pid")"
+  [ -n "$start_after" ] && [ "$start_after" = "$start_before" ] || return 1
+  printf '%s\t%s\t%s\n' "$pid" "$start_before" "$command_line"
+}
+
+stop_process_snapshot() {
+  local pid="$1"
+  local expected_start="$2"
+  local expected_command="$3"
+  local deadline=$((SECONDS + 6))
+
+  # Every signal is preceded by a fresh start-time + exact-command check.
+  process_matches_snapshot "$pid" "$expected_start" "$expected_command" || return 0
+  /bin/kill -TERM "$pid" 2>/dev/null || return 0
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    process_matches_snapshot "$pid" "$expected_start" "$expected_command" || return 0
+    /bin/sleep 0.2
+  done
+  process_matches_snapshot "$pid" "$expected_start" "$expected_command" || return 0
+  /bin/kill -KILL "$pid" 2>/dev/null || true
+}
+
+remove_injector_launchd_job() {
+  /bin/launchctl remove "gui/$(/usr/bin/id -u)/$INJECTOR_JOB_LABEL" >/dev/null 2>&1 || true
+  /bin/launchctl remove "$INJECTOR_JOB_LABEL" >/dev/null 2>&1 || true
+}
+
 stop_recorded_injector() {
   [ -f "$STATE_PATH" ] || return 0
-  local pid
-  local saved_start
-  local saved_node
-  local saved_injector
-  local actual_start
-  local command_line
+  local pid=""
+  local saved_start=""
+  local saved_node=""
+  local saved_injector=""
+  local saved_port=""
+  local saved_theme_dir=""
+  local expected_command=""
+
   pid="$(state_field injectorPid 2>/dev/null || true)"
-  # Already paused / no daemon
-  if [ -z "${pid:-}" ] || [ "$pid" = "0" ]; then
-    /bin/launchctl remove "$INJECTOR_JOB_LABEL" >/dev/null 2>&1 || true
-    return 0
-  fi
-  /bin/kill -0 "$pid" 2>/dev/null || {
-    /bin/launchctl remove "$INJECTOR_JOB_LABEL" >/dev/null 2>&1 || true
-    return 0
-  }
   saved_start="$(state_field injectorStartedAt 2>/dev/null || true)"
   saved_node="$(state_field nodePath 2>/dev/null || true)"
   saved_injector="$(state_field injectorPath 2>/dev/null || true)"
-  # Soft identity check (macOS path case: /Users/Fei vs /Users/fei)
-  local node_ok="true" inj_ok="true"
-  if [ -n "$saved_node" ] && [ -n "${NODE:-}" ]; then
-    [ "$(printf '%s' "$saved_node" | /usr/bin/tr '[:upper:]' '[:lower:]')" = "$(printf '%s' "$NODE" | /usr/bin/tr '[:upper:]' '[:lower:]')" ] || node_ok="false"
-  fi
-  if [ -n "$saved_injector" ] && [ -n "${INJECTOR:-}" ]; then
-    [ "$(printf '%s' "$saved_injector" | /usr/bin/tr '[:upper:]' '[:lower:]')" = "$(printf '%s' "$INJECTOR" | /usr/bin/tr '[:upper:]' '[:lower:]')" ] || inj_ok="false"
-  fi
-  # If identity clearly wrong but process looks like our injector, still stop by cmdline.
-  command_line="$(/bin/ps -p "$pid" -o command= 2>/dev/null || true)"
-  case "$command_line" in
-    *injector.mjs*--watch*) ;;
-    *)
-      if [ "$node_ok" = "true" ] && [ "$inj_ok" = "true" ]; then
-        :
+  saved_port="$(state_field port 2>/dev/null || true)"
+  saved_theme_dir="$(state_field themeDir 2>/dev/null || true)"
+
+  # The fixed label belongs to this installation; removing it never targets
+  # an arbitrary PID. A direct fallback process is handled below.
+  remove_injector_launchd_job
+  case "$pid" in ''|0|*[!0-9]*) return 0 ;; esac
+  case "$saved_port" in ''|*[!0-9]*) return 0 ;; esac
+  [ -n "$saved_start" ] && [ -n "$saved_node" ] && [ -n "$saved_injector" ] \
+    && [ -n "$saved_theme_dir" ] || return 0
+  expected_command="$saved_node $saved_injector --watch --port $saved_port --theme-dir $saved_theme_dir"
+  stop_process_snapshot "$pid" "$saved_start" "$expected_command"
+}
+
+stop_known_injectors() {
+  local pid=""
+  local command_line=""
+  local snapshot=""
+  local records=""
+  local expected_start=""
+  local expected_command=""
+
+  # The fixed launchd label is owned by this installation and is safe to remove
+  # even when state.json is missing or stale.
+  remove_injector_launchd_job
+
+  # Direct nohup fallback processes have no launchd label. Keep a full process
+  # identity snapshot; a numeric PID by itself is never sufficient to signal.
+  while read -r pid command_line; do
+    [ -n "$pid" ] || continue
+    known_injector_command "$command_line" || continue
+    if snapshot="$(known_injector_snapshot "$pid")"; then
+      if [ -n "$records" ]; then
+        records="$records
+$snapshot"
       else
-        # Stale PID that is not our injector — ignore
-        return 0
+        records="$snapshot"
       fi
-      ;;
-  esac
-  if [ -n "$saved_start" ]; then
-    actual_start="$(process_started_at "$pid")"
-    if [ -n "$actual_start" ] && [ "$actual_start" != "$saved_start" ]; then
-      # PID recycled — do not kill stranger
-      return 0
     fi
-  fi
-  /bin/launchctl remove "$INJECTOR_JOB_LABEL" >/dev/null 2>&1 || true
-  /bin/kill -TERM "$pid" 2>/dev/null || true
-  local deadline=$((SECONDS + 6))
-  while /bin/kill -0 "$pid" 2>/dev/null && [ "$SECONDS" -lt "$deadline" ]; do /bin/sleep 0.2; done
-  /bin/kill -KILL "$pid" 2>/dev/null || true
-  return 0
+  done < <(/bin/ps -axo pid=,command=)
+
+  [ -n "$records" ] || return 0
+  while IFS=$'\t' read -r pid expected_start expected_command; do
+    [ -n "$pid" ] || continue
+    stop_process_snapshot "$pid" "$expected_start" "$expected_command"
+  done <<< "$records"
 }
 
 launch_injector_daemon() {
@@ -458,6 +535,74 @@ except Exception: pass' "$STATE_PATH" 2>/dev/null || true)"
   require_macos_runtime
 }
 
+# Copy a fully validated theme into a same-filesystem staging directory, then
+# replace the active directory with atomic renames. The old active directory is
+# retained inside the transaction until the new directory is in place, so a
+# failed second rename can be rolled back without exposing a partial theme.
+activate_theme_from_directory() {
+  local source_dir="$1"
+  local transaction_dir=""
+  local staged_dir=""
+  local previous_dir=""
+  local had_previous="false"
+
+  [ -d "$source_dir" ] || fail "Theme source is missing: $source_dir"
+  [ -f "$source_dir/theme.json" ] || fail "Theme source is missing theme.json: $source_dir"
+  ensure_state_root
+  ensure_node_runtime
+
+  transaction_dir="$(/usr/bin/mktemp -d "$STATE_ROOT/.theme-swap.XXXXXX")" \
+    || fail "Could not create a theme activation transaction."
+  staged_dir="$transaction_dir/staged"
+  previous_dir="$transaction_dir/previous"
+  /bin/mkdir "$staged_dir" || {
+    /bin/rm -rf "$transaction_dir" 2>/dev/null || true
+    fail "Could not create the staged theme directory."
+  }
+  if ! /bin/chmod 700 "$transaction_dir" "$staged_dir"; then
+    /bin/rm -rf "$transaction_dir" 2>/dev/null || true
+    fail "Could not secure the staged theme directory."
+  fi
+
+  if ! /bin/cp -R "$source_dir/." "$staged_dir/"; then
+    /bin/rm -rf "$transaction_dir" 2>/dev/null || true
+    fail "Could not stage the selected theme."
+  fi
+  if ! /usr/bin/find "$staged_dir" -type d -exec /bin/chmod 700 {} + \
+    || ! /usr/bin/find "$staged_dir" -type f -exec /bin/chmod 600 {} +; then
+    /bin/rm -rf "$transaction_dir" 2>/dev/null || true
+    fail "Could not secure the staged theme contents."
+  fi
+
+  # Validate the exact staged bytes. This closes the gap between validating the
+  # library copy and activating a second, potentially incomplete copy.
+  if ! "$NODE" "$INJECTOR" --check-payload --theme-dir "$staged_dir" >/dev/null; then
+    /bin/rm -rf "$transaction_dir" 2>/dev/null || true
+    fail "The staged theme failed payload validation; the active theme was not changed."
+  fi
+
+  if [ -e "$THEME_DIR" ] || [ -L "$THEME_DIR" ]; then
+    if ! /bin/mv "$THEME_DIR" "$previous_dir"; then
+      /bin/rm -rf "$transaction_dir" 2>/dev/null || true
+      fail "Could not preserve the active theme before activation."
+    fi
+    had_previous="true"
+  fi
+
+  if ! /bin/mv "$staged_dir" "$THEME_DIR"; then
+    if [ "$had_previous" = "true" ]; then
+      if ! /bin/mv "$previous_dir" "$THEME_DIR"; then
+        fail "Theme activation failed and automatic rollback failed; the previous theme remains at $previous_dir"
+      fi
+    fi
+    /bin/rm -rf "$transaction_dir" 2>/dev/null || true
+    fail "Theme activation failed; the previous theme was restored."
+  fi
+
+  /bin/rm -rf "$transaction_dir" \
+    || fail "Theme activated, but its temporary transaction could not be removed: $transaction_dir"
+}
+
 # Fast path when CDP is already open: restart injector + one-shot inject.
 # Returns 0 on success, 1 if CDP is not ready (caller should full-start).
 hot_reapply_theme() {
@@ -468,15 +613,7 @@ hot_reapply_theme() {
   ensure_node_runtime || return 1
 
   stop_recorded_injector 2>/dev/null || true
-  # Kill any leftover watch injectors for this theme injector path
-  local old
-  while IFS= read -r old; do
-    [ -n "$old" ] || continue
-    /bin/kill -TERM "$old" 2>/dev/null || true
-  done < <(/bin/ps -axo pid=,command= | /usr/bin/awk -v inj="$INJECTOR" '
-    index($0, inj) && index($0, "--watch") { print $1 }
-  ')
-  /bin/sleep 0.15
+  stop_known_injectors
 
   local inj_pid
   inj_pid="$(launch_injector_daemon "$port")"

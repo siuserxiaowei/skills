@@ -16,6 +16,11 @@ trap '/bin/rm -rf "$TMP"' EXIT
   --exclude 'release/' \
   --exclude 'runtime/' \
   "$ROOT/" "$ENGINE/"
+/bin/mkdir -p "$ENGINE/skills/codex-bugfire-customizer"
+/usr/bin/rsync -a \
+  --exclude '.DS_Store' \
+  "$ROOT/../skills/codex-bugfire-customizer/" \
+  "$ENGINE/skills/codex-bugfire-customizer/"
 
 /usr/bin/printf '%s\n' \
   '#!/bin/bash' \
@@ -25,7 +30,7 @@ trap '/bin/rm -rf "$TMP"' EXIT
   > "$CLIENT_ROOT/安装 Codex 主题编辑器.command"
 
 /usr/bin/printf '%s\n' \
-  'Codex 主题编辑器 1.1.2' \
+  'Codex BUGFIRE 补丁兽 1.2.0-bugfire.1' \
   '' \
   '推荐方式：把这个完整 ZIP、你喜欢的图片和“给 Codex 的部署提示词.md”一起发给自己的 Codex。' \
   '' \
@@ -37,6 +42,7 @@ trap '/bin/rm -rf "$TMP"' EXIT
 /bin/cp "$ROOT/CLIENT_DEPLOY_PROMPT.md" "$CLIENT_ROOT/给 Codex 的部署提示词.md"
 /bin/chmod 755 "$CLIENT_ROOT/安装 Codex 主题编辑器.command"
 /bin/chmod 755 "$ENGINE"/*.command "$ENGINE"/scripts/*.sh "$ENGINE"/tests/*.sh
+/bin/chmod 755 "$ENGINE"/skills/codex-bugfire-customizer/scripts/*.sh
 /usr/bin/xattr -cr "$CLIENT_ROOT"
 /usr/bin/find "$CLIENT_ROOT" -type f \( -name '.DS_Store' -o -name '._*' \) -delete
 /bin/mkdir -p "$(dirname "$OUTPUT")"

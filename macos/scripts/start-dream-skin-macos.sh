@@ -69,8 +69,9 @@ fi
 
 if [ -f "$STATE_PATH" ]; then
   stop_recorded_injector
-  /bin/rm -f "$STATE_PATH"
 fi
+stop_known_injectors
+/bin/rm -f "$STATE_PATH"
 
 if [ "$FOREGROUND_INJECTOR" = "true" ]; then
   exec "$NODE" "$INJECTOR" --watch --port "$PORT" --theme-dir "$THEME_DIR"
@@ -104,7 +105,8 @@ if [ "$verify_code" -ne 0 ]; then
     /bin/rm -f /tmp/dream-skin-verify.$$.json
     exit 0
   fi
-  /bin/launchctl remove "$INJECTOR_JOB_LABEL" >/dev/null 2>&1 || /bin/kill -TERM "$INJECTOR_PID" 2>/dev/null || true
+  stop_recorded_injector 2>/dev/null || true
+  stop_known_injectors
   /bin/rm -f "$STATE_PATH" /tmp/dream-skin-verify.$$.json
   fail "Injection verification failed. The injector was stopped; see $INJECTOR_ERROR_LOG"
 fi

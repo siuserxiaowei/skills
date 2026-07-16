@@ -1,150 +1,89 @@
-# Codex Dream Skin · 项目记录
+# BUGFIRE project notes
 
-> 本地归档说明。面向维护者，不是用户安装手册。  
-> 仓库首页：[`../README.md`](../README.md)（中文）· [`../README.en.md`](../README.en.md)（English）  
-> GitHub：https://github.com/Fei-Away/Codex-Dream-Skin
+> Version: `1.2.0-bugfire.1`
+> Platform: macOS
+> Canonical public repository: pending a user-owned remote
 
----
+BUGFIRE「补丁兽」is an independent extension of Codex Dream Skin. It adds an original pixel Patch Dragon, a clearly labelled simulated Build loop, five local progression levels, growth cards, and a Season 01 keepsake certificate.
 
-## 1. 它是什么
+The extension is based on [Codex Dream Skin v1.1.2 commit `2f038b5`](https://github.com/Fei-Away/Codex-Dream-Skin/commit/2f038b5322702cfb248d9c7564b56470a389abc2). The upstream project is the runtime base, not BUGFIRE's canonical product URL.
 
-**Codex Dream Skin** 是给 **OpenAI Codex 桌面端** 用的**外部主题 / 换肤**方案：
+## Product boundaries
 
-- 本机 **CDP** 注入 CSS + 装饰 DOM
-- **不修改**官方 `.app` / `app.asar` / WindowsApps / 代码签名
-- 侧栏、建议卡、项目选择、输入框仍是**原生可点控件**（不是整窗假截图）
-- 可换图、可一键恢复
-- **不会**静默改写 API Key / Base URL（换肤与中转配置分开）
+- Runs against the official Codex Desktop app on macOS.
+- Does not modify the official `.app`, `app.asar`, or code signature.
+- Uses only a verified loopback CDP endpoint already associated with Codex.
+- Does not read task text, prompts, source code, API keys, secrets, or real Build output.
+- Does not execute a real project or Shell command in `1.2.0-bugfire.1`.
+- Treats levels and cards as local entertainment records, not skills assessments or credentials.
 
-非 OpenAI 官方产品。
-
----
-
-## 2. 来源与时间线（简）
-
-| 阶段 | 说明 |
-|------|------|
-| 素材包 | 微信传播的 Win / Mac 皮肤包（RAR/ZIP），含注入脚本与主题资源 |
-| 安全审 | 核对是否改 asar、是否静默劫持 API；结论：以本机 CDP 注入为主，开源时明确禁止静默中转劫持 |
-| 整理开源 | 按平台拆成 `macos/`、`windows/`，补 README 图库与安装入口 |
-| 本地美化 | Mac 本机引擎装在 `~/.codex/codex-dream-skin-studio`；CSS 走浅色壳 + 可选底部赞助 chip |
-| 赞助 | Passion8（`aff=TuPe`）写在 README 顶部；强调满血中转卖点，且与换肤配置隔离 |
-| 图库 | `docs/images/gallery/skin-01`～`08`；粉系定制 → 财神打工 → 红白科幻… |
-| i18n | 默认中文 `README.md`，英文 `README.en.md`，顶部互链 |
-
-本地曾用过 `8765` 静态预览与临时 injector；**发布后不要求**常驻这两个进程。桌面快捷方式指向已安装引擎，不依赖本仓库路径。
-
----
-
-## 3. 架构（两边相同）
+## Repository layout
 
 ```text
-用户本机主题工具（本仓库脚本 / 已安装引擎）
-    │  启动官方 Codex + 本机 CDP（127.0.0.1）
-    ▼
-官方 Codex Desktop（不改 asar / 签名）
-    │  注入 CSS + 装饰 DOM
-    ▼
-原生侧栏 / 输入框 / 建议卡 + 主题外观
-```
-
-更细的平台路径见 [`platforms.md`](./platforms.md)。
-
----
-
-## 4. 仓库结构
-
-```text
-Codex-Dream-Skin/
-├── README.md              # 默认中文
-├── README.en.md           # English
+.
+├── README.md                  # Chinese product overview
+├── README.en.md               # English product overview
+├── GEO-ANALYSIS.md            # Repository-level AI-search readiness audit
+├── SEO-PLAN.md                # Publication and discovery plan
+├── llms.txt                   # Machine-readable navigation and facts
 ├── docs/
-│   ├── PROJECT.md         # 本文件（项目记录）
-│   ├── platforms.md       # Win/Mac 路径与能力矩阵
-│   ├── promo-copy.md      # 宣传文案（朋友圈等，注意肖像/IP）
-│   └── images/
-│       ├── gallery/       # README 效果图 skin-01…08
-│       └── sponsor-passion8.png
-├── macos/                 # Mac 脚本、资源、LICENSE、SKILL
-└── windows/               # Windows PowerShell / 注入脚本
+│   ├── USAGE.zh-CN.md         # Installation, controls, verify, restore
+│   └── images/                # Privacy-safe BUGFIRE runtime evidence
+└── macos/
+    ├── assets/                # Theme, renderer UI, CSS
+    ├── scripts/               # Installer, injector, progress model
+    ├── tests/                 # State, lifecycle, UI and upstream tests
+    └── references/            # QA inventory
 ```
 
-**安装后的运行位置（Mac，与仓库分离）：**
+The upstream `windows/` directory remains in the source history, but BUGFIRE pet functionality is currently implemented and tested only under `macos/`. Do not advertise Windows pet support until equivalent code and tests exist.
 
-| 用途 | 路径 |
-|------|------|
-| 引擎 | `~/.codex/codex-dream-skin-studio` |
-| 状态 / 主题 | `~/Library/Application Support/CodexDreamSkinStudio` |
-| 桌面启动器 | `~/Desktop/Codex Dream Skin*.command` → 指向上面的引擎脚本 |
+## Runtime flow
 
-Windows 状态目录见 `platforms.md`（`%LOCALAPPDATA%\CodexDreamSkin`）。
+```text
+Official Codex Desktop
+        │
+        │ verified 127.0.0.1 CDP
+        ▼
+BUGFIRE injector
+        │
+        ├── inject idempotent CSS and decorative DOM
+        ├── validate renderer markers and native interaction surfaces
+        └── Runtime binding for validated pet events
+                │
+                ▼
+Application Support progress file
+atomic JSON · mode 0600 · no task/source/key fields
+```
 
----
+The renderer exposes a six-state pet animation (`idle`, `building`, `bug`, `fire`, `success`, `level-up`). It automatically collapses the cabin on task routes and positions the 72 px nest away from the native composer.
 
-## 5. Git / 移动目录说明
+## Local paths
 
-- **远程**：`origin` → `https://github.com/Fei-Away/Codex-Dream-Skin.git`
-- **分支**：`main`
-- **整夹移动本地路径**（例如从 `中转站/New-api` 挪到 `Personal_Developer`）：
-  - **不影响** `.git` 历史、commit、remote
-  - **不影响** GitHub 上的仓库
-  - 只需用 `mv` 移动整个含 `.git` 的目录；之后在新路径里 `git status` 即可
-  - 若 IDE / 终端仍开着旧路径工作区，需重新打开新路径
+| Purpose | Path |
+| --- | --- |
+| Source checkout | User-selected repository directory |
+| Installed engine | `~/.codex/codex-dream-skin-studio` |
+| Runtime state | `~/Library/Application Support/CodexDreamSkinStudio` |
+| Progress | `bugfire-progress.json` inside the runtime state directory |
 
-桌面 `.command` 与 `~/.codex/...` **不依赖**本仓库磁盘位置，移动开源目录后主题安装仍可用。
+## Git remotes
 
----
+The pinned source repository is now named `upstream`, and its push URL is deliberately set to `DISABLED`. No user-owned `origin` or canonical URL is configured yet. Never push this independent product branch to `Fei-Away/Codex-Dream-Skin`.
 
-## 6. 安全与合规边界
+```bash
+git remote add origin <user-owned BUGFIRE repository URL>
+```
 
-1. CDP **仅** `127.0.0.1`，主题运行期勿跑来路不明的本机程序  
-2. 不改官方安装目录与签名  
-3. **禁止**安装脚本静默写入第三方 Base URL / Key  
-4. 效果图含人物 / IP 时仅作主题示意；商用再分发需自行确认肖像与商标  
-5. 宣传文案见 `promo-copy.md`（避免未授权商业化表述）
+The second command intentionally remains a release-time step until the user supplies or creates the canonical repository URL.
 
----
+## Release evidence
 
-## 7. 赞助（Passion8）
+The first release should include:
 
-- 注册链：`https://passion8.cc/register?aff=TuPe`
-- README 调性：更智能的连接 / 满血 AI 中转 / 官方模型、无降智无套壳 / 一行接 Codex·Claude Code·Grok  
-- 固定声明：换肤与 API 配置互相独立  
-
-Logo 资源：`docs/images/sponsor-passion8.png`（及 svg）。
-
----
-
-## 8. 常用维护动作
-
-| 动作 | 说明 |
-|------|------|
-| 换图库图 | 替换 `docs/images/gallery/skin-XX.jpg`，同步改 README 两份 caption |
-| 改赞助文案 | 同时改 `README.md` 与 `README.en.md` |
-| 发版推送 | 在本仓库目录 `git add` → `commit` → `push origin main` |
-| Mac 本机主题 | 改 `~/.codex/codex-dream-skin-studio` 的 CSS/inject；与 GitHub 源码可不同步，属本机实验位 |
-
----
-
-## 9. 本地路径变迁
-
-| 时间 | 路径 |
-|------|------|
-| 初开源整理 | `~/Desktop/中转站/New-api/Codex-Dream-Skin` |
-| 归档位置 | `~/Desktop/Personal_Developer/Codex-Dream-Skin` |
-
-（若再次移动，在本表追加一行即可。）
-
----
-
-## 10. 相关但不在本仓
-
-| 项 | 说明 |
-|----|------|
-| 本机已装引擎 | `~/.codex/codex-dream-skin-studio` |
-| Passion8 主站 / NewAPI | 独立业务；本仓只做赞助致谢与配置隔离说明 |
-| 中转站其它项目 | 勿与本仓混目录；本仓可独立于 New-api 工作区存在 |
-
----
-
-*最后更新：随仓库提交维护。有架构变更时优先改本文件与 `platforms.md`。*
+- full `macos/tests/run-tests.sh` output;
+- `doctor-macos.sh --require-live` with `pass: true`;
+- `verify-dream-skin-macos.sh --reload` with `pass: true`;
+- Restore/no-residue verification followed by a hot re-apply;
+- privacy-safe home, cabin, failure, growth-card, certificate, and task-route screenshots;
+- exact version `v1.2.0-bugfire.1`, upstream attribution, MIT license, and unofficial disclaimer.

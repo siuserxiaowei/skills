@@ -1,73 +1,80 @@
-# 宣传文案（可直接发）
+# BUGFIRE launch copy
 
-仓库：https://github.com/Fei-Away/Codex-Dream-Skin
+> Replace `[canonical repository URL]` only after a user-owned public repository exists. Do not link this independent extension to the upstream repository as if it were the BUGFIRE canonical.
 
----
+## GitHub About
 
-## 短版（朋友圈 / 群公告）
+**Description**
 
-Codex 也能「换皮肤」了。
+> BUGFIRE 补丁兽 — an unofficial Codex macOS desktop pet: simulated Builds, bug-fire animations, XP levels, local keepsakes, and custom pet packs. No app patching.
 
-不是整窗假截图，侧栏、卡片、输入框都还是真控件。  
-一张图一套主题：千玺、热巴、Miku、KUN、ENFP……你想要的样子自己配。
+**Topics**
 
-本机注入，不改官方安装包，还能一键恢复。
+```text
+bugfire
+codex-desktop
+desktop-pet
+macos
+pixel-art
+vibe-coding
+coding-companion
+developer-tools
+codex-theme
+cdp
+javascript
+css
+local-first
+pet-pack
+custom-theme
+open-source
+```
 
-开源地址：  
-https://github.com/Fei-Away/Codex-Dream-Skin
+## 中文短介绍
 
-感谢 Passion8 赞助：https://passion8.cc/register?aff=TuPe
+给 Codex Desktop 养一只会喷火除 Bug 的像素补丁龙。
 
----
+BUGFIRE「补丁兽」把“模拟 Build → 失败 → 修复重建 → 喷火升级”做成一个本地成长循环。首次体验从 `Lv2 · 220/240 XP` 开始：失败不加分，修复成功获得 35 XP，解锁 Lv3 技能 `BUGFIRE` 和成长卡。
 
-## 中版（公众号 / 即刻 / 小红书）
+它不执行真实 Shell、不读取任务正文、源码或 API Key，也不修改官方 `.app`、`app.asar` 或代码签名。等级和证书只是本地成长纪念，不代表专业资格，也不是 OpenAI 官方认证。
 
-标题可选：
+想换成自己的伙伴也可以：本地 CLI 用一张背景和一张宠物图即可生成桌宠包，另外五种状态图可选；素材不上传、不远程下载，包里也不能塞脚本。
 
-1. 我给 Codex 做了个皮肤商店：从人民的 AI 到初音未来  
-2. 写代码也能有爱豆同款桌面  
-3. Codex Dream Skin：不拆包，也能把官方界面变成你的
+项目与使用说明：[canonical repository URL]
 
-正文：
+## 中文社交帖
 
-还在用默认灰白 Codex？有点可惜。
+```text
+BUGFIRE「补丁兽」v1.2.0-bugfire.1
 
-**Codex Dream Skin** 是一套给 Codex 桌面端用的外部主题方案：  
-用本机 CDP 把样式和横幅「贴」上去，**不修改官方 `.app` / `app.asar`**，侧栏、建议卡、项目选择、输入框都是原生可点。
+BUILD · BURN BUGS · LEVEL UP
 
-你看到的热巴紫夜、千玺清透、Miku 蓝粉、KUN 黑金、ENFP 小宇宙……都是同一套能力换图 + 换色的结果。
+🐉 Codex Desktop 右下角像素桌宠
+🔥 模拟 Build 失败 → 修复 → 喷火升级
+🧪 失败 0 XP，修复成功 +35 XP，同一事件只结算一次
+🪪 本地成长卡与 PNG 赛季纪念证书
+🎨 背景 + idle 图即可制作本地自定义宠物包
+🔒 不改 .app / app.asar / 签名；不读任务、源码或密钥
 
-开源仓库（含效果图与安装脚本）：  
-https://github.com/Fei-Away/Codex-Dream-Skin
+首版只支持 macOS，Build 是明确标注的演示。
+非 OpenAI 官方产品；等级与卡片不代表专业资格。
 
-想稳定接模型的话，可以走赞助方 Passion8（与换肤分开配置）：  
-https://passion8.cc/register?aff=TuPe
+[canonical repository URL]
+```
 
----
+## English short description
 
-## 长版钩子（发帖置顶）
+BUGFIRE Patch Dragon is an unofficial local pixel desktop pet for Codex on macOS. Its clearly labelled demo turns a failed simulated Build into a repair, fire-breathing animation, +35 XP, and an Lv3 growth card. It does not run project commands, read task or source content, or modify the official app bundle. Levels and certificates are personal local keepsakes, not professional qualifications or OpenAI credentials.
 
-> 写代码的桌面，也可以有自己的皮肤。
+[canonical repository URL]
 
-- 真交互，不是 P 一张假 UI  
-- 可换图、可恢复  
-- Mac / Windows 脚本都在仓库里  
-- 效果图直接看 README Gallery  
+## 60-second demo outline
 
-👉 https://github.com/Fei-Away/Codex-Dream-Skin
+1. Show the privacy-safe Codex home screen and the 72 px pet nest.
+2. Open the cabin and hold on `Lv2 · 220/240 XP`.
+3. Select `BUILD · Demo`; show the Bug and “failure awards no XP”.
+4. Select “Fixed — rebuild”; show BUGFIRE, +35 XP, and the Lv3 card.
+5. Open a normal task; show the cabin collapsed away from the native composer.
+6. Show the Season 01 certificate preview and its unofficial-keepsake disclaimer.
+7. End on the version, canonical repository, and Restore command.
 
----
-
-## 一句话 slogan
-
-- 给 Codex 换一张会呼吸的脸  
-- 一张图，一种心情  
-- 写代码，也要有氛围感  
-- 不拆包，也能全员爱豆版 Codex  
-
----
-
-## 注意（发的时候自己把关）
-
-效果图含公众人物 / IP 形象时，**仅作主题示意**。  
-二次商用或大规模传播前，请确认肖像与商标授权，避免纠纷。
+Do not use an OpenAI logo, official-looking seal, ability score, fabricated testimonial, ranking claim, or third-party character/IP in promotional assets.

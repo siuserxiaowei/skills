@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "my-codex-companion",
+  "name": "我的 Codex 伙伴",
+  "theme": {
+    "background": "assets/background.png",
+    "tagline": "每一次 Build，都让作品和伙伴一起进化。",
+    "quote": "BUILD · FIX · LEARN · SHIP",
+    "colors": {
+      "background": "#050704",
+      "panel": "#0a0e09",
+      "panelAlt": "#11180e",
+      "accent": "#83ff45",
+      "accentAlt": "#c1ff72",
+      "secondary": "#ff7a1a",
+      "highlight": "#ff3d0a",
+      "text": "#f4efd8",
+      "muted": "#9aa58d"
+    }
+  },
+  "pet": {
+    "name": "我的补丁伙伴",
+    "seasonId": "season-1",
+    "seasonLabel": "SEASON 01 · BUILD TO EVOLVE",
+    "art": { "idle": "assets/pet-idle.png" }
+  },
+  "gameplay": {
+    "rewardXp": 35,
+    "sayings": ["今天也一起把 Bug 烧掉。", "先描述清楚，再动手构建。", "修复不是倒退，是进化素材。"],
+    "quests": [
+      { "id": "first-fix", "title": "完成第一次修复重建", "metric": "repairedBuilds", "target": 1 },
+      { "id": "build-streak", "title": "累计完成 3 次 Build", "metric": "successfulBuilds", "target": 3 },
+      { "id": "level-three", "title": "成长到 Lv3", "metric": "level", "target": 3 }
+    ],
+    "certificateTitle": "我的 Codex 成长纪念"
+  },
+  "rights": {
+    "declaration": "我确认拥有这些素材的使用权，或素材许可允许本次使用。",
+    "sourceUrl": ""
+  }
+}

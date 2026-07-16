@@ -1,16 +1,15 @@
-name: "Feature request / 功能建议"
-description: "Suggest an improvement for Codex Dream Skin / 为换肤工具提改进建议"
+name: "BUGFIRE feature request / BUGFIRE 功能建议"
+description: "Suggest an improvement for the BUGFIRE macOS desktop pet / 为 BUGFIRE 桌宠提建议"
 title: "[Feature]: "
 labels: ["enhancement", "needs-triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Share an idea that fits this project’s scope: **external theming** for Codex Desktop via loopback CDP — not API relays, not patching the official app.
-        欢迎提建议。本项目范围是：通过 **本机 CDP** 给 Codex 桌面端做 **外部换肤**，不包含中转配置、不修改官方安装包。
+        Share an idea that fits BUGFIRE’s scope: an unofficial macOS Codex desktop pet and external skin via loopback CDP. It does not patch the official app or act as an API relay.
+        欢迎提出 BUGFIRE macOS 桌宠、动画、无障碍或测试方面的建议；不包含 API 中转，也不修改官方安装包。
 
-        Please check [README](https://github.com/Fei-Away/Codex-Dream-Skin/blob/main/README.md) and [CHANGELOG](https://github.com/Fei-Away/Codex-Dream-Skin/blob/main/macos/CHANGELOG.md) first.
-        提交前可先看 README 与 CHANGELOG，避免重复已有能力。
+        Please read the repository README and `macos/CHANGELOG.md` first. The current pet implementation is macOS-only.
 
   - type: dropdown
     id: platform
@@ -18,8 +17,7 @@ body:
       label: Target platform / 目标平台
       options:
         - macOS
-        - Windows
-        - Both / 双平台
+        - Future platform request / 未来平台请求
         - Docs / repo only / 仅文档或仓库
         - Unsure / 不确定
     validations:

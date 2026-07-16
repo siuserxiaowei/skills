@@ -1,11 +1,14 @@
 {
   "name": "codex-dream-skin-studio",
-  "version": "1.1.2",
+  "version": "1.2.0-bugfire.1",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "./tests/run-tests.sh",
-    "doctor": "./scripts/doctor-macos.sh"
+    "doctor": "./scripts/doctor-macos.sh",
+    "pack:init": "node ./scripts/bugfire-pack.mjs init",
+    "pack:validate": "node ./scripts/bugfire-pack.mjs validate",
+    "pack:build": "node ./scripts/bugfire-pack.mjs build"
   },
   "engines": {
     "node": ">=20"

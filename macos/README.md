@@ -45,6 +45,77 @@ Install location after step 2:
 | State / logs / user images | `~/Library/Application Support/CodexDreamSkinStudio` |
 | Theme backup | under Application Support (`theme-backup.json`) |
 
+## BUGFIRE 补丁兽
+
+This fork adds an original local coding companion without replacing any Codex controls. Open the
+72 px nest in the lower-right corner to run a clearly labelled simulated Build: the first pass
+creates a Bug without XP, and a repaired rebuild lets the patch dragon use BUGFIRE and gain 35 XP.
+
+- The first-run experience seed is Lv2 at 220 / 240 XP so one repaired rebuild demonstrates a level-up.
+- Reset starts a genuine Lv1 / 0 XP local record.
+- Progress is stored at `~/Library/Application Support/CodexDreamSkinStudio/bugfire-progress.json`
+  with mode `0600`; no task text, source code, API key, or real shell output is read.
+- Renderer events cross the already-verified CDP session through one `Runtime` binding. No extra
+  HTTP server or listening port is created.
+- Growth cards and the Season 01 PNG are personal local keepsakes, not an official certification
+  or a professional-skills assessment.
+
+The demo never runs a project command. A future real-Build bridge must be separately authorized
+and may only consume the exit code of an explicit allowlisted command.
+
+## Custom companion packs
+
+`Bugfire Pack v1` turns the fixed demo into a reusable system. A pack may provide a background,
+one reusable pet image or six state-specific images, a palette, names, click sayings, derived local
+quests, and a keepsake title. It cannot contain executable code, remote assets, SVG/GIF payloads, or
+paths outside its own folder.
+
+```bash
+cd macos
+. ./scripts/common-macos.sh
+discover_codex_app
+require_macos_runtime
+
+PACK="$HOME/Documents/my-bugfire-pack"
+OUTPUT="$HOME/Documents/my-bugfire-pack-built"
+
+"$NODE" ./scripts/bugfire-pack.mjs init "$PACK"
+# Add assets/background.png and assets/pet-idle.png, then edit bugfire-pack.json.
+"$NODE" ./scripts/bugfire-pack.mjs validate "$PACK"
+"$NODE" ./scripts/bugfire-pack.mjs build "$PACK" "$OUTPUT"
+
+# Put a validated build in the local theme library without changing the live theme.
+./scripts/install-bugfire-pack-macos.sh --pack "$PACK" --no-apply
+
+# Activate only after review; a cold Codex session may need to restart.
+./scripts/switch-theme-macos.sh --id my-codex-companion
+```
+
+The pack ID passed to `switch-theme-macos.sh` must equal the manifest `id`. Omitting `--no-apply`
+from the installer validates, builds, and activates in one command. Use a different source and
+output directory: `build ... --replace` removes an existing output, and the compiler refuses
+source/output overlap.
+
+| Input | Limit |
+| --- | --- |
+| Manifest | 128 KiB; schema v1; no undeclared fields |
+| Background | PNG/JPEG/WebP; 16 MiB; max dimension 8192 px; max 32 Mi pixels |
+| Each pet image | PNG/JPEG/WebP; 4 MiB; max dimension 4096 px; max 8 Mi pixels |
+| Declared pet art total | 16 MiB |
+| Text rules | 1–12 sayings, 1–5 aggregate-only quests, reward 1–100 XP |
+
+One background and `pet.art.idle` are required. The other five state images are optional and fall
+back to idle. APNG, animated WebP, SVG, GIF, symlinked files, parent-link escapes, extension/content
+mismatches, remote URLs, and pack-provided JavaScript/CSS are rejected. The rights declaration is
+required. The five XP levels remain fixed.
+
+Changing the manifest `id` or `pet.seasonId` archives the previous progress as a `.previous...` file and creates
+the labelled Lv2 experience seed for the new identity; records from different packs are not merged.
+Activation stages and validates a complete copy, stops identity-checked watchers, then swaps the
+active directory atomically with rollback.
+
+See `../docs/CUSTOMIZATION.zh-CN.md` and `../skills/codex-bugfire-customizer/`.
+
 ## Customer ZIP (optional packaging)
 
 To build the “double-click install” folder layout for non-git users:
@@ -62,7 +133,8 @@ That ZIP contains a visible installer plus a hidden `.codex-dream-skin-studio` e
 3. Accept the debug port only when it belongs to Codex (or a legitimate child).
 4. Inject only into expected `app://` renderer targets.
 5. Keep a small injector alive across reloads and route changes.
-6. Restore stops the injector only when PID, path, and start time match the recorded job.
+6. Validate and atomically persist BUGFIRE events received through the verified CDP binding.
+7. Restore stops the injector only when PID, path, and start time match the recorded job.
 
 CDP is powerful and unauthenticated on loopback. Prefer Restore when you are done theming.
 
@@ -73,6 +145,9 @@ CDP is powerful and unauthenticated on loopback. Prefer Restore when you are don
 - Wide images work best (width ≥ 2000 px recommended)
 - Keep the left side relatively calm for native home titles
 - Image is banner + background only — never a full-window fake UI overlay
+
+HEIC and TIFF support applies only to the background customizer. `Bugfire Pack v1` assets accept
+PNG, JPEG, and WebP only.
 
 CLI example:
 
@@ -94,21 +169,6 @@ Reset to the bundled abstract demo:
 ## License
 
 MIT — see `LICENSE`. Additional notices in `NOTICE.md` (trademarks, demo asset, runtime Node).
-
-## Sponsors
-
-Thanks to **[passion8.cc](https://passion8.cc/register?aff=TuPe)** for sponsoring this project.
-
-<p align="center">
-  <a href="https://passion8.cc/register?aff=TuPe">
-    <img src="../docs/images/sponsor-passion8.png" alt="Passion8" height="96">
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://passion8.cc/register?aff=TuPe"><strong>Passion8｜感谢 passion8.cc 赞助本项目</strong></a><br>
-  AI API 中转站，支持 Codex / Claude Code / Grok 等工具接入。主题与 API 配置互相独立。
-</p>
 
 ## What this is not
 
