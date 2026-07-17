@@ -3,6 +3,7 @@
 [English](README.en.md)
 
 [![在线体验](https://img.shields.io/badge/在线体验-BUGFIRE-83ff45?style=for-the-badge&labelColor=050704)](https://siuserxiaowei.github.io/Codex-Bugfire-Skin/)
+[![75 秒实机宣传片](https://img.shields.io/badge/实机宣传片-75_秒-ff7a1a?style=for-the-badge&labelColor=050704)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou.mp4)
 [![下载最新版](https://img.shields.io/github/v/release/siuserxiaowei/Codex-Bugfire-Skin?style=for-the-badge&label=下载&labelColor=050704&color=ff7a1a)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/latest)
 [![自动化测试](https://img.shields.io/github/actions/workflow/status/siuserxiaowei/Codex-Bugfire-Skin/ci.yml?branch=main&style=for-the-badge&label=CI&labelColor=050704)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/actions/workflows/ci.yml)
 [![MIT License](https://img.shields.io/badge/License-MIT-f4efd8?style=for-the-badge&labelColor=050704)](LICENSE)
@@ -12,6 +13,14 @@
 > 当前版本：`1.2.0-bugfire.1` · macOS 首版 · 非 OpenAI 官方产品
 
 ![BUGFIRE 补丁兽在 Codex Desktop 首页右下角的像素桌宠浮巢](docs/images/bugfire-home.png)
+
+## 先看 75 秒真实 Codex 实机演示
+
+[![BUGFIRE 75 秒真实 Codex 实机宣传片：模拟失败、喷火重建、Lv3 与双图定制](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Contact-Sheet.jpg)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou.mp4)
+
+**[▶ 播放/下载 V2 云舟详细版 MP4](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou.mp4)** · **[字幕 SRT](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou.srt)** · **[全部宣传片与真实性记录](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/tag/promo-v1-review-20260717)**
+
+视频中的功能画面来自真实 Codex Desktop 录屏；`DEMO BUILD` 是明确标注的模拟反馈，不监听 GitHub Actions，也不读取或修复源码。
 
 **[▶ 打开在线交互 Demo](https://siuserxiaowei.github.io/Codex-Bugfire-Skin/)** · **[↓ 下载最新版](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/latest)** · **[🧩 制作自己的补丁兽](skills/codex-bugfire-customizer/SKILL.md)**
 
