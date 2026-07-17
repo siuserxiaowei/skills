@@ -3,7 +3,7 @@
 [中文](README.md)
 
 [![Live demo](https://img.shields.io/badge/LIVE_DEMO-BUGFIRE-83ff45?style=for-the-badge&labelColor=050704)](https://siuserxiaowei.github.io/Codex-Bugfire-Skin/)
-[![75-second real demo](https://img.shields.io/badge/REAL_DEMO-75_SECONDS-ff7a1a?style=for-the-badge&labelColor=050704)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou.mp4)
+[![75-second real demo](https://img.shields.io/badge/REAL_DEMO-75_SECONDS-ff7a1a?style=for-the-badge&labelColor=050704)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou-Cover.mp4)
 [![Latest release](https://img.shields.io/github/v/release/siuserxiaowei/Codex-Bugfire-Skin?style=for-the-badge&label=DOWNLOAD&labelColor=050704&color=ff7a1a)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/latest)
 [![Tests](https://img.shields.io/github/actions/workflow/status/siuserxiaowei/Codex-Bugfire-Skin/ci.yml?branch=main&style=for-the-badge&label=CI&labelColor=050704)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/actions/workflows/ci.yml)
 [![MIT License](https://img.shields.io/badge/LICENSE-MIT-f4efd8?style=for-the-badge&labelColor=050704)](LICENSE)
@@ -16,9 +16,9 @@
 
 ## Watch the 75-second real Codex demo first
 
-[![BUGFIRE 75-second real Codex demo: simulated failure, fire-breathing rebuild, Lv3, and two-image customization](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Contact-Sheet.jpg)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou.mp4)
+[![BUGFIRE 75-second real Codex demo: I gave Codex a Patch Dragon](docs/images/bugfire-video-cover.png)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou-Cover.mp4)
 
-**[▶ Play/download the V2 MP4](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou.mp4)** · **[Chinese SRT captions](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou.srt)** · **[All promo assets and reality checks](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/tag/promo-v1-review-20260717)**
+**[▶ Play/download the V2 MP4 with the new cover](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou-Cover.mp4)** · **[Synced Chinese SRT captions](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/download/promo-v1-review-20260717/BUGFIRE-Promo-V2-Yunzhou-Cover.srt)** · **[All promo assets and reality checks](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/tag/promo-v1-review-20260717)**
 
 All feature footage in the video comes from a real Codex Desktop recording. `DEMO BUILD` is explicitly simulated: BUGFIRE does not monitor GitHub Actions or read or repair source code.
 
