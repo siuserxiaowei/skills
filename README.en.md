@@ -2,11 +2,18 @@
 
 [中文](README.md)
 
+[![Live demo](https://img.shields.io/badge/LIVE_DEMO-BUGFIRE-83ff45?style=for-the-badge&labelColor=050704)](https://siuserxiaowei.github.io/Codex-Bugfire-Skin/)
+[![Latest release](https://img.shields.io/github/v/release/siuserxiaowei/Codex-Bugfire-Skin?style=for-the-badge&label=DOWNLOAD&labelColor=050704&color=ff7a1a)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/latest)
+[![Tests](https://img.shields.io/github/actions/workflow/status/siuserxiaowei/Codex-Bugfire-Skin/ci.yml?branch=main&style=for-the-badge&label=87%20TESTS&labelColor=050704)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/actions/workflows/ci.yml)
+[![MIT License](https://img.shields.io/badge/LICENSE-MIT-f4efd8?style=for-the-badge&labelColor=050704)](LICENSE)
+
 **BUGFIRE is an unofficial, local pixel-art desktop pet for Codex Desktop on macOS.** Its clearly labelled demo turns a small coding loop into playable feedback: a simulated Build fails, a Bug appears, a repaired rebuild succeeds, and the Patch Dragon breathes fire to level up. BUGFIRE does not run project commands or read task text, source code, prompts, API keys, or shell output. Pet levels track local activity only; they are not a programming-skills assessment, professional qualification, or OpenAI certification.
 
 > Current version: `1.2.0-bugfire.1` · macOS first release candidate · Unofficial project
 
 ![BUGFIRE Patch Dragon in the lower-right corner of the Codex Desktop home screen](docs/images/bugfire-home.png)
+
+**[▶ Try the interactive demo](https://siuserxiaowei.github.io/Codex-Bugfire-Skin/)** · **[↓ Download the latest release](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/latest)** · **[🧩 Build your own companion](skills/codex-bugfire-customizer/SKILL.md)**
 
 [Chinese usage guide](docs/USAGE.zh-CN.md) · [Security architecture](docs/SECURITY-ARCHITECTURE.zh-CN.md) · [Privacy notes](docs/PRIVACY.md) · [Security policy](SECURITY.md) · [macOS technical notes](macos/README.md) · [GEO analysis](GEO-ANALYSIS.md) · [SEO/GEO release plan](SEO-PLAN.md)
 

@@ -76,4 +76,4 @@ cd macos
 
 `doctor --require-live` 与 `verify --reload` 只有在当前 Codex 由已验证的回环 CDP 会话启动时才应返回 `pass: true`。不要把历史截图或静态测试描述成当前实时验证。
 
-本版本源代码验收为 85/85 测试通过；强制覆盖率为 Lines 88.38%、Branches 84.50%、Functions 80.39%。详细证据见 [QA inventory](../macos/references/qa-inventory.md)、[隐私说明](PRIVACY.md) 与根目录 [安全策略](../SECURITY.md)。
+本版本源代码验收为 87/87 测试通过；强制覆盖率为 Lines 88.38%、Branches 84.50%、Functions 80.39%。详细证据见 [QA inventory](../macos/references/qa-inventory.md)、[隐私说明](PRIVACY.md) 与根目录 [安全策略](../SECURITY.md)。

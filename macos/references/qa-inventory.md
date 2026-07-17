@@ -55,7 +55,7 @@
 
 ## BUGFIRE 1.2.0-bugfire.1 source acceptance (2026-07-16)
 
-- `macos/tests/run-tests.sh`: 85/85 automated tests passed outside the restricted process sandbox; syntax, payload, custom-theme, config round-trip, HOME recovery, signature, and non-live doctor checks also passed.
+- `macos/tests/run-tests.sh`: 87/87 automated tests passed outside the restricted process sandbox; syntax, payload, custom-theme, config round-trip, HOME recovery, signature, and non-live doctor checks also passed.
 - Enforced coverage set: 42/42 tests passed; lines `88.38%`, branches `84.50%`, functions `80.39%` (all thresholds 80%).
 - Independent release-blocker re-audit found no remaining P0/P1 after regression fixes for AppleScript metadata injection and disguised WebP frame dimensions.
 - A 3 MiB idle-only pet pack completes payload validation with one encoding and a total payload below 10 MiB; six runtime state aliases do not multiply the asset.

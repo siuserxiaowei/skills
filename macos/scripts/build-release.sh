@@ -21,6 +21,11 @@ if [ "${1:-}" != "--skip-tests" ]; then "$ROOT/tests/run-tests.sh"; fi
   --exclude '.DS_Store' \
   "$ROOT/../skills/codex-bugfire-customizer/" \
   "$TMP/codex-dream-skin-studio/skills/codex-bugfire-customizer/"
+/bin/mkdir -p "$TMP/codex-dream-skin-studio/docs"
+/usr/bin/rsync -a \
+  --exclude '.DS_Store' \
+  "$ROOT/../docs/" \
+  "$TMP/codex-dream-skin-studio/docs/"
 /bin/chmod 755 "$TMP/codex-dream-skin-studio"/*.command
 /bin/chmod 755 "$TMP/codex-dream-skin-studio"/scripts/*.sh "$TMP/codex-dream-skin-studio"/tests/*.sh
 /bin/chmod 755 "$TMP/codex-dream-skin-studio"/skills/codex-bugfire-customizer/scripts/*.sh

@@ -2,11 +2,18 @@
 
 [English](README.en.md)
 
+[![在线体验](https://img.shields.io/badge/在线体验-BUGFIRE-83ff45?style=for-the-badge&labelColor=050704)](https://siuserxiaowei.github.io/Codex-Bugfire-Skin/)
+[![下载最新版](https://img.shields.io/github/v/release/siuserxiaowei/Codex-Bugfire-Skin?style=for-the-badge&label=下载&labelColor=050704&color=ff7a1a)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/latest)
+[![自动化测试](https://img.shields.io/github/actions/workflow/status/siuserxiaowei/Codex-Bugfire-Skin/ci.yml?branch=main&style=for-the-badge&label=87%20项测试&labelColor=050704)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/actions/workflows/ci.yml)
+[![MIT License](https://img.shields.io/badge/License-MIT-f4efd8?style=for-the-badge&labelColor=050704)](LICENSE)
+
 **BUGFIRE「补丁兽」是一款运行在 macOS 版 Codex Desktop 里的本地像素桌宠。** 它用“模拟 Build → 发现 Bug → 修复重建 → 喷火升级”的可玩反馈，让 Vibe Coding 的练习过程更有成长感；它不会执行真实构建，也不把宠物等级包装成编程能力认证。
 
 > 当前版本：`1.2.0-bugfire.1` · macOS 首版 · 非 OpenAI 官方产品
 
 ![BUGFIRE 补丁兽在 Codex Desktop 首页右下角的像素桌宠浮巢](docs/images/bugfire-home.png)
+
+**[▶ 打开在线交互 Demo](https://siuserxiaowei.github.io/Codex-Bugfire-Skin/)** · **[↓ 下载最新版](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/latest)** · **[🧩 制作自己的补丁兽](skills/codex-bugfire-customizer/SKILL.md)**
 
 [使用说明](docs/USAGE.zh-CN.md) · [安全架构](docs/SECURITY-ARCHITECTURE.zh-CN.md) · [隐私说明](docs/PRIVACY.md) · [安全策略](SECURITY.md) · [GEO 分析](GEO-ANALYSIS.md) · [SEO/GEO 发布计划](SEO-PLAN.md) · [macOS 技术说明](macos/README.md)
 

@@ -1,0 +1,47 @@
+name: BUGFIRE CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos-tests:
+    name: macOS · Node ${{ matrix.node }}
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    defaults:
+      run:
+        working-directory: macos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Check runtime syntax
+        run: |
+          find scripts assets -type f \( -name '*.mjs' -o -name '*.js' \) -print0 | xargs -0 -n1 node --check
+          find . -type f \( -name '*.sh' -o -name '*.command' \) ! -path './release/*' -print0 | xargs -0 -n1 bash -n
+      - name: Run 87 portable automated tests
+        env:
+          SKILL_VALIDATOR: /nonexistent/quick_validate.py
+        run: node --test tests/*.test.mjs
+
+  skill-validation:
+    name: Skill package contract
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate skill files and end-to-end wrapper
+        working-directory: macos
+        run: node --test tests/bugfire-skill.test.mjs
