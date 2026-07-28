@@ -1,0 +1,4 @@
+interface:
+  display_name: "MarkItDown Convert"
+  short_description: "将本地 PDF、Word、PPT 与表格安全转换为 Markdown"
+  default_prompt: "使用 $markitdown-convert 将这个受信的本地文档转换为 Markdown，并抽查关键信息。"
