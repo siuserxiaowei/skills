@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Memory Vault"
+  short_description: "Set up and maintain a shared Agent Memory Vault"
+  default_prompt: "Use $agent-memory when installing, inspecting, or maintaining a local Agent Memory Vault system."

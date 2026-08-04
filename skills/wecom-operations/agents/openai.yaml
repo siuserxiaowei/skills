@@ -1,0 +1,4 @@
+interface:
+  display_name: "企业微信文档与协作"
+  short_description: "把 Markdown 发成企微图文文档，待办及已授权企业的会议日程同样可管"
+  default_prompt: "通过 $wecom-operations 发布企微文档，或处理已获授权的会议、日程与待办。"
