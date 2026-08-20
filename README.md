@@ -129,19 +129,19 @@ $task-status 继续 搜索合作机会｜恢复搜索，并先复核上次的阻
 
 ## 提示音
 
-每次真正进入新状态时播放一次对应提示音：
+每次真正进入新状态时，用统一的正常普通话声音念出对应状态，只保留轻微语速差异：
 
-| 状态 | 事件名 | macOS 音效 |
-|---|---|---|
-| `📝 待派发` | `pending` | `Pop` |
-| `💬 讨论中` | `discussion` | `Purr` |
-| `🟡 待确认` | `attention` | `Ping` |
-| `🔵 进行中` | `running` | `Tink` |
-| `⏳ 等待中` | `waiting` | `Submarine` |
-| `⏸️ 已暂停` | `paused` | `Basso` |
-| `✅ 已完成` | `complete` | `Glass` |
+| 状态 | 事件名 | 播报文字 | 默认语气 |
+|---|---|---|---|
+| `📝 待派发` | `pending` | “任务待派发” | 中性 |
+| `💬 讨论中` | `discussion` | “任务讨论中” | 稍慢 |
+| `🟡 待确认` | `attention` | “任务待确认” | 稍清晰 |
+| `🔵 进行中` | `running` | “任务进行中” | 稍轻快 |
+| `⏳ 等待中` | `waiting` | “任务等待中” | 平稳 |
+| `⏸️ 已暂停` | `paused` | “任务已暂停” | 稍缓慢 |
+| `✅ 已完成` | `complete` | “任务已完成” | 轻快但不夸张 |
 
-重复状态、普通评论和历史批量整理仍然保持静音。跨平台脚本会优先使用系统音效：macOS 使用上表中的七种系统音效，Windows 使用七组不同音高节奏，Linux 尝试七种桌面音效；系统没有可用音频后端时才回退到终端铃声。
+重复状态、普通评论和历史批量整理仍然保持静音。macOS 默认统一使用普通话 `Tingting`，仅小幅调整语速；Windows 使用系统普通话语音；Linux 尝试 `spd-say` 或 `espeak` 的中文语音。设备没有可用语音后端时，会降级为之前的七种提示音，最后才回退到终端铃声。
 
 测试音效后端但不真正播放：
 
@@ -155,7 +155,13 @@ python3 scripts/play-status-sound.py paused --dry-run
 python3 scripts/play-status-sound.py complete --dry-run
 ```
 
-删除 `--dry-run` 就会实际播放对应状态的声音。也可以通过 `CODEX_TASK_STATUS_<事件名>_SOUND` 环境变量为 macOS 的单个事件指定自定义音频文件。
+删除 `--dry-run` 就会实际播报对应状态。macOS 还可以通过 `CODEX_TASK_STATUS_<事件名>_VOICE`、`CODEX_TASK_STATUS_<事件名>_RATE` 或 `CODEX_TASK_STATUS_<事件名>_SOUND`，为单个事件改用其他系统声音、语速或自定义音频文件。
+
+录屏或集中试听时，可以按固定顺序播完七种语音；该命令只播放，不会修改任务状态：
+
+```bash
+python3 scripts/play-status-sound.py demo
+```
 
 ## 可选常驻模式
 
@@ -235,7 +241,7 @@ python3 scripts/package_skill.py dist/task-status-skill.zip
 unzip -l dist/task-status-skill.zip
 ```
 
-测试覆盖七种标题、七种独立提示音、重复迁移、旧前缀替换、提示音 dry-run、常驻模式启用/重复启用/关闭、备份保护和安装包边界。
+测试覆盖七种标题、七种正常中文播报和轻微语速差异、重复迁移、旧前缀替换、语音 dry-run、常驻模式启用/重复启用/关闭、备份保护和安装包边界。
 
 ## License
 
