@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex Task Status Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #eef1f6;
+      color: #191b22;
+    }
+    * { box-sizing: border-box; }
+    body {
+      width: 1200px;
+      height: 760px;
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 14% 10%, rgba(97, 218, 251, .18), transparent 32%),
+        radial-gradient(circle at 88% 86%, rgba(136, 104, 255, .14), transparent 34%),
+        #eef1f6;
+      display: grid;
+      place-items: center;
+    }
+    .frame {
+      width: 1080px;
+      height: 640px;
+      border: 1px solid rgba(32, 38, 52, .12);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, .9);
+      box-shadow: 0 28px 70px rgba(27, 35, 58, .15);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+    }
+    .sidebar {
+      padding: 34px 28px 28px;
+      background: #f7f8fb;
+      border-right: 1px solid #e2e5ec;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 22px;
+      background: linear-gradient(135deg, #111827, #4f46e5);
+      box-shadow: 0 8px 20px rgba(79, 70, 229, .25);
+    }
+    .brand strong { display: block; font-size: 18px; letter-spacing: -.02em; }
+    .brand span { color: #777e8e; font-size: 12px; }
+    .section-label {
+      color: #8b91a0;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .13em;
+      margin: 20px 12px 10px;
+    }
+    .task {
+      height: 56px;
+      margin: 7px 0;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 14px;
+      color: #2e323c;
+      font-size: 15px;
+      font-weight: 610;
+      letter-spacing: -.01em;
+    }
+    .task.active {
+      background: white;
+      box-shadow: 0 5px 18px rgba(31, 41, 55, .08);
+      border: 1px solid #e9eaf0;
+    }
+    .task .status { width: 24px; text-align: center; font-size: 17px; }
+    .task .text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .content {
+      padding: 60px 64px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: linear-gradient(160deg, rgba(255,255,255,.98), rgba(247,248,252,.96));
+    }
+    .eyebrow {
+      color: #4f46e5;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 14px 0 18px;
+      max-width: 510px;
+      font-size: 47px;
+      line-height: 1.12;
+      letter-spacing: -.045em;
+    }
+    .lead {
+      max-width: 500px;
+      color: #656c7b;
+      font-size: 18px;
+      line-height: 1.7;
+    }
+    .chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 30px; }
+    .chip {
+      border: 1px solid #e1e4eb;
+      border-radius: 999px;
+      background: white;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #4b5261;
+      box-shadow: 0 4px 12px rgba(31, 41, 55, .05);
+    }
+    .privacy {
+      margin-top: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #7c8392;
+      font-size: 12px;
+    }
+    .privacy::before { content: "●"; color: #22c55e; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <main class="frame" aria-label="Codex task status privacy-safe demo">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">✓</div>
+        <div><strong>Task Status</strong><span>Codex 多状态任务管理</span></div>
+      </div>
+      <div class="section-label">任务</div>
+      <div class="task"><span class="status">📝</span><span class="text">待派发｜准备下周计划</span></div>
+      <div class="task"><span class="status">💬</span><span class="text">讨论中｜比较三个实现方案</span></div>
+      <div class="task active"><span class="status">🔵</span><span class="text">进行中｜搭建项目页面</span></div>
+      <div class="task"><span class="status">🟡</span><span class="text">待确认｜确认发布范围</span></div>
+      <div class="task"><span class="status">⏳</span><span class="text">等待中｜等待第三方审核</span></div>
+      <div class="task"><span class="status">⏸️</span><span class="text">已暂停｜恢复账号访问</span></div>
+      <div class="task"><span class="status">✅</span><span class="text">已完成｜整理调研资料</span></div>
+    </aside>
+    <section class="content">
+      <div class="eyebrow">Codex Skill</div>
+      <h1>一眼看懂每个任务现在走到哪里</h1>
+      <div class="lead">七种生命周期状态、历史任务预览、待派发流程、幂等改名和跨平台提示音。</div>
+      <div class="chips">
+        <span class="chip">七状态模型</span>
+        <span class="chip">历史先预览后确认</span>
+        <span class="chip">不改 ChatGPT 聊天</span>
+        <span class="chip">可选常驻模式</span>
+      </div>
+      <div class="privacy">演示数据 · 不含真实任务、对话、路径或账号信息</div>
+    </section>
+  </main>
+</body>
+</html>

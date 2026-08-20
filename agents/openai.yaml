@@ -1,0 +1,7 @@
+interface:
+  display_name: "Codex 多状态任务管理"
+  short_description: "管理七种任务状态、历史看板、待派发流程与完成提醒"
+  default_prompt: "使用 $task-status 执行接下来的任务，并自动维护任务状态。"
+
+policy:
+  allow_implicit_invocation: false
