@@ -8,11 +8,11 @@ Read this file whenever a task needs classification or a status transition.
 |---|---|---|
 | `pending` | `📝 待派发` | The user explicitly registered work but the execution instruction has not been sent. Never infer this from an unsent composer draft. |
 | `discussion` | `💬 讨论中` | The conversation is clarifying needs, comparing options, or chatting, and actual execution has not been authorized. |
-| `attention` | `🟡 待确认` | Progress requires user information, approval of a high-impact action, confirmation before sending, or acceptance of a result. Play the attention sound once on entry. |
+| `attention` | `🟡 待确认` | Progress requires user information, approval of a high-impact action, confirmation before sending, or acceptance of a result. |
 | `running` | `🔵 进行中` | Codex is actively executing, using tools, validating, or otherwise making progress. |
 | `waiting` | `⏳ 等待中` | The next dependency is an external system, scheduled time, automation, another task, rate limit, or cooldown. |
 | `paused` | `⏸️ 已暂停` | The user explicitly paused/cancelled, or a real blocker prevents further progress. Inactivity alone is not evidence. |
-| `complete` | `✅ 已完成` | The requested deliverable exists and proportionate verification passed. Play the completion sound once on entry. |
+| `complete` | `✅ 已完成` | The requested deliverable exists and proportionate verification passed. |
 
 Accepted aliases for manual marking are the keys above and these Chinese forms: `待派发`, `讨论中`, `待确认`, `进行中`, `等待中`, `已暂停`, `已完成`. The legacy `🌞` prefix means `running` only for migration.
 
@@ -43,9 +43,9 @@ Never inflate confidence based only on an existing Emoji prefix: the prefix is a
 3. Normalize with `scripts/status_title.py transition --status <key> --title <current-title>`.
 4. If `changed` is false, stop. Do not rename or sound.
 5. Rename to `proposedTitle`.
-6. Only if `stateChanged` is true and `soundEvent` is `attention` or `complete`, play that event once after the rename succeeds.
+6. Only if `stateChanged` is true, play the returned `soundEvent` once after the rename succeeds. Every state uses its own event and sound.
 
-During historical batch application, suppress all sounds even when rows enter attention or completion.
+During historical batch application, suppress all sounds regardless of the target states.
 
 ## Classification examples
 

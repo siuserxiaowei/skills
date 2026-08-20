@@ -2,7 +2,7 @@
 
 把 Codex 侧边栏从一串难以辨认的任务标题，变成可扫描的多状态任务看板。
 
-`task-status` 是一个可分享的 Codex Skill。它用统一的 Emoji 前缀表示任务生命周期，支持当前任务跟踪、待派发登记、历史整理、手动纠错、完成提示音和可选常驻模式。
+`task-status` 是一个可分享的 Codex Skill。它用统一的 Emoji 前缀表示任务生命周期，支持当前任务跟踪、待派发登记、历史整理、手动纠错、七状态提示音和可选常驻模式。
 
 > English summary: A Codex Skill for managing task titles across seven lifecycle states, with history review, privacy-safe batch updates, notification sounds, and an opt-in always-on mode.
 
@@ -129,18 +129,33 @@ $task-status 继续 搜索合作机会｜恢复搜索，并先复核上次的阻
 
 ## 提示音
 
-- 进入 `🟡 待确认`：播放注意提示音。
-- 进入 `✅ 已完成`：播放完成提示音。
-- 重复状态、普通评论和历史批量整理：不播放。
+每次真正进入新状态时播放一次对应提示音：
 
-跨平台脚本会优先使用系统音效：macOS 使用 `Ping` / `Glass`，Windows 使用系统提示音，Linux 尝试桌面音效，最后回退到终端铃声。
+| 状态 | 事件名 | macOS 音效 |
+|---|---|---|
+| `📝 待派发` | `pending` | `Pop` |
+| `💬 讨论中` | `discussion` | `Purr` |
+| `🟡 待确认` | `attention` | `Ping` |
+| `🔵 进行中` | `running` | `Tink` |
+| `⏳ 等待中` | `waiting` | `Submarine` |
+| `⏸️ 已暂停` | `paused` | `Basso` |
+| `✅ 已完成` | `complete` | `Glass` |
+
+重复状态、普通评论和历史批量整理仍然保持静音。跨平台脚本会优先使用系统音效：macOS 使用上表中的七种系统音效，Windows 使用七组不同音高节奏，Linux 尝试七种桌面音效；系统没有可用音频后端时才回退到终端铃声。
 
 测试音效后端但不真正播放：
 
 ```bash
+python3 scripts/play-status-sound.py pending --dry-run
+python3 scripts/play-status-sound.py discussion --dry-run
 python3 scripts/play-status-sound.py attention --dry-run
+python3 scripts/play-status-sound.py running --dry-run
+python3 scripts/play-status-sound.py waiting --dry-run
+python3 scripts/play-status-sound.py paused --dry-run
 python3 scripts/play-status-sound.py complete --dry-run
 ```
+
+删除 `--dry-run` 就会实际播放对应状态的声音。也可以通过 `CODEX_TASK_STATUS_<事件名>_SOUND` 环境变量为 macOS 的单个事件指定自定义音频文件。
 
 ## 可选常驻模式
 
@@ -220,7 +235,7 @@ python3 scripts/package_skill.py dist/task-status-skill.zip
 unzip -l dist/task-status-skill.zip
 ```
 
-测试覆盖七种标题、重复迁移、旧前缀替换、提示音 dry-run、常驻模式启用/重复启用/关闭、备份保护和安装包边界。
+测试覆盖七种标题、七种独立提示音、重复迁移、旧前缀替换、提示音 dry-run、常驻模式启用/重复启用/关闭、备份保护和安装包边界。
 
 ## License
 

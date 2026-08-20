@@ -28,6 +28,8 @@ def check_titles() -> None:
     }
     for state, title in expected.items():
         assert status_title.format_title(state, "原任务") == title
+        entered = status_title.transition(state, "未管理任务")
+        assert entered["soundEvent"] == state
         repeated = status_title.transition(state, title)
         assert repeated["changed"] is False
         assert repeated["stateChanged"] is False
@@ -43,11 +45,17 @@ def check_titles() -> None:
 
 def check_sounds() -> None:
     sound = SCRIPT_DIR / "play-status-sound.py"
-    for event in ("attention", "complete"):
+    signatures = set()
+    for event in status_title.STATES:
         output = subprocess.check_output([sys.executable, str(sound), event, "--dry-run"], text=True)
         payload = json.loads(output)
         assert payload["event"] == event
         assert payload["backend"]
+        assert payload["sound"]
+        if payload["backend"] == "macos-afplay":
+            signatures.add(payload["sound"])
+    if signatures:
+        assert len(signatures) == len(status_title.STATES)
 
 
 def check_always_on() -> None:
