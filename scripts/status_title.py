@@ -82,7 +82,7 @@ def transition(status: str, title: str) -> dict[str, object]:
     proposed = format_title(key, title)
     changed = title != proposed
     state_changed = previous != key
-    sound_event = key if key in {"attention", "complete"} and state_changed else None
+    sound_event = key if state_changed else None
     return {
         "status": key,
         "previousStatus": previous,

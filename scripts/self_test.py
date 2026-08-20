@@ -28,6 +28,8 @@ def check_titles() -> None:
     }
     for state, title in expected.items():
         assert status_title.format_title(state, "原任务") == title
+        entered = status_title.transition(state, "未管理任务")
+        assert entered["soundEvent"] == state
         repeated = status_title.transition(state, title)
         assert repeated["changed"] is False
         assert repeated["stateChanged"] is False
@@ -43,11 +45,34 @@ def check_titles() -> None:
 
 def check_sounds() -> None:
     sound = SCRIPT_DIR / "play-status-sound.py"
-    for event in ("attention", "complete"):
+    phrases = {
+        "pending": "任务待派发。",
+        "discussion": "任务讨论中。",
+        "attention": "任务待确认。",
+        "running": "任务进行中。",
+        "waiting": "任务等待中。",
+        "paused": "任务已暂停。",
+        "complete": "任务已完成。",
+    }
+    signatures = set()
+    for event in status_title.STATES:
         output = subprocess.check_output([sys.executable, str(sound), event, "--dry-run"], text=True)
         payload = json.loads(output)
         assert payload["event"] == event
+        assert payload["phrase"] == phrases[event]
         assert payload["backend"]
+        assert payload["sound"]
+        if payload["backend"] == "macos-say":
+            signatures.add(payload["sound"])
+    if signatures:
+        assert len(signatures) == len(status_title.STATES)
+
+    demo_output = subprocess.check_output(
+        [sys.executable, str(sound), "demo", "--dry-run"],
+        text=True,
+    )
+    demo_events = [json.loads(line)["event"] for line in demo_output.splitlines()]
+    assert demo_events == list(status_title.STATES)
 
 
 def check_always_on() -> None:

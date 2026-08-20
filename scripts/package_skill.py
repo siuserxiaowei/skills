@@ -10,6 +10,7 @@ from pathlib import Path
 
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
+ARCHIVE_ROOT = "task-status"
 TEXT_SUFFIXES = {".md", ".py", ".sh", ".yaml", ".yml", ".json", ".txt"}
 EXCLUDED_PARTS = {
     "__pycache__",
@@ -65,7 +66,7 @@ def main() -> int:
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for path in files:
             relative = path.relative_to(SKILL_DIR)
-            info = zipfile.ZipInfo.from_file(path, arcname=str(Path(SKILL_DIR.name) / relative))
+            info = zipfile.ZipInfo.from_file(path, arcname=str(Path(ARCHIVE_ROOT) / relative))
             info.compress_type = zipfile.ZIP_DEFLATED
             archive.writestr(info, path.read_bytes())
     print(output)

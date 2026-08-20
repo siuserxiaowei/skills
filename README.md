@@ -2,7 +2,7 @@
 
 把 Codex 侧边栏从一串难以辨认的任务标题，变成可扫描的多状态任务看板。
 
-`task-status` 是一个可分享的 Codex Skill。它用统一的 Emoji 前缀表示任务生命周期，支持当前任务跟踪、待派发登记、历史整理、手动纠错、完成提示音和可选常驻模式。
+`task-status` 是一个可分享的 Codex Skill。它用统一的 Emoji 前缀表示任务生命周期，支持当前任务跟踪、待派发登记、历史整理、手动纠错、七状态提示音和可选常驻模式。
 
 > English summary: A Codex Skill for managing task titles across seven lifecycle states, with history review, privacy-safe batch updates, notification sounds, and an opt-in always-on mode.
 
@@ -129,17 +129,38 @@ $task-status 继续 搜索合作机会｜恢复搜索，并先复核上次的阻
 
 ## 提示音
 
-- 进入 `🟡 待确认`：播放注意提示音。
-- 进入 `✅ 已完成`：播放完成提示音。
-- 重复状态、普通评论和历史批量整理：不播放。
+每次真正进入新状态时，用统一的正常普通话声音念出对应状态，只保留轻微语速差异：
 
-跨平台脚本会优先使用系统音效：macOS 使用 `Ping` / `Glass`，Windows 使用系统提示音，Linux 尝试桌面音效，最后回退到终端铃声。
+| 状态 | 事件名 | 播报文字 | 默认语气 |
+|---|---|---|---|
+| `📝 待派发` | `pending` | “任务待派发” | 中性 |
+| `💬 讨论中` | `discussion` | “任务讨论中” | 稍慢 |
+| `🟡 待确认` | `attention` | “任务待确认” | 稍清晰 |
+| `🔵 进行中` | `running` | “任务进行中” | 稍轻快 |
+| `⏳ 等待中` | `waiting` | “任务等待中” | 平稳 |
+| `⏸️ 已暂停` | `paused` | “任务已暂停” | 稍缓慢 |
+| `✅ 已完成` | `complete` | “任务已完成” | 轻快但不夸张 |
+
+重复状态、普通评论和历史批量整理仍然保持静音。macOS 默认统一使用普通话 `Tingting`，仅小幅调整语速；Windows 使用系统普通话语音；Linux 尝试 `spd-say` 或 `espeak` 的中文语音。设备没有可用语音后端时，会降级为之前的七种提示音，最后才回退到终端铃声。
 
 测试音效后端但不真正播放：
 
 ```bash
+python3 scripts/play-status-sound.py pending --dry-run
+python3 scripts/play-status-sound.py discussion --dry-run
 python3 scripts/play-status-sound.py attention --dry-run
+python3 scripts/play-status-sound.py running --dry-run
+python3 scripts/play-status-sound.py waiting --dry-run
+python3 scripts/play-status-sound.py paused --dry-run
 python3 scripts/play-status-sound.py complete --dry-run
+```
+
+删除 `--dry-run` 就会实际播报对应状态。macOS 还可以通过 `CODEX_TASK_STATUS_<事件名>_VOICE`、`CODEX_TASK_STATUS_<事件名>_RATE` 或 `CODEX_TASK_STATUS_<事件名>_SOUND`，为单个事件改用其他系统声音、语速或自定义音频文件。
+
+录屏或集中试听时，可以按固定顺序播完七种语音；该命令只播放，不会修改任务状态：
+
+```bash
+python3 scripts/play-status-sound.py demo
 ```
 
 ## 可选常驻模式
@@ -220,7 +241,7 @@ python3 scripts/package_skill.py dist/task-status-skill.zip
 unzip -l dist/task-status-skill.zip
 ```
 
-测试覆盖七种标题、重复迁移、旧前缀替换、提示音 dry-run、常驻模式启用/重复启用/关闭、备份保护和安装包边界。
+测试覆盖七种标题、七种正常中文播报和轻微语速差异、重复迁移、旧前缀替换、语音 dry-run、常驻模式启用/重复启用/关闭、备份保护和安装包边界。
 
 ## License
 
