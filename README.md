@@ -1,12 +1,12 @@
 # skills — 自用 Agent Skill 合集
 
-把高频使用的 Agent Skill 收进一个仓库统一管理。共 **56 个 Skill**，覆盖全网调研、微信/企业微信本地数据、飞书全家桶、设计前端和 Agent 效率工具。
+把高频使用的 Agent Skill 收进一个仓库统一管理。共 **57 个 Skill**，覆盖全网调研、微信/企业微信本地数据、飞书全家桶、设计前端和 Agent 效率工具。
 
 说明：
 
 - 收录的第三方 Skill 均已做**去个人化处理**：移除原作者的个人路径、账号、联系方式、推广内容，以及自更新/遥测/支付回传代码，保留全部功能；各目录内保留其原始 `LICENSE`，来源见 `THIRD_PARTY_NOTICES.md`。
-- `web-research`、`agent-memory`、`wechat-local-vault`、`wecom-local-vault`、`wecom-operations`、`wechat-mp-batch-exporter`、`chatgpt-web-research`、`x-article-draft-uploader`、`mac-wechat-dual-open` 这 9 个 Skill 是**按功能需求重新撰写的原创实现**——文档文字独立撰写，功能灵感来自公开项目，与原作无文字复制关系。
-- 合集本体及上述 9 个 Skill 采用顶层 `LICENSE`（MIT）；其余第三方 Skill 以各自目录内 `LICENSE` 为准。
+- `web-research`、`cross-platform-top50`、`agent-memory`、`wechat-local-vault`、`wecom-local-vault`、`wecom-operations`、`wechat-mp-batch-exporter`、`chatgpt-web-research`、`x-article-draft-uploader`、`mac-wechat-dual-open` 这 10 个 Skill 是**按功能需求重新撰写的原创实现**——文档文字独立撰写，功能灵感来自公开项目，与原作无文字复制关系。
+- 合集本体及上述 10 个 Skill 采用顶层 `LICENSE`（MIT）；其余第三方 Skill 以各自目录内 `LICENSE` 为准。
 
 ## 安装
 
@@ -29,11 +29,12 @@ cp -R skills/<skill-name> ~/.agents/skills/
 
 ## Skill 一览
 
-### 研究与信息获取（4 个）
+### 研究与信息获取（5 个）
 
 | Skill | 用途 |
 |---|---|
 | `web-research` | 互联网研究总入口 |
+| `cross-platform-top50` | 检索 20+ 公开网络与社交渠道，生成可审计 Top N，并可按授权归档飞书知识库 |
 | `chatgpt-web-research` | Drive the user's already logged-in ChatGPT 官网 / ChatGPT 网页版 account — … |
 | `wechat-reading` | 微信读书助手 — 搜索书籍、管理书架、查看笔记划线、浏览书评、阅读统计、发现推荐好书 |
 | `skill-vetter` | Security-first vetting protocol for AI agent skills. Use before instal… |
@@ -128,7 +129,7 @@ cp -R skills/<skill-name> ~/.agents/skills/
 
 ## 许可说明
 
-- 合集本体与 9 个重写 Skill：MIT（见顶层 `LICENSE`）。
+- 合集本体与 10 个重写 Skill：MIT（见顶层 `LICENSE`）。
 - 第三方 Skill：`lark-` 系列、`imagegen-frontend-web`、`kami`、`beautiful-html-templates`、`skill-publisher`、`goal-meta-skill` 为 MIT；`impeccable`、`wechat-reading` 为 Apache-2.0（`impeccable` 含 `NOTICE.md`）；`pua` 系列源仓库未附带 LICENSE 文件（其 frontmatter 自述 MIT），使用前请知悉。
 - `x-article-draft-uploader` 内保留上游 `wshuyi/x-article-publisher-skill` 的 MIT 归属文件。
 - 各 Skill 的依赖（如 `lark-cli`、`wecom-cli`、本地微信数据库、浏览器登录态等）以其 `SKILL.md` 说明为准；涉及本地隐私数据的 Skill 全部在本机运行，不外传数据。

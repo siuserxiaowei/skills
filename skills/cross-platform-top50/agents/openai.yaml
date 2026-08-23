@@ -1,0 +1,4 @@
+interface:
+  display_name: "跨平台 Top 50 研究"
+  short_description: "检索 28 个渠道，验证排名并按明确授权归档飞书知识库"
+  default_prompt: "使用 $cross-platform-top50 研究《请替换为真实主题》，交付本次检索范围内 Top 50 和可审计本地研究包；只有我明确要求时才发布飞书。"
