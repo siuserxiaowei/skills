@@ -26,6 +26,8 @@ description: 规划并执行 CSDN、公众号、知乎、小红书、微博、�
 - `platforms`：默认计划覆盖 [平台路由](references/platform-routing.md) 的 canonical 28 渠道；用户点名平台为 `required`，明显不适用的平台可带依据标 `not_applicable`。
 - `login_mode`：`public-only` 或 `user-assisted`；默认 `public-only`。用户表示可以协助登录时采用 `user-assisted`，但登录完成前仍不得假设会话有效。
 - `publish_mode`：`local`、`feishu-new-space` 或 `feishu-existing-space`；默认 `local`。只有当前请求明确要求写入飞书才编译为后两者；其它拼法先规范化为这三个值，不能静默产生第四种语义。
+- `engine_mode`：`auto`、`python`、`go`、`rust` 或 `hybrid`；默认 `auto`。这决定本地执行后端，不改变平台授权、证据门禁或发布边界。用户强制的后端若探针/能力不满足必须失败关闭，不能静默改成另一种语言。
+- `dual_run`：默认 `false`。只有用户明确要求，或当前阶段属于高风险规范化/去重且有两个独立可用实现时才启用；双跑用于比较，不把同一请求无条件执行三遍。
 
 其余缺省项用保守默认值继续，并在 `run_manifest.json` 标为工作假设。用户只要固定提示词而不执行本次研究时，交付 [便携总提示词](assets/master-prompt.md) 的参数化版本。
 
@@ -64,13 +66,30 @@ tool_readiness | bridge_state | auth_state | quota_state | authorization | probe
 
 probe 的 401/403、429、验证码、空响应与解析错误都必须进入路由账本。不得在研究中自动升级 CLI、安装扩展、购买配额或切换身份；这些是独立环境变更。
 
-### 3. 并行只用于独立分片
+### 3. 三套执行后端长期保留、按阶段路由
+
+需要执行本地采集、批处理或排名时读取 [三引擎路由](references/engine-routing.md)。当一个研究范围同时含平台 CLI、浏览器、已发现公共 URL 或已完成 extraction 的本地批次时，先按 [多来源请求编译](references/route-bundle-compilation.md) 生成独立 shard，再对可执行 shard 运行 Python 路由器的真实 probe/plan：
+
+- **Python 控制面**：始终保留，负责平台 CLI/Browser 登录编排、能力与授权账本、证据门禁、`deterministic-v2` 排名和飞书发布；小规模或登录型任务可全程走 Python。
+- **Go collector**：只处理已经授权、已发现且由 manifest SHA-256/job-set digest 冻结的公共 HTTP(S) URL 批量抓取，负责透明自有 UA、robots 门禁、有界并发、按 host 限速、重试、响应上限和 checkpoint。它不是搜索引擎，不能绕过登录/验证码，也不能接收 Cookie/Authorization、任意请求 Header 或调用方自定义 UA；`transport_success` 只证明传输与工件落盘，不证明内容可用。
+- **Rust processor**：只处理本地候选批次，负责 URL 规范化、安全预检、内容指纹、精确聚类和近重复待审标记。它不联网，不把离线 DNS 判断冒充 fetch-time SSRF 防护，也不代替 curator 或 Python 排名器。
+- **Hybrid**：完整流程通常按 `Python discovery → Go fetch → Python extraction → Rust process → Python curate/rank/publish` 串行交接。Python extraction 必须把抓取工件转换为带稳定 ID、来源字段和可审计摘录的候选；没有完整提取产物时 Rust 不得启动。平台原生 CLI、OpenCLI 或浏览器获得的内容仍由 Python 控制面编排，再按需送 Rust 批处理。
+
+不得仅凭源码目录或可执行文件存在就称引擎可用。probe 必须核对 engine ID、版本、合同版本、能力和退出状态；计划保存候选引擎、实际选择、阶段顺序、fallback、reason code 与 probe 证据。后端失败不能从账本消失。
+
+语言选择看总成本，不只看 Token：同时评估实现与返工时间、测试矩阵、依赖/部署、安全维护、平台变化适配、故障定位、运行资源和结果验证成本。三套结构长期保留不表示每次三跑；只让某个后端承担它能明显降低总成本或不确定性的阶段。
+
+`ego-browser` / ego-lite 只保留为 Python `browser_session` 的默认禁用候选，不是第四引擎。供应链、CLI 数据流、二进制许可和会话隔离门禁未关闭时，它不得进入 `auto` / `hybrid` 候选集；不得自动安装、移除 quarantine 或迁移日常 Chrome 数据。
+
+不得把 `OAI-SearchBot`、`ChatGPT-User`、`Claude-User`、`Claude-SearchBot`、`Bytespider` 或其它第三方官方爬虫 UA 当作失败重试身份；UA 表示请求软件/服务身份，不是内容解锁开关。公开页可使用透明自有 UA 与受控 `Accept` / `Accept-Language` 内容协商，但 robots disallow、401/403、验证码、登录墙或访问控制必须停止并入账。
+
+### 4. 并行只用于独立分片
 
 有子 Agent 时按“查询/访问后端/语言或内容类型”划分独立分片，而不是为了凑数一平台一 Agent。使用运行时实际可用的并发槽位并分批复用；不得宣称调用了并未启动的 50 个 Agent，也不得把脚本线程称作独立 Agent。
 
 每个研究 worker 只能把证据推进到 `[_]`。主任务或独立 curator 必须直接查看原始来源支持后，才能写 `[x]` / `reviewer_status=accepted`。主任务负责合并账本、处理转载与冲突、核对所有拟入选条目；Agent 数量本身不构成可信度。
 
-### 4. 登录接力是可恢复 checkpoint
+### 5. 登录接力是可恢复 checkpoint
 
 登录型平台被阻塞时：
 
@@ -81,7 +100,7 @@ probe 的 401/403、429、验证码、空响应与解析错误都必须进入路
 
 不得绕过登录墙、付费墙、验证码、robots、限频或私密数据边界。
 
-### 5. 候选不是证据
+### 6. 候选不是证据
 
 搜索结果页只负责发现。候选至少保留稳定 ID、平台、标题、原 URL、作者/账号、发布日期或未知标记、访问日期、内容类型、查询与后端、可见互动原值、短摘录/可观察事实和限制。默认只保存元数据、短摘录、分析与链接，不批量复制全文或完整字幕。
 
@@ -97,7 +116,7 @@ probe 的 401/403、429、验证码、空响应与解析错误都必须进入路
 
 自动摘要、标题、热度、多来源表面一致和 worker 自报 `accepted` 都不能单独通过门禁。
 
-### 6. 确定性排名只处理已验收输入
+### 7. 确定性排名只处理已验收输入
 
 排序前冻结研究包，然后运行：
 
@@ -108,27 +127,41 @@ python3 scripts/rank_candidates.py \
   --queries <run-dir>/queries.tsv \
   --sources <run-dir>/sources.tsv \
   --evidence-cards <run-dir>/evidence_cards.tsv \
+  --platform-coverage <run-dir>/platform_coverage.tsv \
+  --lineage-manifest <run-dir>/rank-input-manifest.json \
+  --curator-acceptance <run-dir>/curate-result.json \
   --output-dir <new-nonexistent-output-dir> \
   --top 50
 ```
 
 脚本必须失败关闭：缺少研究上下文、证据引用不可解析、required 平台仍 pending、非公共 URL、账本不守恒或审核不独立时，不能产生完成通过。评分为相关性 35、来源质量 20、证据 20、平台内可比互动 15、新鲜/适用性 10；未观测互动得 0，不因样本数得到默认奖励。热度不改变证据等级。
 
+`rank-input-manifest.json` 必须在 curator 决策前冻结 ranker 实际读取的六个文件及其原始 SHA-256、记录数与 ID-set 摘要；curator 工件再绑定该 manifest。router 和 standalone ranker 都要在创建输出目录前核对同一组文件、候选/证据/来源集合，禁止 curator 验收集合 A 而 ranker 读取集合 B。
+
+冻结命令：
+
+```bash
+python3 scripts/lineage_contract.py freeze-rank-inputs \
+  --run-dir <run-dir> \
+  --run-id <run-id>
+```
+
 合格去重后不足 `top_n` 时交付真实 Top K 与缺口，禁止填充或声称 Top N 完成。平台覆盖与最终入选分布分别报告，不设平台保底名额。
 
-### 7. 先验收本地研究包
+### 8. 先验收本地研究包
 
 最低产物为：
 
 - `run_manifest.json`、`queries.tsv`、`sources.tsv`、`candidates.json`、`evidence_cards.tsv`；
 - `ranking.json`、`top.json`、`rejected.json`、`run_summary.json`、`package_validation.json`、`report.md`；
 - `source_gap_backlog.md` 与 `platform_coverage.tsv`。
+- `engine_probe.json`、`engine_plan.json` 与 `engine_execution.json`（执行过三引擎路由时）；其中必须能解释为何选择/跳过/降级每个后端。
 
 只在结构校验通过且 curator 完成语义验收后，把报告称为最终研究结果。机器绿灯不证明摘录真的支持主张。
 
 创建或大幅修改本 Skill 时，用 [前向验收场景](references/evaluation-scenarios.md) 做独立行为测试；普通运行不需要加载该文件。
 
-### 8. 飞书发布
+### 9. 飞书发布
 
 仅当本地包通过、主题非空、且当前命令明确要求新建/写入飞书时读取并执行 [飞书发布合同](references/feishu-publish.md)。使用 `lark-wiki` 管理空间/节点，使用 `lark-doc` 写正文；显式 `--as user`，逐阶段绑定真实 ID，查重、dry-run、执行、回读。
 

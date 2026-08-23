@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import csv
+import hashlib
 import json
 import subprocess
 import sys
@@ -18,6 +19,12 @@ assert SPEC and SPEC.loader
 ranking = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = ranking
 SPEC.loader.exec_module(ranking)
+
+LINEAGE_SCRIPT = SCRIPT.with_name("lineage_contract.py")
+LINEAGE_SPEC = importlib.util.spec_from_file_location("lineage_contract_test", LINEAGE_SCRIPT)
+assert LINEAGE_SPEC and LINEAGE_SPEC.loader
+lineage = importlib.util.module_from_spec(LINEAGE_SPEC)
+LINEAGE_SPEC.loader.exec_module(lineage)
 
 
 def candidate(identifier: str, *, url: str | None = None) -> dict[str, object]:
@@ -161,6 +168,146 @@ def context_from(payload: dict[str, object]):
     )
 
 
+def write_frozen_rank_inputs(root: Path, payload: dict[str, object]) -> dict[str, Path]:
+    paths = {
+        "candidates": root / "candidates.json",
+        "run_manifest": root / "run_manifest.json",
+        "queries": root / "queries.tsv",
+        "sources": root / "sources.tsv",
+        "evidence_cards": root / "evidence_cards.tsv",
+        "platform_coverage": root / "platform_coverage.tsv",
+    }
+    paths["candidates"].write_text(
+        json.dumps({"topic": payload["topic"], "candidates": payload["candidates"]}),
+        encoding="utf-8",
+    )
+    paths["run_manifest"].write_text(json.dumps(payload["run_manifest"]), encoding="utf-8")
+
+    def write_tsv(path: Path, rows: list[dict[str, object]]) -> None:
+        with path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(rows[0]), delimiter="\t", lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(rows)
+
+    write_tsv(paths["queries"], payload["queries"])
+    write_tsv(paths["sources"], payload["sources"])
+    write_tsv(paths["evidence_cards"], payload["evidence_cards"])
+    write_tsv(paths["platform_coverage"], payload["platform_coverage"])
+    manifest = lineage.build_rank_input_manifest(root, "run-test")
+    lineage_path = root / "rank-input-manifest.json"
+    lineage_path.write_text(json.dumps(manifest), encoding="utf-8")
+    process = {
+        "contract_version": "top50-process-result/v1",
+        "run_id": "run-test",
+        "stage": "process",
+        "status": "complete",
+        "producer": {"engine_id": "python-control-plane", "engine_version": "0.1.0"},
+        "input_bindings": [],
+        "processed_candidates": [
+            {"candidate_id": row["id"], "requires_fetch_time_dns_validation": False}
+            for row in payload["candidates"]
+        ],
+        "exact_clusters": [],
+        "near_duplicate_reviews": [],
+        "counts": {
+            "input_candidates": len(payload["candidates"]),
+            "processed_candidates": len(payload["candidates"]),
+            "exact_clusters": 0,
+            "exact_duplicate_candidates": 0,
+            "near_duplicate_reviews": 0,
+            "dns_validation_required": 0,
+        },
+    }
+    process["result_digest_sha256"] = lineage.canonical_json_sha256(process)
+    process_path = root / "process-result.json"
+    process_path.write_text(json.dumps(process), encoding="utf-8")
+
+    def stage_binding(relation: str, path: Path, artifact: dict[str, object], record_ids: list[str], record_kind: str) -> dict[str, object]:
+        return {
+            "relation": relation,
+            "path": str(path),
+            "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "contract": artifact["contract_version"],
+            "run_id": artifact["run_id"],
+            "stage": artifact["stage"],
+            "required_status": artifact["status"],
+            "producer_engine_id": artifact["producer"]["engine_id"],
+            "result_digest_sha256": artifact["result_digest_sha256"],
+            "record_kind": record_kind,
+            "record_count": len(record_ids),
+            "record_ids_sha256": lineage.canonical_json_sha256(sorted(record_ids)),
+        }
+
+    curator = {
+        "contract_version": "top50-curator-acceptance/v1",
+        "run_id": "run-test",
+        "stage": "curate",
+        "status": "accepted",
+        "producer": {"engine_id": "python-control-plane", "engine_version": "0.1.0"},
+        "input_bindings": [
+            stage_binding("process_result", process_path, process, [row["id"] for row in payload["candidates"]], "candidate"),
+            stage_binding("rank_input_manifest", lineage_path, manifest, [row["input_id"] for row in manifest["files"]], "file"),
+        ],
+        "curator": {"id": "curator-1"},
+        "worker_ids": ["worker-1"],
+        "decisions": [
+            {
+                "candidate_id": row["id"],
+                "decision": "accepted",
+                "evidence_ids": row["evidence_ids"],
+                "reason_codes": [],
+            }
+            for row in payload["candidates"]
+        ],
+        "accepted_candidate_ids": [row["id"] for row in payload["candidates"]],
+        "evidence_ledger_binding": {
+            "artifact_sha256": next(row["artifact_sha256"] for row in manifest["files"] if row["input_id"] == "evidence_cards")
+        },
+        "source_ledger_binding": {
+            "artifact_sha256": next(row["artifact_sha256"] for row in manifest["files"] if row["input_id"] == "sources")
+        },
+        "counts": {
+            "input_candidates": len(payload["candidates"]),
+            "accepted": len(payload["candidates"]),
+            "rejected": 0,
+            "blocked": 0,
+        },
+    }
+    curator["result_digest_sha256"] = lineage.canonical_json_sha256(curator)
+    curator_path = root / "curate-result.json"
+    curator_path.write_text(json.dumps(curator), encoding="utf-8")
+    return {**paths, "lineage": lineage_path, "curator": curator_path}
+
+
+def frozen_rank_cli_command(
+    paths: dict[str, Path], output: Path, *, top: int = 1
+) -> list[str]:
+    return [
+        sys.executable,
+        str(SCRIPT),
+        "--input",
+        str(paths["candidates"]),
+        "--manifest",
+        str(paths["run_manifest"]),
+        "--queries",
+        str(paths["queries"]),
+        "--sources",
+        str(paths["sources"]),
+        "--evidence-cards",
+        str(paths["evidence_cards"]),
+        "--platform-coverage",
+        str(paths["platform_coverage"]),
+        "--lineage-manifest",
+        str(paths["lineage"]),
+        "--curator-acceptance",
+        str(paths["curator"]),
+        "--output-dir",
+        str(output),
+        "--top",
+        str(top),
+    ]
+
+
 class RankingGateTests(unittest.TestCase):
     def test_candidate_self_report_cannot_replace_run_and_evidence_context(self) -> None:
         with self.assertRaisesRegex(ValueError, "research context"):
@@ -234,6 +381,143 @@ class RankingGateTests(unittest.TestCase):
                 rows, top_n=1, context=context_from(payload), topic="test topic"
             )
 
+    def test_platform_ledgers_cannot_be_relabeled_to_fake_required_coverage(self) -> None:
+        rows = [candidate("one")]
+        payload = bundle(rows)
+        for row in payload["queries"]:
+            row["platform"] = "youtube"
+        for row in payload["platform_coverage"]:
+            row["platform"] = "youtube"
+        for row in payload["run_manifest"]["coverage"]:
+            row["platform"] = "youtube"
+        payload["run_manifest"]["scope"]["required_platforms"] = ["youtube"]
+
+        with self.assertRaisesRegex(ValueError, "candidate platform counts"):
+            ranking.rank_candidates(
+                rows, top_n=1, context=context_from(payload), topic="test topic"
+            )
+
+    def test_source_and_query_platforms_must_exist_in_coverage(self) -> None:
+        mutations = (
+            (
+                lambda payload: payload["sources"][0].__setitem__("platform", "youtube"),
+                "source platform lacks coverage",
+            ),
+            (
+                lambda payload: payload["queries"][0].__setitem__("platform", "youtube"),
+                "query platform lacks coverage",
+            ),
+        )
+        for mutate, message in mutations:
+            rows = [candidate("one")]
+            payload = bundle(rows)
+            mutate(payload)
+
+            with self.subTest(message=message), self.assertRaisesRegex(ValueError, message):
+                ranking.rank_candidates(
+                    rows, top_n=1, context=context_from(payload), topic="test topic"
+                )
+
+    def test_fetched_platform_count_requires_enough_successful_source_rows(self) -> None:
+        rows = [candidate("one"), candidate("two")]
+        payload = bundle(rows)
+        payload["sources"] = payload["sources"][:1]
+        payload["evidence_cards"] = payload["evidence_cards"][:1]
+        payload["run_manifest"]["counts"]["sources"] = 1
+        payload["run_manifest"]["counts"]["evidence_cards"] = 1
+
+        with self.assertRaisesRegex(ValueError, "source counts.*fetched"):
+            ranking.rank_candidates(
+                rows, top_n=2, context=context_from(payload), topic="test topic"
+            )
+
+    def test_candidate_direct_source_cannot_claim_another_platform(self) -> None:
+        rows = [candidate("one")]
+        payload = bundle(rows)
+        payload["sources"][0]["platform"] = "youtube"
+        youtube_coverage = {
+            "platform": "youtube",
+            "coverage_status": "complete",
+            "discovered_count": 0,
+            "fetched_count": 0,
+            "eligible_count": 0,
+            "blocked_count": 0,
+            "rejected_count": 0,
+        }
+        payload["platform_coverage"].append(youtube_coverage)
+        payload["run_manifest"]["counts"]["platforms"] = 2
+        payload["queries"].extend(
+            [
+                {
+                    "platform": "youtube",
+                    "query": "topic exact",
+                    "backend": "public_search",
+                    "executed_at": "2026-08-23T08:10:00+08:00",
+                    "status": "complete",
+                    "candidate_count": 0,
+                },
+                {
+                    "platform": "youtube",
+                    "query": "topic practical guide",
+                    "backend": "public_search",
+                    "executed_at": "2026-08-23T08:15:00+08:00",
+                    "status": "complete",
+                    "candidate_count": 0,
+                },
+            ]
+        )
+        payload["run_manifest"]["counts"]["queries"] = 4
+
+        with self.assertRaisesRegex(ValueError, "direct source platform"):
+            ranking.rank_candidates(
+                rows, top_n=1, context=context_from(payload), topic="test topic"
+            )
+
+    def test_per_platform_candidate_counts_must_match_coverage(self) -> None:
+        first = candidate("github-one")
+        second = candidate("youtube-one")
+        second["platform"] = "youtube"
+        payload = bundle([first, second])
+        coverage = {
+            row["platform"]: row for row in payload["platform_coverage"]
+        }
+        manifest_coverage = {
+            row["platform"]: row for row in payload["run_manifest"]["coverage"]
+        }
+        for ledger in (coverage, manifest_coverage):
+            for key in ("discovered_count", "fetched_count", "eligible_count"):
+                ledger["github"][key] = 0
+                ledger["youtube"][key] = 2
+
+        with self.assertRaisesRegex(ValueError, "candidate platform counts"):
+            ranking.rank_candidates(
+                [first, second],
+                top_n=2,
+                context=context_from(payload),
+                topic="test topic",
+            )
+
+    def test_query_candidate_counts_must_cover_platform_discoveries(self) -> None:
+        rows = [candidate("one")]
+        payload = bundle(rows)
+        for query in payload["queries"]:
+            query["candidate_count"] = 0
+
+        with self.assertRaisesRegex(ValueError, "query candidate counts"):
+            ranking.rank_candidates(
+                rows, top_n=1, context=context_from(payload), topic="test topic"
+            )
+
+    def test_platform_aliases_cannot_disagree_inside_one_ledger_row(self) -> None:
+        rows = [candidate("one")]
+        payload = bundle(rows)
+        payload["sources"][0]["platform_id"] = "youtube"
+
+        with self.assertRaisesRegex(ValueError, "conflicting platform aliases"):
+            ranking.rank_candidates(
+                rows, top_n=1, context=context_from(payload), topic="test topic"
+            )
+
     def test_candidate_requires_linked_accepted_evidence_card(self) -> None:
         rows = [candidate("one")]
         payload = bundle(rows)
@@ -273,6 +557,22 @@ class RankingGateTests(unittest.TestCase):
 
 
 class UrlAndDedupeTests(unittest.TestCase):
+    def test_canonical_url_matches_shared_cross_language_fixture(self) -> None:
+        fixture_path = (
+            Path(__file__).parents[1]
+            / "engines"
+            / "rust-processor"
+            / "tests"
+            / "fixtures"
+            / "canonical-url-v1.json"
+        )
+        fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(fixture["contract_version"], "top50-canonical-url-fixture/v1")
+        for case in fixture["accepted"]:
+            with self.subTest(case=case["name"]):
+                self.assertEqual(ranking.canonical_url(case["input"]), case["canonical_url"])
+
     def test_http_and_https_are_one_canonical_public_url(self) -> None:
         self.assertEqual(
             ranking.canonical_url("http://www.example.com/a/?utm_source=x#part"),
@@ -427,21 +727,11 @@ class EngagementAndCliTests(unittest.TestCase):
         payload = bundle([candidate("one")])
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            input_path = root / "candidates.json"
+            paths = write_frozen_rank_inputs(root, payload)
             output_path = root / "out"
-            input_path.write_text(json.dumps(payload), encoding="utf-8")
 
             completed = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "--input",
-                    str(input_path),
-                    "--output-dir",
-                    str(output_path),
-                    "--top",
-                    "1",
-                ],
+                frozen_rank_cli_command(paths, output_path),
                 capture_output=True,
                 text=True,
                 check=False,
@@ -468,26 +758,71 @@ class EngagementAndCliTests(unittest.TestCase):
             self.assertEqual(validation["status"], "pass")
             self.assertTrue(validation["count_conservation_passed"])
 
+    def test_cli_requires_both_lineage_artifacts_before_creating_output(self) -> None:
+        payload = bundle([candidate("one")])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = write_frozen_rank_inputs(root, payload)
+            base_command = [
+                sys.executable,
+                str(SCRIPT),
+                "--input",
+                str(paths["candidates"]),
+                "--manifest",
+                str(paths["run_manifest"]),
+                "--queries",
+                str(paths["queries"]),
+                "--sources",
+                str(paths["sources"]),
+                "--evidence-cards",
+                str(paths["evidence_cards"]),
+                "--platform-coverage",
+                str(paths["platform_coverage"]),
+                "--top",
+                "1",
+            ]
+            missing_cases = {
+                "both": [],
+                "lineage_manifest": [
+                    "--curator-acceptance",
+                    str(paths["curator"]),
+                ],
+                "curator_acceptance": [
+                    "--lineage-manifest",
+                    str(paths["lineage"]),
+                ],
+            }
+
+            for label, lineage_args in missing_cases.items():
+                output = root / f"ranking-output-{label}"
+                completed = subprocess.run(
+                    [
+                        *base_command,
+                        *lineage_args,
+                        "--output-dir",
+                        str(output),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+
+                with self.subTest(missing=label):
+                    self.assertEqual(completed.returncode, 2, completed.stderr)
+                    self.assertIn("lineage-manifest", completed.stderr)
+                    self.assertIn("curator-acceptance", completed.stderr)
+                    self.assertFalse(output.exists())
+
     def test_cli_failure_does_not_leave_a_partial_output_directory(self) -> None:
         payload = bundle([candidate("one")])
         payload["run_manifest"]["counts"]["queries"] = 999
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            input_path = root / "candidates.json"
+            paths = write_frozen_rank_inputs(root, payload)
             output_path = root / "out"
-            input_path.write_text(json.dumps(payload), encoding="utf-8")
 
             completed = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "--input",
-                    str(input_path),
-                    "--output-dir",
-                    str(output_path),
-                    "--top",
-                    "1",
-                ],
+                frozen_rank_cli_command(paths, output_path),
                 capture_output=True,
                 text=True,
                 check=False,
@@ -501,22 +836,12 @@ class EngagementAndCliTests(unittest.TestCase):
         payload = bundle([candidate("one")])
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            input_path = root / "candidates.json"
+            paths = write_frozen_rank_inputs(root, payload)
             output_path = root / "out"
-            input_path.write_text(json.dumps(payload), encoding="utf-8")
             output_path.mkdir()
 
             completed = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "--input",
-                    str(input_path),
-                    "--output-dir",
-                    str(output_path),
-                    "--top",
-                    "1",
-                ],
+                frozen_rank_cli_command(paths, output_path),
                 capture_output=True,
                 text=True,
                 check=False,
@@ -547,34 +872,25 @@ class ExtendedBehaviorTests(unittest.TestCase):
                 [row], top_n=1, context=context_from(payload), topic="test topic"
             )
 
-    def test_cli_rejects_candidate_without_a_stable_id(self) -> None:
-        row = candidate("missing-id")
-        payload = bundle([row])
-        row.pop("id")
+    def test_cli_rejects_candidate_id_removal_after_lineage_freeze(self) -> None:
+        payload = bundle([candidate("missing-id")])
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            input_path = root / "candidates.json"
+            paths = write_frozen_rank_inputs(root, payload)
             output_path = root / "out"
-            input_path.write_text(json.dumps(payload), encoding="utf-8")
+            rewritten = json.loads(paths["candidates"].read_text(encoding="utf-8"))
+            rewritten["candidates"][0].pop("id")
+            paths["candidates"].write_text(json.dumps(rewritten), encoding="utf-8")
 
             completed = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "--input",
-                    str(input_path),
-                    "--output-dir",
-                    str(output_path),
-                    "--top",
-                    "1",
-                ],
+                frozen_rank_cli_command(paths, output_path),
                 capture_output=True,
                 text=True,
                 check=False,
             )
 
             self.assertEqual(completed.returncode, 2)
-            self.assertIn("stable ID", completed.stderr)
+            self.assertIn("lineage", completed.stderr)
             self.assertFalse(output_path.exists())
 
     def test_observed_engagement_is_scored_and_normalized(self) -> None:
@@ -748,46 +1064,27 @@ class ExtendedBehaviorTests(unittest.TestCase):
                     rows, top_n=1, context=context_from(payload), topic="test topic"
                 )
 
-    def test_cli_accepts_separate_tsv_context_files(self) -> None:
+    def test_cli_accepts_separate_frozen_tsv_context_files(self) -> None:
         payload = bundle([candidate("one")])
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            candidate_path = root / "candidates.json"
-            manifest_path = root / "run_manifest.json"
-            candidate_path.write_text(json.dumps({"topic": payload["topic"], "candidates": payload["candidates"]}), encoding="utf-8")
-            manifest_path.write_text(json.dumps(payload["run_manifest"]), encoding="utf-8")
-
-            def write_tsv(name: str, rows: list[dict[str, object]]) -> Path:
-                path = root / name
-                fields = list(dict.fromkeys(key for row in rows for key in row))
-                with path.open("w", encoding="utf-8", newline="") as handle:
-                    writer = csv.DictWriter(handle, fieldnames=fields, delimiter="\t")
-                    writer.writeheader()
-                    writer.writerows(rows)
-                return path
-
-            queries = write_tsv("queries.tsv", payload["queries"])
-            sources = write_tsv("sources.tsv", payload["sources"])
-            evidence = write_tsv("evidence_cards.tsv", payload["evidence_cards"])
-            coverage = write_tsv("platform_coverage.tsv", payload["platform_coverage"])
+            paths = write_frozen_rank_inputs(root, payload)
             output = root / "out"
-            completed = subprocess.run([
-                sys.executable, str(SCRIPT), "--input", str(candidate_path),
-                "--manifest", str(manifest_path), "--queries", str(queries),
-                "--sources", str(sources), "--evidence-cards", str(evidence),
-                "--platform-coverage", str(coverage), "--output-dir", str(output),
-                "--top", "1",
-            ], capture_output=True, text=True, check=False)
+            completed = subprocess.run(
+                frozen_rank_cli_command(paths, output),
+                capture_output=True,
+                text=True,
+                check=False,
+            )
 
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertTrue((output / "package_validation.json").exists())
 
-    def test_direct_bundle_roundtrip_exposes_contract_fields_and_validates_files(self) -> None:
+    def test_direct_unbound_bundle_loader_is_rejected(self) -> None:
         payload = bundle([candidate("one")])
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             input_path = root / "bundle.json"
-            output_path = root / "out"
             input_path.write_text(json.dumps(payload), encoding="utf-8")
             args = SimpleNamespace(
                 input=input_path,
@@ -798,30 +1095,8 @@ class ExtendedBehaviorTests(unittest.TestCase):
                 platform_coverage=None,
             )
 
-            topic, rows, context = ranking.load_bundle(args)
-            result = ranking.rank_candidates(
-                rows, top_n=1, context=context, topic=topic
-            )
-            ranking.write_package(output_path, topic, rows, context, result)
-
-            self.assertEqual(
-                {path.name for path in output_path.iterdir()}, ranking.PACKAGE_FILES
-            )
-            output = json.loads((output_path / "ranking.json").read_text())
-            gaps = (output_path / "source_gap_backlog.md").read_text()
-            selected = output["ranked_candidates"][0]
-            self.assertEqual(output["ranking_version"], "deterministic-v2")
-            self.assertEqual(output["score_model"]["name"], "deterministic-v2")
-            self.assertEqual(output["requested_top_n"], 1)
-            self.assertEqual(output["actual_count"], 1)
-            self.assertEqual(selected["platform_id"], "github")
-            self.assertEqual(selected["creator_name"], "Example Author")
-            self.assertEqual(
-                selected["total_score"],
-                sum(selected[f"{name}_score"] for name in ranking.SCORE_WEIGHTS),
-            )
-            self.assertIn("短缺：0 条", gaps)
-            self.assertIn("未入选原因摘要", gaps)
+            with self.assertRaisesRegex(ValueError, "lineage-manifest"):
+                ranking.load_bundle(args)
 
     def test_gap_backlog_reports_shortfall_coverage_and_rejection_counts(self) -> None:
         good = candidate("good")
@@ -860,6 +1135,120 @@ class ExtendedBehaviorTests(unittest.TestCase):
                 rows, top_n=1, context=context_from(payload), topic="test topic"
             )
 
+    def test_cli_frozen_lineage_succeeds_before_writing_package(self) -> None:
+        payload = bundle([candidate("one")])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = write_frozen_rank_inputs(root, payload)
+            output = root / "ranking-output"
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--input",
+                    str(paths["candidates"]),
+                    "--manifest",
+                    str(paths["run_manifest"]),
+                    "--queries",
+                    str(paths["queries"]),
+                    "--sources",
+                    str(paths["sources"]),
+                    "--evidence-cards",
+                    str(paths["evidence_cards"]),
+                    "--platform-coverage",
+                    str(paths["platform_coverage"]),
+                    "--lineage-manifest",
+                    str(paths["lineage"]),
+                    "--curator-acceptance",
+                    str(paths["curator"]),
+                    "--output-dir",
+                    str(output),
+                    "--top",
+                    "1",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertTrue((output / "package_validation.json").is_file())
+
+    def test_cli_rejects_curator_a_rank_b_without_creating_output(self) -> None:
+        payload = bundle([candidate("accepted-a")])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = write_frozen_rank_inputs(root, payload)
+            replacement = candidate("replacement-b")
+            paths["candidates"].write_text(
+                json.dumps({"topic": "test topic", "candidates": [replacement]}),
+                encoding="utf-8",
+            )
+            output = root / "ranking-output"
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--input",
+                    str(paths["candidates"]),
+                    "--manifest",
+                    str(paths["run_manifest"]),
+                    "--queries",
+                    str(paths["queries"]),
+                    "--sources",
+                    str(paths["sources"]),
+                    "--evidence-cards",
+                    str(paths["evidence_cards"]),
+                    "--platform-coverage",
+                    str(paths["platform_coverage"]),
+                    "--lineage-manifest",
+                    str(paths["lineage"]),
+                    "--curator-acceptance",
+                    str(paths["curator"]),
+                    "--output-dir",
+                    str(output),
+                    "--top",
+                    "1",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 2)
+            self.assertIn("lineage", completed.stderr)
+            self.assertFalse(output.exists())
+
+    def test_cli_rejects_curator_set_drift_without_creating_output(self) -> None:
+        payload = bundle([candidate("one")])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = write_frozen_rank_inputs(root, payload)
+            curator_payload = json.loads(paths["curator"].read_text(encoding="utf-8"))
+            curator_payload["accepted_candidate_ids"] = []
+            curator_payload["result_digest_sha256"] = lineage.canonical_json_sha256(
+                {
+                    key: value
+                    for key, value in curator_payload.items()
+                    if key != "result_digest_sha256"
+                }
+            )
+            paths["curator"].write_text(json.dumps(curator_payload), encoding="utf-8")
+            output = root / "ranking-output"
+            args = SimpleNamespace(
+                input=paths["candidates"],
+                manifest=paths["run_manifest"],
+                queries=paths["queries"],
+                sources=paths["sources"],
+                evidence_cards=paths["evidence_cards"],
+                platform_coverage=paths["platform_coverage"],
+                lineage_manifest=paths["lineage"],
+                curator_acceptance=paths["curator"],
+            )
+
+            with self.assertRaisesRegex(ValueError, "accepted candidate IDs"):
+                ranking.load_bundle(args)
+            self.assertFalse(output.exists())
 
 if __name__ == "__main__":
     unittest.main()

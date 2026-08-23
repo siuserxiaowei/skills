@@ -1,0 +1,35 @@
+{
+  "contract_version": "top50-canonical-url-fixture/v1",
+  "accepted": [
+    {
+      "name": "http_https_www_path_and_tracking_identity",
+      "input": "http://www.Example.com:80/a//b///?utm_campaign=test&ref=feed&spm=123&z=9#section",
+      "canonical_url": "https://example.com/a/b?z=9",
+      "requires_fetch_time_dns_validation": true
+    },
+    {
+      "name": "query_order_and_known_tracking_parameters",
+      "input": "https://example.com/watch?xhstrackerid=abc&v=42&mc_eid=def&a=1",
+      "canonical_url": "https://example.com/watch?a=1&v=42",
+      "requires_fetch_time_dns_validation": true
+    },
+    {
+      "name": "preserve_parameters_outside_shared_tracking_contract",
+      "input": "https://example.com/watch?dclid=content-sensitive&v=42",
+      "canonical_url": "https://example.com/watch?dclid=content-sensitive&v=42",
+      "requires_fetch_time_dns_validation": true
+    },
+    {
+      "name": "public_ip_does_not_claim_dns_requirement",
+      "input": "http://8.8.8.8:80/dns-query/",
+      "canonical_url": "https://8.8.8.8/dns-query",
+      "requires_fetch_time_dns_validation": false
+    },
+    {
+      "name": "public_ipv6_preserves_url_brackets",
+      "input": "http://[2606:4700:4700::1111]:80/dns-query/",
+      "canonical_url": "https://[2606:4700:4700::1111]/dns-query",
+      "requires_fetch_time_dns_validation": false
+    }
+  ]
+}

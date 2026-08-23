@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-router-request/v1",
+  "title": "Cross-platform Top 50 engine router request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "run_id",
+    "stage",
+    "workload",
+    "source_kind",
+    "risk",
+    "required_capabilities",
+    "engine_mode",
+    "dual_run"
+  ],
+  "properties": {
+    "schema": {"const": "top50-router-request/v1"},
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "stage": {"enum": ["discovery", "fetch", "process", "rank", "full"]},
+    "workload": {"enum": ["small", "medium", "large"]},
+    "source_kind": {
+      "enum": ["public_http", "platform_cli", "browser_session", "local_bundle"]
+    },
+    "risk": {"enum": ["low", "medium", "high"]},
+    "required_capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "engine_mode": {"enum": ["auto", "python", "go", "rust", "hybrid"]},
+    "dual_run": {"type": "boolean"},
+    "engine_paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "python": {"type": "string", "minLength": 1},
+        "go": {"type": "string", "minLength": 1},
+        "rust": {"type": "string", "minLength": 1}
+      }
+    },
+    "run_dir": {"type": "string", "minLength": 1},
+    "top_n": {"type": "integer", "minimum": 1, "maximum": 100},
+    "timeout_seconds": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 3600
+    },
+    "public_http_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_path",
+        "manifest_artifact_sha256",
+        "job_set_sha256",
+        "job_count"
+      ],
+      "properties": {
+        "manifest_path": {"type": "string", "minLength": 1},
+        "manifest_artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "job_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "job_count": {"type": "integer", "minimum": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source_kind": {"const": "public_http"},
+          "stage": {"enum": ["fetch", "full"]}
+        },
+        "required": ["source_kind", "stage"]
+      },
+      "then": {"required": ["public_http_binding"]},
+      "else": {"not": {"required": ["public_http_binding"]}}
+    }
+  ]
+}

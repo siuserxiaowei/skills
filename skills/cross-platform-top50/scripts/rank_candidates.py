@@ -22,6 +22,29 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
+try:
+    from lineage_contract import (
+        LineageError,
+        validate_curator_against_rank_bundle,
+        validate_rank_input_manifest,
+    )
+except ImportError:  # pragma: no cover - supports importlib-based unit tests
+    import importlib.util
+
+    _LINEAGE_PATH = Path(__file__).with_name("lineage_contract.py")
+    _LINEAGE_SPEC = importlib.util.spec_from_file_location(
+        "top50_lineage_contract", _LINEAGE_PATH
+    )
+    if _LINEAGE_SPEC is None or _LINEAGE_SPEC.loader is None:
+        raise
+    _LINEAGE = importlib.util.module_from_spec(_LINEAGE_SPEC)
+    _LINEAGE_SPEC.loader.exec_module(_LINEAGE)
+    LineageError = _LINEAGE.LineageError
+    validate_curator_against_rank_bundle = (
+        _LINEAGE.validate_curator_against_rank_bundle
+    )
+    validate_rank_input_manifest = _LINEAGE.validate_rank_input_manifest
+
 
 TRACKING_PARAMETERS = {
     "fbclid", "gclid", "igshid", "mc_cid", "mc_eid", "ref", "ref_src",
@@ -220,7 +243,8 @@ def canonical_url(value: str) -> str:
     if host.startswith("www."):
         host = host[4:]
     port = parts.port
-    netloc = host if not port or port in {80, 443} else f"{host}:{port}"
+    url_host = f"[{host}]" if ":" in host else host
+    netloc = url_host if not port or port in {80, 443} else f"{url_host}:{port}"
     path = re.sub(r"/{2,}", "/", parts.path or "/")
     if path != "/":
         path = path.rstrip("/")
@@ -358,6 +382,31 @@ def _id_index(rows: list[dict[str, Any]], key: str, label: str) -> dict[str, dic
     return result
 
 
+def _platform_value(row: dict[str, Any], label: str) -> str:
+    """Return one non-empty platform value and reject ambiguous aliases."""
+    platform = row.get("platform")
+    platform_id = row.get("platform_id")
+    for field, value in (("platform", platform), ("platform_id", platform_id)):
+        if value is not None and (not isinstance(value, str) or not value.strip()):
+            raise ValueError(f"{label} has invalid {field}")
+    if isinstance(platform, str) and isinstance(platform_id, str) and platform != platform_id:
+        raise ValueError(f"{label} has conflicting platform aliases")
+    value = platform if isinstance(platform, str) else platform_id
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{label} missing platform")
+    return value
+
+
+def _platform_counts(rows: list[Any], label: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict):
+            raise ValueError(f"{label} row {index + 1} must be an object")
+        platform = _platform_value(row, f"{label} row {index + 1}")
+        counts[platform] = counts.get(platform, 0) + 1
+    return counts
+
+
 def validate_context(context: ResearchContext, rows: list[Any], topic: str) -> None:
     manifest = context.manifest
     if not isinstance(manifest, dict):
@@ -404,11 +453,10 @@ def validate_context(context: ResearchContext, rows: list[Any], topic: str) -> N
     if not isinstance(discovered, int) or isinstance(discovered, bool) or discovered != len(rows):
         raise ValueError("discovered candidate count is not conserved")
 
+    candidate_platform_counts = _platform_counts(rows, "candidate")
     coverage_by_platform: dict[str, dict[str, Any]] = {}
     for item in context.platform_coverage:
-        platform = item.get("platform") or item.get("platform_id")
-        if not isinstance(platform, str) or not platform:
-            raise ValueError("platform coverage row missing platform")
+        platform = _platform_value(item, "platform coverage row")
         if platform in coverage_by_platform:
             raise ValueError(f"duplicate platform coverage: {platform}")
         coverage_by_platform[platform] = item
@@ -429,14 +477,23 @@ def validate_context(context: ResearchContext, rows: list[Any], topic: str) -> N
             raise ValueError(f"platform coverage counts are not conserved: {platform}")
     if sum(int(item.get("discovered_count", 0)) for item in context.platform_coverage) != discovered:
         raise ValueError("manifest and platform coverage discovered counts do not match")
+    coverage_candidate_counts = {
+        platform: int(item.get("discovered_count", 0))
+        for platform, item in coverage_by_platform.items()
+        if int(item.get("discovered_count", 0)) > 0
+    }
+    if candidate_platform_counts != coverage_candidate_counts:
+        raise ValueError("candidate platform counts and platform coverage disagree")
     manifest_coverage = manifest.get("coverage")
     if manifest_coverage is not None:
         manifest_rows = _as_rows(manifest_coverage, "manifest coverage")
-        manifest_by_platform = {
-            str(item.get("platform") or item.get("platform_id") or ""): item
-            for item in manifest_rows
-        }
-        if "" in manifest_by_platform or set(manifest_by_platform) != set(coverage_by_platform):
+        manifest_by_platform: dict[str, dict[str, Any]] = {}
+        for item in manifest_rows:
+            platform = _platform_value(item, "manifest coverage row")
+            if platform in manifest_by_platform:
+                raise ValueError(f"duplicate manifest coverage: {platform}")
+            manifest_by_platform[platform] = item
+        if set(manifest_by_platform) != set(coverage_by_platform):
             raise ValueError("manifest and platform coverage ledgers disagree")
         for platform, item in coverage_by_platform.items():
             manifest_item = manifest_by_platform[platform]
@@ -453,19 +510,31 @@ def validate_context(context: ResearchContext, rows: list[Any], topic: str) -> N
     required = scope.get("required_platforms", [])
     if not isinstance(required, list):
         raise ValueError("required_platforms must be an array")
+    if any(not isinstance(platform, str) or not platform for platform in required):
+        raise ValueError("required_platforms must contain non-empty strings")
+    if len(required) != len(set(required)):
+        raise ValueError("required_platforms must not contain duplicates")
     for platform in required:
         if platform not in coverage_by_platform:
             raise ValueError(f"required platform lacks coverage: {platform}")
     query_platform_counts: dict[str, int] = {}
+    query_candidate_counts: dict[str, int] = {}
     for item in context.queries:
-        for field in ("platform", "query", "backend", "executed_at", "status", "candidate_count"):
+        platform = _platform_value(item, "query row")
+        if platform not in coverage_by_platform:
+            raise ValueError(f"query platform lacks coverage: {platform}")
+        for field in ("query", "backend", "executed_at", "status", "candidate_count"):
             if field not in item or item[field] in (None, ""):
                 raise ValueError(f"query row missing {field}")
         if item.get("status") not in HANDLED_COVERAGE:
             raise ValueError(f"query has pending or invalid status: {item.get('query')}")
         if not isinstance(item.get("candidate_count"), int) or item["candidate_count"] < 0:
             raise ValueError("query candidate_count must be a non-negative integer")
-        query_platform_counts[str(item["platform"])] = query_platform_counts.get(str(item["platform"]), 0) + 1
+        query_platform_counts[platform] = query_platform_counts.get(platform, 0) + 1
+        query_candidate_counts[platform] = query_candidate_counts.get(platform, 0) + int(item["candidate_count"])
+    for platform, coverage in coverage_by_platform.items():
+        if query_candidate_counts.get(platform, 0) < int(coverage.get("discovered_count", 0)):
+            raise ValueError(f"query candidate counts do not cover discoveries: {platform}")
     for platform in required:
         status = coverage_by_platform[platform].get("coverage_status") or coverage_by_platform[platform].get("status")
         if status == "complete" and query_platform_counts.get(str(platform), 0) < 2:
@@ -477,11 +546,17 @@ def validate_context(context: ResearchContext, rows: list[Any], topic: str) -> N
             raise ValueError("20+ platform completion claim lacks 20 handled and 12 recalled platforms")
 
     source_index = _id_index(context.sources, "source_id", "source")
+    successful_source_counts: dict[str, int] = {}
     for source in context.sources:
+        platform = _platform_value(source, "source row")
+        if platform not in coverage_by_platform:
+            raise ValueError(f"source platform lacks coverage: {platform}")
         if source.get("status") not in SOURCE_ALLOWED | {"blocked", "rejected"}:
             raise ValueError(f"source has pending or invalid status: {source.get('source_id')}")
         if source.get("status") in SOURCE_ALLOWED and not is_safe_public_url(source.get("url")):
             raise ValueError(f"source is not a safe public URL: {source.get('source_id')}")
+        if source.get("status") in SOURCE_ALLOWED:
+            successful_source_counts[platform] = successful_source_counts.get(platform, 0) + 1
     evidence_index = _id_index(context.evidence_cards, "evidence_id", "evidence card")
     for card in context.evidence_cards:
         if card.get("reviewer_id") != curator_id:
@@ -509,6 +584,30 @@ def validate_context(context: ResearchContext, rows: list[Any], topic: str) -> N
                 f"evidence card supports must be one of {sorted(SUPPORT_TYPES)}: "
                 f"{card.get('evidence_id')}"
             )
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict) or not is_safe_public_url(row.get("url")):
+            continue
+        candidate_platform = _platform_value(row, f"candidate row {index + 1}")
+        candidate_url = canonical_url(str(row["url"]))
+        evidence_ids = row.get("evidence_ids")
+        if not isinstance(evidence_ids, list):
+            continue
+        for evidence_id in evidence_ids:
+            card = evidence_index.get(str(evidence_id))
+            source = source_index.get(str(card.get("source_id"))) if card else None
+            if (
+                source is not None
+                and source.get("status") in SOURCE_ALLOWED
+                and canonical_url(str(source.get("url", ""))) == candidate_url
+                and _platform_value(source, "source row") != candidate_platform
+            ):
+                raise ValueError(
+                    f"candidate direct source platform mismatch: {row.get('id') or row.get('candidate_id')}"
+                )
+    for platform, coverage in coverage_by_platform.items():
+        fetched_count = int(coverage.get("fetched_count", 0))
+        if successful_source_counts.get(platform, 0) < fetched_count:
+            raise ValueError(f"source counts do not support fetched coverage: {platform}")
     # The indexes are constructed here so malformed bundles fail before ranking.
     if not evidence_index and rows:
         raise ValueError("research context has no evidence cards")
@@ -791,35 +890,63 @@ def _read_tsv(path: Path, label: str) -> list[dict[str, Any]]:
 
 
 def load_bundle(args: argparse.Namespace) -> tuple[str, list[Any], ResearchContext]:
-    payload = _read_json(args.input, "candidate input")
+    lineage_manifest = getattr(args, "lineage_manifest", None)
+    curator_acceptance = getattr(args, "curator_acceptance", None)
+    if lineage_manifest is None or curator_acceptance is None:
+        raise ValueError(
+            "--lineage-manifest and --curator-acceptance are required"
+        )
+    try:
+        raw_curator = curator_acceptance.read_bytes()
+        curator = json.loads(raw_curator.decode("utf-8"))
+        if not isinstance(curator, dict):
+            raise ValueError("curator acceptance root must be an object")
+        run_id = curator.get("run_id")
+        if not isinstance(run_id, str) or not run_id:
+            raise ValueError("curator acceptance run_id is required")
+        frozen = validate_rank_input_manifest(lineage_manifest, run_id)
+        validate_curator_against_rank_bundle(curator, frozen, run_id)
+    except (LineageError, OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"rank input lineage validation failed: {exc}") from exc
+    paths = frozen["paths"]
+    expected_paths = {
+        "input": args.input,
+        "manifest": args.manifest,
+        "queries": args.queries,
+        "sources": args.sources,
+        "evidence_cards": args.evidence_cards,
+        "platform_coverage": args.platform_coverage,
+    }
+    manifest_keys = {
+        "input": "candidates",
+        "manifest": "run_manifest",
+        "queries": "queries",
+        "sources": "sources",
+        "evidence_cards": "evidence_cards",
+        "platform_coverage": "platform_coverage",
+    }
+    if any(
+        value is None
+        or Path(value).resolve(strict=False) != paths[manifest_keys[key]]
+        for key, value in expected_paths.items()
+    ):
+        raise ValueError("rank CLI paths do not match the frozen lineage manifest")
+    parsed = frozen["inputs"]
+    payload = parsed["candidates"]
     if isinstance(payload, list):
         payload = {"candidates": payload}
-    if not isinstance(payload, dict):
-        raise ValueError("input root must be an object or candidate array")
-    topic = normalized_topic(str(payload.get("topic") or ""))
+    topic = normalized_topic(
+        str(payload.get("topic") or parsed["run_manifest"].get("topic") or "")
+    )
     candidates = payload.get("candidates")
     if not isinstance(candidates, list):
         raise ValueError("candidates must be an array")
-    identifiers = [
-        row.get("id") or row.get("candidate_id") for row in candidates if isinstance(row, dict)
-    ]
-    duplicates = sorted({identifier for identifier in identifiers if identifier and identifiers.count(identifier) > 1})
-    if duplicates:
-        raise ValueError(f"duplicate candidate IDs: {', '.join(str(item) for item in duplicates)}")
-
-    manifest = _read_json(args.manifest, "manifest") if args.manifest else payload.get("run_manifest")
-    queries = _read_tsv(args.queries, "queries") if args.queries else payload.get("queries")
-    sources = _read_tsv(args.sources, "sources") if args.sources else payload.get("sources")
-    evidence = _read_tsv(args.evidence_cards, "evidence cards") if args.evidence_cards else payload.get("evidence_cards")
-    coverage_path = getattr(args, "platform_coverage", None)
-    coverage = _read_tsv(coverage_path, "platform coverage") if coverage_path else payload.get("platform_coverage")
-    if coverage is None and isinstance(manifest, dict):
-        coverage = manifest.get("coverage")
     context = ResearchContext(
-        manifest=manifest if isinstance(manifest, dict) else {},
-        queries=_as_rows(queries, "queries"), sources=_as_rows(sources, "sources"),
-        evidence_cards=_as_rows(evidence, "evidence_cards"),
-        platform_coverage=_as_rows(coverage, "platform_coverage"),
+        manifest=parsed["run_manifest"],
+        queries=parsed["queries"],
+        sources=parsed["sources"],
+        evidence_cards=parsed["evidence_cards"],
+        platform_coverage=parsed["platform_coverage"],
     )
     return topic, candidates, context
 
@@ -1028,6 +1155,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--sources", type=Path, help="sources.tsv; overrides bundled sources")
     parser.add_argument("--evidence-cards", type=Path, help="evidence_cards.tsv; overrides bundled cards")
     parser.add_argument("--platform-coverage", type=Path, help="platform_coverage.tsv; optional when manifest embeds coverage")
+    parser.add_argument(
+        "--lineage-manifest",
+        required=True,
+        type=Path,
+        help="frozen top50-rank-input-manifest/v1",
+    )
+    parser.add_argument(
+        "--curator-acceptance",
+        required=True,
+        type=Path,
+        help="accepted top50-curator-acceptance/v1",
+    )
     parser.add_argument("--output-dir", type=Path, default=Path("research-output"))
     parser.add_argument("--top", type=int, default=50)
     return parser

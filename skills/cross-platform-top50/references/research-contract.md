@@ -66,6 +66,8 @@ $cross-platform-top50 研究《真实主题》 --purpose=<用途> --audience=<�
 | `login_mode` | 否 | `public-only` | `user-assisted` 仅表示可在当前任务获明确授权后由用户协助登录 |
 | `storage_mode` | 否 | `summary_and_excerpt` | 默认只存元数据、短摘录、分析和链接；不批量复制受版权保护全文 |
 | `publish_mode` | 否 | `local` | `feishu-new-space` / `feishu-existing-space` 属外部写操作，须满足第 12 节发布门禁；兼容输入必须先规范化到这三个值 |
+| `engine_mode` | 否 | `auto` | `auto`、`python`、`go`、`rust`、`hybrid`；只选择本地执行结构，不改变平台访问授权 |
+| `dual_run` | 否 | `false` | 高风险处理或用户明确要求时允许两个兼容引擎独立执行并比较；不是默认三跑 |
 | `budget` / `deadline` | 否 | 无硬限制 | 达到后按第 10 节降级，保留缺口 |
 | `stop_condition` | 否 | 第 11 节组合条件 | 在广泛发现开始前冻结 [继承] |
 
@@ -153,6 +155,20 @@ created_at, expires_or_unknown
 
 `artifact_paths` 必须指向同一 run 的 `run_manifest.json`、查询/来源账本和候选。继续不依赖该登录的公开路线；需要用户操作时一次性列出平台与动作并暂停。恢复时读取同一 `run_id`、重新执行最小只读 probe，只执行 `pending_query_ids`，不丢失 `error_summary`，也不重跑 `completed_query_ids`。[适配]
 
+### 3.4 Python / Go / Rust 多引擎路由
+
+三套结构永久保留，但共享版本化 JSON 合同并按阶段选择；完整选择、能力和失败合同见 [三引擎路由](engine-routing.md)。[适配]
+
+- Python 是控制面与最终证据/排名权威，也负责平台 CLI、Browser 登录接力和飞书；它可完成小规模或受平台会话约束的全流程。
+- Go 是公共 HTTP 批量 fetch 数据面，只接受当前任务已经授权的 URL 清单，使用透明自有 UA 并执行 robots；并发性能不能扩大 robots、认证、验证码、私密数据或速率边界。禁止调用方注入或轮换第三方官方 crawler UA。
+- Rust 是本地确定性 processor，负责规范化、指纹、exact cluster 与 near-duplicate review；不联网、不写 accepted evidence、不排名。
+- `auto` 必须先 probe 再按 stage、workload、source kind、risk 和 required capabilities 计划；完整 `hybrid` 通常是 Python discovery→Go fetch→Python extraction→Rust process→Python curate/rank/publish。用户强制引擎而能力不匹配时失败关闭，不静默降级；强制语言也不能绕过 extraction 或 curator 门禁。
+- 每次计划保存 `engine_id/version/contract_version/capabilities/probe evidence`、选择原因、阶段、fallback chain、实际退出和输出摘要。源码目录、编译成功或零退出码都不能单独证明输出合同正确。
+- 阶段 `input_bindings` 必须按固定 DAG 绑定不可变上游：同一文件描述符读取并核对原始 SHA-256、contract/run/stage/status、producer、内嵌 result digest、记录数和 ID-set 摘要；空数组、额外前驱、同路径替换或集合漂移均失败关闭。Rust 输入只能由已验证 extraction 原子生成。
+- rank 前生成 `top50-rank-input-manifest/v1`，冻结 ranker 实际读取的 candidates、manifest、queries、sources、evidence、coverage 六个文件；curator acceptance 必须绑定同一 manifest。router 与 standalone ranker 都在写输出前复验，禁止 curator 验收 A 而 rank 读取 B。
+- `dual_run` 的输出必须按稳定 candidate/job ID 比较并保存差异；不一致时转人工复核，不把任一结果静默指定为真。三种语言共享数据合同，不要求产生相同内部实现。
+- ego-lite/`ego-browser` 若存在，只登记为 Python 控制面默认禁用的候选 `browser_session` 后端，不是第四种 `engine_mode`。先关闭供应链完整性、CLI 数据流、浏览器二进制许可和跨 Space 会话隔离门禁；启用时仍要求当前任务显式 opt-in、低敏感独立 profile、真实 probe 和版本/隐私证据。不得由研究任务自动安装、迁移全量 Chrome 数据或更新。
+
 ## 4. 20+ 平台覆盖矩阵
 
 矩阵是**路由与覆盖合同**，不是所有主题都强制每个平台贡献入选条目。用户点名的平台默认 `required`；主题明显不适用的平台可以 `not_applicable`，但必须说明主题—平台不匹配依据。[适配]
@@ -204,6 +220,7 @@ created_at, expires_or_unknown
 - `platform_coverage` 报告平台是否被处理、发现多少、可抓取多少、可入选多少、阻塞多少。
 - `top50_distribution` 报告最终各平台占比。
 - 某平台零入选不等于未覆盖；反之，从单一搜索引擎发现多个平台链接也不等于这些平台已完成原文审核。[适配]
+- 排名前按平台核对 `candidates`、`queries.tsv`、`sources.tsv`、`platform_coverage.tsv`、manifest coverage 与 `required_platforms`。coverage 的 `discovered_count` 必须等于该平台候选数，`fetched_count` 不得超过该平台成功来源记录数，查询召回计数不得小于 discovered；候选直达来源的平台不得与候选平台冲突。任一平台别名冲突、孤立平台或计数不守恒均失败关闭，不能通过整批改标签伪造 required/20+ 覆盖。[适配]
 
 ## 5. 候选池合同
 
@@ -325,7 +342,7 @@ total_score = relevance + source_quality + evidence
 
 ### 9.1 运行级字段
 
-至少包含：`schema_version`、`run_id`、原始命令、规范化主题、研究问题、purpose/audience、范围、平台矩阵版本、查询计划、排名 profile/version、候选池目标、能力、当前任务授权、路线、阶段、覆盖、错误、产物、停止条件、开始/结束时间、策展人、发布状态。[继承+适配]
+至少包含：`schema_version`、`run_id`、原始命令、规范化主题、研究问题、purpose/audience、范围、平台矩阵版本、查询计划、排名 profile/version、候选池目标、能力、当前任务授权、引擎 probe/plan/execution、路线、阶段、覆盖、错误、产物、停止条件、开始/结束时间、策展人、发布状态。[继承+适配]
 
 清单不得保存 token、cookie、API key、Authorization header、signed URL 或私密查询参数。[继承]
 
@@ -484,7 +501,7 @@ source_independence, reviewer_status, review_notes
 
 ### 13.1 机器可检门禁
 
-- [ ] 最低研究包中的 `run_manifest.json`、`queries.tsv`、`sources.tsv`、`candidates.json`、`evidence_cards.tsv`、`platform_coverage.tsv`、`ranking.json`、`top.json`、`rejected.json`、`run_summary.json`、`package_validation.json`、`report.md`、`source_gap_backlog.md` 均存在。带 `schema_version` 的机器文件分别符合自身已声明 schema；`run_manifest.schema_version` 与 `ranking.schema_version` 描述不同对象，不要求数值相同。未声明 schema 的 JSON/TSV/Markdown 按 `package_validation.json` 和各文件结构合同验收，不自行补造版本字段。[适配]
+- [ ] 最低研究包中的 `run_manifest.json`、`queries.tsv`、`sources.tsv`、`candidates.json`、`evidence_cards.tsv`、`platform_coverage.tsv`、`rank-input-manifest.json`、`curate-result.json`、`ranking.json`、`top.json`、`rejected.json`、`run_summary.json`、`package_validation.json`、`report.md`、`source_gap_backlog.md` 均存在。带 `schema_version` 的机器文件分别符合自身已声明 schema；`run_manifest.schema_version` 与 `ranking.schema_version` 描述不同对象，不要求数值相同。未声明 schema 的 JSON/TSV/Markdown 按 `package_validation.json` 和各文件结构合同验收，不自行补造版本字段。[适配]
 - [ ] 稳定 ID 无重复、URL 可解析、日期格式一致、枚举合法、Top N 名次连续且唯一。[建议]
 - [ ] 评分分项之和等于总分；同分规则可复算；去重簇最多一个代表项进入 Top N（有明确版本例外除外）。[建议]
 - [ ] accepted finding 只引用 `reviewer_status=accepted` 且非 blocked 的证据卡。[继承]
@@ -495,6 +512,9 @@ source_independence, reviewer_status, review_notes
 - [ ] 公开来源 URL 仅允许 `http(s)`、公共 DNS 主机且不含 userinfo；拒绝 localhost、loopback、link-local、私网、保留地址和文件/数据协议。每次校验重新解析 DNS，不复用旧的公网判定；任何实际 fetch 还必须在请求层重新解析并把连接绑定到这次校验通过的公网 IP、禁用到私网的重定向，不能把排名器的布尔校验当成 SSRF 防护。HTTP/HTTPS 仅作为同一公共对象的 scheme 差异去重，原 URL 仍保留供审计。[适配]
 - [ ] 未观测互动为 `unknown/null` 且该维得 0；不能因同平台样本量、全组相同值或填零而获得默认分。互动归一只在真实可比且已观测的组内进行。[适配]
 - [ ] 工具/桥接/认证/配额/当前任务授权和 probe 结果分列；静态 doctor 的“ok”不能覆盖真实 probe 的 401/403/429、验证码、空结果或解析失败。[适配]
+- [ ] 本地引擎选择有真实 probe 与版本化合同证据；强制模式不被静默替换，auto/hybrid 的阶段顺序与 fallback 可重放，dual-run 差异没有被吞掉。[适配]
+- [ ] HTTP 抓取使用透明自有身份并执行 robots；未注入或轮换第三方官方 bot UA。内容不完整时只使用有账本的 reader/browser/`Accept*` 路线；robots disallow、401/403、验证码和登录墙没有被换 UA 绕过。[适配]
+- [ ] 若使用 ego-lite/`ego-browser`，存在用户当前 opt-in、独立低敏感 profile、版本/隐私记录、最小只读 probe、Task Space 清理与登录接力证据；没有自动安装、全量 profile 迁移或越权 CDP/fetch/upload/download/session mutation。[适配]
 
 机器验证只证明结构与门禁，不证明 claim 为真或摘录语义支持 claim。[继承]
 
@@ -530,6 +550,8 @@ run-<run_id>/
 ├── candidates.json
 ├── evidence_cards.tsv
 ├── platform_coverage.tsv
+├── rank-input-manifest.json         # rank 实际六文件的不可变绑定
+├── curate-result.json               # 独立 curator 对同一冻结输入的验收
 ├── ranking.json
 ├── top.json
 ├── rejected.json
@@ -537,6 +559,9 @@ run-<run_id>/
 ├── package_validation.json
 ├── report.md
 ├── source_gap_backlog.md
+├── engine_probe.json                # 使用多引擎路由时
+├── engine_plan.json                 # 使用多引擎路由时
+├── engine_execution.json            # 使用多引擎路由时
 ├── agent_ledger.tsv                 # 可选：实际使用 worker/sub-Agent 时
 ├── publish_manifest.json            # 可选：请求飞书发布时
 └── feishu_readback_check.md         # 可选：请求飞书发布时

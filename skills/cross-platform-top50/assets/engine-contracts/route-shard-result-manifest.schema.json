@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-route-shard-result-manifest/v1",
+  "title": "Cross-platform Top 50 route shard result manifest",
+  "description": "Ordered result ledger for the ready pre-rank shard IDs frozen by a route bundle. Bundle-level runtime validation establishes the exact expected shard set; this schema validates each recorded result without admitting blocked or pending route states as completed results.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "run_id",
+    "route_bundle_digest_sha256",
+    "status",
+    "results"
+  ],
+  "properties": {
+    "schema": {"const": "top50-route-shard-result-manifest/v1"},
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "route_bundle_digest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "status": {"enum": ["complete", "failed"]},
+    "results": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "shard_id",
+          "result_contract",
+          "status",
+          "artifact_path",
+          "artifact_digest_sha256",
+          "error_summary"
+        ],
+        "properties": {
+          "shard_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9._-]+$"
+          },
+          "result_contract": {"const": "top50-route-shard-result/v1"},
+          "status": {"enum": ["complete", "failed"]},
+          "artifact_path": {
+            "anyOf": [
+              {"type": "string", "minLength": 1},
+              {"type": "null"}
+            ]
+          },
+          "artifact_digest_sha256": {
+            "anyOf": [
+              {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              {"type": "null"}
+            ]
+          },
+          "error_summary": {
+            "anyOf": [
+              {"type": "string", "minLength": 1},
+              {"type": "null"}
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {"status": {"const": "complete"}},
+              "required": ["status"]
+            },
+            "then": {
+              "properties": {
+                "artifact_path": {"type": "string", "minLength": 1},
+                "artifact_digest_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "error_summary": {"type": "null"}
+              }
+            },
+            "else": {
+              "properties": {
+                "artifact_path": {"type": "null"},
+                "artifact_digest_sha256": {"type": "null"},
+                "error_summary": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"const": "complete"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "results": {
+            "items": {
+              "properties": {"status": {"const": "complete"}}
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "results": {
+            "contains": {
+              "properties": {"status": {"const": "failed"}},
+              "required": ["status"]
+            },
+            "minContains": 1
+          }
+        }
+      }
+    }
+  ]
+}

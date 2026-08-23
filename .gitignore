@@ -1,4 +1,14 @@
 .DS_Store
 __pycache__/
 *.pyc
+.coverage
 node_modules/
+router-runs/
+skills/cross-platform-top50/router-runs/
+skills/cross-platform-top50/research-runs/
+skills/cross-platform-top50/route-runs/
+skills/cross-platform-top50/engines/go-collector/go-collector
+skills/cross-platform-top50/engines/rust-processor/target/
+*.coverprofile
+coverage.out
+*.cover

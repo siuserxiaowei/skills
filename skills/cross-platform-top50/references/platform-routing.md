@@ -30,6 +30,8 @@
 
 ## 3. 路由优先级
 
+本节选择的是平台访问后端；Go/Rust/Python 本地执行结构另按 [三引擎路由](engine-routing.md) 选择。平台 discovery 仍先用专用 CLI/API/搜索适配器；只有候选 URL 已发现且当前任务允许公开 fetch 时才可交给 Go，抓取完成的本地批次才可交给 Rust。换语言不能让登录型平台变成匿名公开平台。
+
 按候选逐级使用：
 
 1. **OpenCLI 专用适配器**：存在真实 `search/read/detail/transcript` 命令且最小 probe 通过时优先；需要 Bridge/登录的适配器按登录接力执行。
@@ -38,6 +40,13 @@
 4. **原页回源**：平台专用 detail/read、`opencli web read --url "<URL>" --stdout true -f md`，或 Jina Reader `curl -sS "https://r.jina.ai/https://example.com/article"`。动态页、登录页和付费页失败时不得把摘要升级为证据。
 
 RSS 若存在，使用已通过 probe 的 OpenCLI 具体适配器、Jina/原始 XML，或把它记作未配置能力；不要凭文档假设某个 MCP 或 Python 包已安装。
+
+### 3.1 HTTP 身份与浏览器后端
+
+- 默认 HTTP 返回空白或明显不完整时，先比较原页、Jina/reader、平台专用只读适配器、真实浏览器渲染，以及受控的 `Accept` / `Accept-Language` 内容协商；保存实际后端、状态码、内容类型、语言、`Vary` 和差异。不得伪装成 `OAI-SearchBot`、`ChatGPT-User`、`Claude-User`、`Claude-SearchBot`、`Bytespider` 等第三方官方 bot，也不得把 401/403、robots、登录墙或验证码当成换 UA 重试信号。
+- `ego-browser` / ego-lite 仅登记为默认禁用的候选 `browser_session` 后端，当前风险门禁见 [ego-lite 适配评估](ego-lite-assessment.md)。只有门禁已关闭、命令已存在、最小真实 probe 通过、用户对本次登录型研究显式 opt-in，且使用低敏感独立 profile 时才可启用。它只接入 Python 控制面；Go 不接收其 Cookie/Authorization，Rust 不联网。
+- 不因本 Skill 被调用而自动安装 ego-lite、运行其安装脚本、移除 quarantine、迁移 Chrome 全量资料、更新版本或切换 profile。安装/迁移是独立的高权限环境变更。首次候选评估记录版本、来源与当前隐私条款；以临时 Task Space 打开公开测试页、读取 snapshot、关闭空间作为最小 probe。
+- ego-lite 登录接力仍遵守同一 checkpoint：只读任务使用精确平台 allowlist；用户接管后不得自动夺回控制。默认禁用原始 CDP、`serverFetch` / `browserFetch`、上传、下载和 Cookie/cache mutation；确有必要时必须与当前只读研究范围一致并单独记录。不要把供应商的“本地优先”宣传当作零数据外传证明。
 
 ## 4. Canonical 28 路由矩阵
 

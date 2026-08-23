@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-route-scope/v1",
+  "title": "Cross-platform Top 50 structured route scope",
+  "description": "Deterministic input produced after topic parsing and platform access classification. This contract does not accept arbitrary natural-language commands.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "run_id",
+    "topic",
+    "top_n",
+    "engine_mode",
+    "dual_run",
+    "login_mode",
+    "platform_routes"
+  ],
+  "$defs": {
+    "publicHttpBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_path",
+        "manifest_artifact_sha256",
+        "job_set_sha256",
+        "job_count"
+      ],
+      "properties": {
+        "manifest_path": {"type": "string", "minLength": 1},
+        "manifest_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "job_set_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "job_count": {"type": "integer", "minimum": 1}
+      }
+    }
+  },
+  "properties": {
+    "schema": {"const": "top50-route-scope/v1"},
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "topic": {"type": "string", "minLength": 1, "maxLength": 500},
+    "top_n": {"type": "integer", "minimum": 1, "maximum": 100},
+    "engine_mode": {"enum": ["auto", "python", "go", "rust", "hybrid"]},
+    "dual_run": {"type": "boolean"},
+    "login_mode": {"enum": ["public-only", "user-assisted"]},
+    "platform_scope_mode": {"enum": ["required_plus_default", "include_only"]},
+    "platform_routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["platform_id", "access_kind", "required"],
+        "properties": {
+          "platform_id": {
+            "enum": [
+              "csdn",
+              "wechat_official_accounts",
+              "zhihu",
+              "xiaohongshu",
+              "weibo",
+              "douyin",
+              "x",
+              "bilibili",
+              "juejin",
+              "youtube",
+              "linuxdo",
+              "github",
+              "baidu_search",
+              "google_search",
+              "bing_search",
+              "toutiao",
+              "36kr",
+              "infoq",
+              "segmentfault",
+              "oschina",
+              "v2ex",
+              "reddit",
+              "hacker_news",
+              "medium",
+              "linkedin",
+              "kuaishou",
+              "wechat_channels",
+              "tiktok"
+            ]
+          },
+          "access_kind": {"enum": ["platform_cli", "browser_session"]},
+          "required": {"type": "boolean"}
+        }
+      }
+    },
+    "public_url_count": {"type": "integer", "minimum": 0},
+    "public_urls_authorized": {"type": "boolean"},
+    "public_http_binding": {"$ref": "#/$defs/publicHttpBinding"},
+    "local_candidate_count": {"type": "integer", "minimum": 0},
+    "extraction_complete": {"type": "boolean"},
+    "risk": {"enum": ["low", "medium", "high"]}
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["public_url_count", "public_urls_authorized"],
+        "properties": {
+          "public_url_count": {"minimum": 1},
+          "public_urls_authorized": {"const": true}
+        }
+      },
+      "then": {"required": ["public_http_binding"]}
+    },
+    {
+      "if": {"required": ["public_http_binding"]},
+      "then": {
+        "required": ["public_url_count", "public_urls_authorized"],
+        "properties": {
+          "public_url_count": {"minimum": 1},
+          "public_urls_authorized": {"const": true}
+        }
+      }
+    }
+  ]
+}

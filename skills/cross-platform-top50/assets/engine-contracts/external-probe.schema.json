@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-engine/v1",
+  "title": "Canonical Go or Rust backend readiness probe",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "engine_id",
+    "engine_version",
+    "status",
+    "capabilities"
+  ],
+  "properties": {
+    "contract_version": {"const": "top50-engine/v1"},
+    "engine_id": {"enum": ["go-collector", "rust-processor"]},
+    "engine_version": {"type": "string", "minLength": 1},
+    "status": {"const": "ready"},
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  }
+}
