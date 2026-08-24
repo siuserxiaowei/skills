@@ -104,6 +104,14 @@ scope
 
 `ranking`、`feishu_publish` 与 `readback_verification` 是本场景新增阶段。[适配]
 
+### 3.0 版本化查询、来源与融合合同
+
+广泛召回前用 `scripts/research_planner.py` 把冻结范围编译成 `top50-research-query-plan/v1`。`search_query` 面向具体平台 Adapter，可含站点或平台表达；`ranking_query` 只表达主题、用途、别名与意图，不能夹带平台词后再跨平台比较。计划保存稳定 query ID、时间窗、unknown 日期隔离政策、CJK tokenizer 的请求值与实际值、幂等键和完整摘要。外部 `recent_social_mode` 只接受 `auto|strict|off`，编译器机械写入 fusion 时间策略：`auto→advisory`、`strict→strict`、`off→unbounded`，不得由调用方另行猜测。CJK bigram 是零依赖默认值；jieba 只作为可选增强，依赖缺失时明确记 `cjk_bigram_fallback`。[适配]
+
+每次 route 尝试用 `scripts/source_contract.py` 生成 `top50-source-outcome/v1`，统一保存 adapter/backend/probe、acquisition/access/evidence tier、原 URL、可见日期及依据、授权、错误、retry 与 breaker。时间窗必须携带有效 IANA `window_timezone`：中国平台默认 `Asia/Shanghai`，其他平台默认 `UTC`，显式覆盖会进入 query identity；边界按该本地时区换算，不能直接截取 UTC 日期。`recovery_basis` 是 retry/breaker 的可重建真源，验证器会在摘要正确时仍拒绝未知字段或派生状态篡改。搜索摘要成功仍只能 `discovered_only`；429 与 transient error 只按冻结次数、延迟和 breaker 阈值恢复；authentication/challenge/robots/unauthorized 是终止状态。严格时间窗只接受真实落在窗口内且日期已观察的来源；unknown 与 inferred 分别隔离。[适配]
+
+多路排名列表在正式策展前可用 `scripts/fuse_candidates.py` 生成 `top50-fusion-result/v1`。算法使用 weighted reciprocal rank fusion 并保留每一 list/query/platform/rank/weight provenance；输入列表顺序不得改变输出。作者上限、第一方作者的有界例外和可选平台 floor 只改善 discovery breadth；`evidence_status` 固定为 `discovery_only`、`curator_accepted=false`，互动量不进入融合分数。候选 ID 的 URL、标题、作者、日期或采集语义冲突时失败关闭。[适配]
+
 | 交接 | 必须满足的门禁 |
 |---|---|
 | scope → discovery | 范围、required 平台、禁止来源、候选池目标、评分版本、停止条件已冻结 |
@@ -155,6 +163,8 @@ created_at, expires_or_unknown
 
 `artifact_paths` 必须指向同一 run 的 `run_manifest.json`、查询/来源账本和候选。继续不依赖该登录的公开路线；需要用户操作时一次性列出平台与动作并暂停。恢复时读取同一 `run_id`、重新执行最小只读 probe，只执行 `pending_query_ids`，不丢失 `error_summary`，也不重跑 `completed_query_ids`。[适配]
 
+权威机械实现是 `scripts/source_contract.py` 的 `top50-research-checkpoint/v1`：包含 TTL、checkpoint/idempotency digest、单调 completed/pending 集合、candidate IDs、四项研究包路径与完整 error history。恢复必须在更新时间之后执行与 `next_safe_command` 等价的成功最小 probe；`resume-checkpoint` 与 `advance-checkpoint` 会原子替换同一工件，并强制 completed 只增、pending 只减、candidate 只增、resume count 不回退、error history 保持旧历史前缀。相同 payload 幂等，回滚或不同 checkpoint 拒绝覆盖。[适配]
+
 ### 3.4 Python / Go / Rust 多引擎路由
 
 三套结构永久保留，但共享版本化 JSON 合同并按阶段选择；完整选择、能力和失败合同见 [三引擎路由](engine-routing.md)。[适配]
@@ -165,9 +175,10 @@ created_at, expires_or_unknown
 - `auto` 必须先 probe 再按 stage、workload、source kind、risk 和 required capabilities 计划；完整 `hybrid` 通常是 Python discovery→Go fetch→Python extraction→Rust process→Python curate/rank/publish。用户强制引擎而能力不匹配时失败关闭，不静默降级；强制语言也不能绕过 extraction 或 curator 门禁。
 - 每次计划保存 `engine_id/version/contract_version/capabilities/probe evidence`、选择原因、阶段、fallback chain、实际退出和输出摘要。源码目录、编译成功或零退出码都不能单独证明输出合同正确。
 - 阶段 `input_bindings` 必须按固定 DAG 绑定不可变上游：同一文件描述符读取并核对原始 SHA-256、contract/run/stage/status、producer、内嵌 result digest、记录数和 ID-set 摘要；空数组、额外前驱、同路径替换或集合漂移均失败关闭。Rust 输入只能由已验证 extraction 原子生成。
-- rank 前生成 `top50-rank-input-manifest/v1`，冻结 ranker 实际读取的 candidates、manifest、queries、sources、evidence、coverage 六个文件；curator acceptance 必须绑定同一 manifest。router 与 standalone ranker 都在写输出前复验，禁止 curator 验收 A 而 rank 读取 B。
+- rank 前生成 `top50-rank-input-manifest/v1`，冻结 ranker 实际读取的 candidates、manifest、queries、sources、source outcomes、evidence、coverage 全部必需输入；每个 source 行唯一解析到一个 outcome，但 outcome 账本保留所有未汇总的 blocked/error/备用路线记录并整体冻结。curator acceptance 必须绑定同一 manifest。router 与 standalone ranker 都在写输出前复验，禁止 curator 验收 A 而 rank 读取 B。
 - `dual_run` 的输出必须按稳定 candidate/job ID 比较并保存差异；不一致时转人工复核，不把任一结果静默指定为真。三种语言共享数据合同，不要求产生相同内部实现。
 - ego-lite/`ego-browser` 若存在，只登记为 Python 控制面默认禁用的候选 `browser_session` 后端，不是第四种 `engine_mode`。先关闭供应链完整性、CLI 数据流、浏览器二进制许可和跨 Space 会话隔离门禁；启用时仍要求当前任务显式 opt-in、低敏感独立 profile、真实 probe 和版本/隐私证据。不得由研究任务自动安装、迁移全量 Chrome 数据或更新。
+- Wigolo 若单独安装，只能按 [Wigolo 外部适配合同](wigolo-adapter.md) 登记为 Python 控制面下默认禁用的公开 Web Adapter，不是第四种 `engine_mode`。显式启用后，任何 runner/probe 前必须确认入口是兼容当前主机、通过 ELF/Mach-O/FAT/PE magic 且 SHA-256 已由代码冻结的原生单文件发行镜像；调用方不能扩展摘要白名单，JavaScript、Node/npm CLI、所有 shebang/解释型脚本、无后缀包装器和未审计/重命名原生程序失败关闭。Adapter 从同一已打开 FD 验证、计算入口 SHA-256并复制到私有快照，再生成绑定 request/probe/入口 SHA-256/严格 argv/authority policy、且由 owner-only key file 执行 HMAC-SHA256 认证的计划；execute 只消费该计划，不重新 probe，密钥不得写入工件、argv 或子进程环境。当前摘要白名单为空，标准 npm `wigolo@0.2.1` 明确 No-go，没有生产执行路线；未来只有兼容的原生单文件发行镜像通过来源/摘要复审、相同门禁、真实 probe 与能力白名单，并经代码更新加入白名单后才可能启用。入口门禁只约束入口文件与路径替换，不声称静态链接或封装系统动态加载器/共享库。公开 discovery/fetch/cache 均只读，watch 仅 `list`，CJK 默认拒绝并仅在显式 experimental 下试用。watch mutation、challenge/stealth/CAPTCHA solve/hosted egress/任意 shell/自定义 UA 等能力不得进入计划，且任何输出仍只是来源或 discovery 候选。[适配]
 
 ## 4. 20+ 平台覆盖矩阵
 
@@ -307,7 +318,7 @@ total_score = relevance + source_quality + evidence
 
 ### 8.1 不得合并的三套状态
 
-**来源抓取状态**（`sources.tsv`）：`pending`、`fetched`、`verified`、`rejected`、`blocked`。[继承]
+**来源抓取状态**（`sources.tsv` 的稳定汇总状态）：`pending`、`fetched`、`verified`、`rejected`、`blocked`。[继承] 具体 route observation 必须先通过 `top50-source-outcome/v1` 保存 `fetched|discovered_only|rejected_payload_shape|empty|rate_limited|error|blocked_*|not_found` 等细粒度 outcome，再显式映射到汇总状态；不能丢掉原始 reason code。[适配]
 
 **工作检查状态**：`[ ]` 未研究/未核查；`[_]` worker 已自检、仍属临时；`[x]` 策展人已接受。worker 不得写 `[x]`。[继承]
 
@@ -501,14 +512,14 @@ source_independence, reviewer_status, review_notes
 
 ### 13.1 机器可检门禁
 
-- [ ] 最低研究包中的 `run_manifest.json`、`queries.tsv`、`sources.tsv`、`candidates.json`、`evidence_cards.tsv`、`platform_coverage.tsv`、`rank-input-manifest.json`、`curate-result.json`、`ranking.json`、`top.json`、`rejected.json`、`run_summary.json`、`package_validation.json`、`report.md`、`source_gap_backlog.md` 均存在。带 `schema_version` 的机器文件分别符合自身已声明 schema；`run_manifest.schema_version` 与 `ranking.schema_version` 描述不同对象，不要求数值相同。未声明 schema 的 JSON/TSV/Markdown 按 `package_validation.json` 和各文件结构合同验收，不自行补造版本字段。[适配]
+- [ ] 最低研究包中的 `run_manifest.json`、`queries.tsv`、`sources.tsv`、`source_outcomes.jsonl`、`candidates.json`、`evidence_cards.tsv`、`platform_coverage.tsv`、`rank-input-manifest.json`、`curate-result.json`、`ranking.json`、`top.json`、`rejected.json`、`run_summary.json`、`package_validation.json`、`report.md`、`source_gap_backlog.md` 均存在。带 `schema_version` 的机器文件分别符合自身已声明 schema；`run_manifest.schema_version` 与 `ranking.schema_version` 描述不同对象，不要求数值相同。未声明 schema 的 JSON/TSV/JSONL/Markdown 按 `package_validation.json` 和各文件结构合同验收，不自行补造版本字段。[适配]
 - [ ] 稳定 ID 无重复、URL 可解析、日期格式一致、枚举合法、Top N 名次连续且唯一。[建议]
 - [ ] 评分分项之和等于总分；同分规则可复算；去重簇最多一个代表项进入 Top N（有明确版本例外除外）。[建议]
 - [ ] accepted finding 只引用 `reviewer_status=accepted` 且非 blocked 的证据卡。[继承]
 - [ ] required 平台无 `pending`；所有 blocked/rejected/partial 有错误和下一步。[适配]
 - [ ] 候选计数守恒：discovered = 后续状态分类之和（允许一项多个过程状态时另用终态计数）。[建议]
 - [ ] manifest 中无 token、cookie、key、Authorization header、signed URL。[继承]
-- [ ] 每个拟入选候选的 `evidence_ids` 都能解析到独立 curator 接受的 strong/medium 证据卡；每张卡的 `source_id/source_url` 能解析到非 blocked 来源账本；候选自报的 `reviewer_status/evidence_grade` 不能替代关联证据。[适配]
+- [ ] 每个拟入选候选的 `evidence_ids` 都能解析到独立 curator 接受的 strong/medium 证据卡；每张卡的 `source_id/source_url` 能解析到 `fetched|verified` 来源汇总行，且该行通过唯一 digest 解析到规范 `source_status=fetched`、`may_enter_general_review=true` 的权威 source outcome。未形成来源行的 blocked/error/备用 route outcomes 仍保留并整体冻结；`discovered_only`、自报 `accepted|complete` 或候选自报的 `reviewer_status/evidence_grade` 均不能替代这条链。[适配]
 - [ ] 公开来源 URL 仅允许 `http(s)`、公共 DNS 主机且不含 userinfo；拒绝 localhost、loopback、link-local、私网、保留地址和文件/数据协议。每次校验重新解析 DNS，不复用旧的公网判定；任何实际 fetch 还必须在请求层重新解析并把连接绑定到这次校验通过的公网 IP、禁用到私网的重定向，不能把排名器的布尔校验当成 SSRF 防护。HTTP/HTTPS 仅作为同一公共对象的 scheme 差异去重，原 URL 仍保留供审计。[适配]
 - [ ] 未观测互动为 `unknown/null` 且该维得 0；不能因同平台样本量、全组相同值或填零而获得默认分。互动归一只在真实可比且已观测的组内进行。[适配]
 - [ ] 工具/桥接/认证/配额/当前任务授权和 probe 结果分列；静态 doctor 的“ok”不能覆盖真实 probe 的 401/403/429、验证码、空结果或解析失败。[适配]
@@ -545,12 +556,15 @@ source_independence, reviewer_status, review_notes
 ```text
 run-<run_id>/
 ├── run_manifest.json
+├── query_plan.json                  # search/ranking query、Adapter chain 与摘要
 ├── queries.tsv
 ├── sources.tsv
+├── source_outcomes.jsonl            # route 级 provenance、日期、重试与 breaker
 ├── candidates.json
+├── fusion_result.json               # 可选：多后端 discovery-only RRF
 ├── evidence_cards.tsv
 ├── platform_coverage.tsv
-├── rank-input-manifest.json         # rank 实际六文件的不可变绑定
+├── rank-input-manifest.json         # rank 全部必需输入的不可变绑定
 ├── curate-result.json               # 独立 curator 对同一冻结输入的验收
 ├── ranking.json
 ├── top.json
@@ -563,6 +577,13 @@ run-<run_id>/
 ├── engine_plan.json                 # 使用多引擎路由时
 ├── engine_execution.json            # 使用多引擎路由时
 ├── agent_ledger.tsv                 # 可选：实际使用 worker/sub-Agent 时
+├── research_checkpoint.json         # 可选：真实暂停后完整运行态 checkpoint
+├── hengzong_plan.json               # 可选：横纵模式
+├── hengzong_brief.json              # 可选：横纵模式
+├── hengzong_curator_acceptance.json # 可选：横纵模式
+├── wigolo_probe.json                # 可选：外部 Adapter 实际启用时
+├── wigolo_plan.json                 # 可选：外部 Adapter 实际启用时
+├── wigolo_result.json               # 可选：外部 Adapter 实际启用时
 ├── publish_manifest.json            # 可选：请求飞书发布时
 └── feishu_readback_check.md         # 可选：请求飞书发布时
 ```
@@ -579,9 +600,14 @@ run-<run_id>/
 - `stanford-oval/storm`：先研究与参考资料，再生成大纲和带引用长文；通过多视角提问提升覆盖。迁移为“发现/证据先于报告结构，查询包含不同立场与内容类型”。
 - `langchain-ai/open_deep_research`：区分 summarization、research、compression、final report 角色，并用基准评测真实输出。迁移为“不同阶段门禁不可压平，Skill 校验之外还需前向行为测试”。
 - `mvanhorn/last30days-skill`：多社交源并行、平台指标路由、doctor 与 auth diagnose；其公开说明也强调各平台是独立访问边界。迁移为“每后端真实 probe、平台内互动归一、登录/失败显式化”。
+- `Jesseovo/last30days-skill-cn`：中国平台 Adapter、平台原生 payload shape、北京时间窗口和 CJK bigram/jieba 回退。迁移为“统一来源 outcome、明确日期 confidence/provenance、零硬依赖 CJK 排名 token 与 API→Browser→公开发现的有序降级”；不迁移 Cookie 持久化、签名规避或 CAPTCHA 路线。
+- `mcncarl/yichen-skills/yichen-web-research`：横向/纵向拆解、日期上下文、研究路由与显式授权边界。因上游仅限个人非商用，本 Skill 只从通用研究思想独立重写 `hengzong` 合同，不复制其代码、提示词、模板或文字。
+- `KnockOutEZ/wigolo`：本地公开 Web search/fetch/cache/watch 与机器可读能力探针。迁移为默认关闭的外部 CLI Adapter；不复制 AGPL 源码或二进制，不启用其超出本 Skill 安全白名单的能力。
 - 持久化研究工作流（如 Temporal/图式研究系统）强调 durable execution。迁移为“登录接力前保存 checkpoint，恢复时只续跑未完成分片”。
 
 本 Skill 在这些模式上额外采用 curator acceptance、研究账本、确定性排名和飞书 readback；并行召回、热度或报告流畅度均不能替代来源支持审核。[适配]
+
+精确核验 revision、许可证与隔离策略见 [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)。[适配]
 
 ### 15.1 直接来自现有 Skill 的规则
 

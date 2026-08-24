@@ -41,12 +41,15 @@
 
 RSS 若存在，使用已通过 probe 的 OpenCLI 具体适配器、Jina/原始 XML，或把它记作未配置能力；不要凭文档假设某个 MCP 或 Python 包已安装。
 
+多条 route 返回候选时，不用单一路由分数直接拼接。先规范为共同候选合同，再用 `scripts/fuse_candidates.py` 的 weighted RRF 合并；每条保留 list/query/platform/rank/weight，互动不参与融合，结果固定为 `discovery_only`。中文或混合语种 QueryPlan 默认保存 CJK bigram tokens；可选 jieba 只有在运行时实际导入成功才登记为 `jieba`，否则显式回退。排名 token 与平台 `search_query` 分离，不能让 `site:` 或平台名提高相关性。
+
 ### 3.1 HTTP 身份与浏览器后端
 
 - 默认 HTTP 返回空白或明显不完整时，先比较原页、Jina/reader、平台专用只读适配器、真实浏览器渲染，以及受控的 `Accept` / `Accept-Language` 内容协商；保存实际后端、状态码、内容类型、语言、`Vary` 和差异。不得伪装成 `OAI-SearchBot`、`ChatGPT-User`、`Claude-User`、`Claude-SearchBot`、`Bytespider` 等第三方官方 bot，也不得把 401/403、robots、登录墙或验证码当成换 UA 重试信号。
 - `ego-browser` / ego-lite 仅登记为默认禁用的候选 `browser_session` 后端，当前风险门禁见 [ego-lite 适配评估](ego-lite-assessment.md)。只有门禁已关闭、命令已存在、最小真实 probe 通过、用户对本次登录型研究显式 opt-in，且使用低敏感独立 profile 时才可启用。它只接入 Python 控制面；Go 不接收其 Cookie/Authorization，Rust 不联网。
 - 不因本 Skill 被调用而自动安装 ego-lite、运行其安装脚本、移除 quarantine、迁移 Chrome 全量资料、更新版本或切换 profile。安装/迁移是独立的高权限环境变更。首次候选评估记录版本、来源与当前隐私条款；以临时 Task Space 打开公开测试页、读取 snapshot、关闭空间作为最小 probe。
 - ego-lite 登录接力仍遵守同一 checkpoint：只读任务使用精确平台 allowlist；用户接管后不得自动夺回控制。默认禁用原始 CDP、`serverFetch` / `browserFetch`、上传、下载和 Cookie/cache mutation；确有必要时必须与当前只读研究范围一致并单独记录。不要把供应商的“本地优先”宣传当作零数据外传证明。
+- Wigolo 是另一个默认关闭的 Python 外部 Adapter，不与 ego-lite 合并，也不是核心引擎。只有用户显式启用，且兼容当前主机的原生单文件发行镜像在任何 probe 前通过 magic、源码冻结的发行 SHA-256、同一 FD 摘要与私有快照门禁，随后真实 probe 和安全能力 allowlist 通过，主要任务不是 CJK 或已显式接受 experimental 时才计划。调用方不能注入摘要；JavaScript、Node/npm CLI、任何 shebang/解释型脚本（含无后缀包装器）和未审计/重命名原生程序都失败关闭。当前摘要白名单为空；标准 npm `wigolo@0.2.1` 明确 No-go，没有生产路线。具体命令与负向门禁见 [Wigolo 外部适配合同](wigolo-adapter.md)。
 
 ## 4. Canonical 28 路由矩阵
 

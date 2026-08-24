@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-wigolo-probe/v2",
+  "title": "Digest-bearing dispatch-only Wigolo readiness probe",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "adapter_version",
+    "backend",
+    "command",
+    "ready",
+    "dispatch_ready",
+    "live_route_ready",
+    "readiness_scope",
+    "status",
+    "outcome",
+    "version",
+    "capabilities",
+    "checks",
+    "diagnostics",
+    "duration_ms",
+    "probe_id",
+    "probe_digest_sha256"
+  ],
+  "properties": {
+    "contract_version": {"const": "top50-wigolo-probe/v2"},
+    "adapter_version": {"const": "2.1.0"},
+    "backend": {"$ref": "#/$defs/backend"},
+    "command": {"type": ["string", "null"]},
+    "ready": {"type": "boolean"},
+    "dispatch_ready": {"type": "boolean"},
+    "live_route_ready": {"const": false},
+    "readiness_scope": {"const": "dispatch_only"},
+    "status": {"enum": ["dispatch_ready", "degraded", "unavailable", "incompatible"]},
+    "outcome": {
+      "enum": [
+        "dispatch_ready",
+        "probe_failed",
+        "executable_unavailable",
+        "auto_install_command_forbidden",
+        "version_probe_failed",
+        "version_probe_timeout",
+        "doctor_not_ready",
+        "unsupported_version",
+        "capability_probe_failed"
+      ]
+    },
+    "version": {"type": ["string", "null"]},
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["discovery", "fetch", "cache", "watch"]}
+    },
+    "checks": {"type": "array", "items": {"$ref": "#/$defs/check"}},
+    "diagnostics": {"type": "array", "items": {"$ref": "#/$defs/diagnostic"}},
+    "duration_ms": {"type": "integer", "minimum": 0},
+    "probe_id": {"type": "string", "pattern": "^wigolo-probe-[0-9a-f]{24}$"},
+    "probe_digest_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"dispatch_ready": {"const": true}}, "required": ["dispatch_ready"]},
+      "then": {
+        "properties": {
+          "ready": {"const": true},
+          "status": {"const": "dispatch_ready"},
+          "outcome": {"const": "dispatch_ready"},
+          "capabilities": {"const": ["discovery", "fetch", "cache", "watch"]}
+        }
+      },
+      "else": {"properties": {"ready": {"const": false}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "backend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "license", "integration_boundary"],
+      "properties": {
+        "id": {"const": "wigolo"},
+        "version": {"type": ["string", "null"]},
+        "license": {"const": "AGPL-3.0-only"},
+        "integration_boundary": {"const": "separate_process"}
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "status", "argv", "returncode"],
+      "properties": {
+        "name": {"enum": ["version", "discovery", "fetch", "cache", "watch"]},
+        "status": {"enum": ["passed", "failed"]},
+        "argv": {"type": "array", "minItems": 2, "items": {"type": "string"}},
+        "returncode": {"type": ["integer", "null"]}
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "level", "message"],
+      "properties": {
+        "code": {"type": "string", "minLength": 1},
+        "level": {"enum": ["info", "warning", "error"]},
+        "message": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

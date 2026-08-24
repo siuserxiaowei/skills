@@ -189,6 +189,18 @@ class RankRuntimeBindingCoverageTests(unittest.TestCase):
                 or "",
             )
 
+            missing_outcomes = copy.deepcopy(rank_step)
+            missing_outcomes["command"] = _remove_flag(
+                missing_outcomes["command"], "--source-outcomes"
+            )
+            self.assertIn(
+                "missing --source-outcomes",
+                router._validate_rank_runtime_binding(
+                    missing_outcomes, curator, "run-test"
+                )[1]
+                or "",
+            )
+
             swapped_candidates = copy.deepcopy(rank_step)
             candidate_index = swapped_candidates["command"].index("--input") + 1
             swapped_candidates["command"][candidate_index] = str(
@@ -293,12 +305,18 @@ class NonEmptyStageContractCoverageTests(unittest.TestCase):
             self.assertIn("DNS validation count", str(error))
 
     def test_discovery_nonempty_ledger_conserves_ids_and_authorization(self) -> None:
+        query_plan_binding = fixtures.query_plan_binding("run-execute")
+        query_plan = json.loads(
+            Path(str(query_plan_binding["path"])).read_text(encoding="utf-8")
+        )
+        frozen_query_id = str(query_plan["queries"][0]["query_id"])
+        frozen_platform = str(query_plan["queries"][0]["platform_id"])
         payload = fixtures.stage_artifact(
             "discovery",
             queries=[
                 {
-                    "query_id": "query-001",
-                    "platform": "web",
+                    "query_id": frozen_query_id,
+                    "platform": frozen_platform,
                     "backend_id": "search-backend",
                     "probe_id": "probe-001",
                     "authorization": "granted",
@@ -309,8 +327,8 @@ class NonEmptyStageContractCoverageTests(unittest.TestCase):
             discoveries=[
                 {
                     "discovery_id": "discovery-001",
-                    "query_id": "query-001",
-                    "platform": "web",
+                    "query_id": frozen_query_id,
+                    "platform": frozen_platform,
                     "url": "https://example.com/article",
                     "canonical_url": "https://example.com/article",
                     "access_kind": "public_http",
@@ -318,9 +336,16 @@ class NonEmptyStageContractCoverageTests(unittest.TestCase):
             ],
             counts={"queries": 1, "discoveries": 1},
         )
+        payload["input_bindings"] = [
+            fixtures.discovery_binding_from_plan(query_plan_binding)
+        ]
+        _refresh_digest(payload)
         self.assertIsNone(
             router._validate_stage_artifact(
-                "discovery", payload, "run-execute"
+                "discovery",
+                payload,
+                "run-execute",
+                query_plan_binding=query_plan_binding,
             )
         )
 
@@ -330,7 +355,10 @@ class NonEmptyStageContractCoverageTests(unittest.TestCase):
         self.assertIn(
             "unauthorized",
             router._validate_stage_artifact(
-                "discovery", unauthorized, "run-execute"
+                "discovery",
+                unauthorized,
+                "run-execute",
+                query_plan_binding=query_plan_binding,
             )
             or "",
         )
@@ -341,7 +369,10 @@ class NonEmptyStageContractCoverageTests(unittest.TestCase):
         self.assertIn(
             "counts",
             router._validate_stage_artifact(
-                "discovery", wrong_count, "run-execute"
+                "discovery",
+                wrong_count,
+                "run-execute",
+                query_plan_binding=query_plan_binding,
             )
             or "",
         )

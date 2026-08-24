@@ -28,6 +28,9 @@ description: 规划并执行 CSDN、公众号、知乎、小红书、微博、�
 - `publish_mode`：`local`、`feishu-new-space` 或 `feishu-existing-space`；默认 `local`。只有当前请求明确要求写入飞书才编译为后两者；其它拼法先规范化为这三个值，不能静默产生第四种语义。
 - `engine_mode`：`auto`、`python`、`go`、`rust` 或 `hybrid`；默认 `auto`。这决定本地执行后端，不改变平台授权、证据门禁或发布边界。用户强制的后端若探针/能力不满足必须失败关闭，不能静默改成另一种语言。
 - `dual_run`：默认 `false`。只有用户明确要求，或当前阶段属于高风险规范化/去重且有两个独立可用实现时才启用；双跑用于比较，不把同一请求无条件执行三遍。
+- `research_mode`：`standard` 或 `hengzong`；默认 `standard`。行业判断、机会地图、趋势推演、复杂决策或根因诊断可选 `hengzong`；普通榜单不承担该模式的额外查询与策展成本。
+- `recent_social_mode`：默认 `auto`。QueryPlan 编译器机械映射为 fusion 时间策略：`auto → advisory`、`strict → strict`、`off → unbounded`；未知值失败关闭。主题明确要求“最近 30 天/近期舆情/社区反馈”时使用 `strict` 并冻结真实日期区间；日期未知或仅推断的候选隔离，不能混入窗口榜单。
+- `wigolo_mode`：`disabled` 或 `external`；默认 `disabled`。它只是预留外部 Adapter：除用户显式启用、非 CJK 公开 Web、能力白名单与真实 probe 外，还必须先通过“兼容当前主机的原生单文件可执行镜像 + 源码冻结的已审计发行 SHA-256”门禁。JavaScript、Node/npm CLI、任何 shebang/解释型脚本（包括无后缀包装器）一律在 probe 前失败关闭；调用方不能注入摘要。当前摘要白名单为空，审计基线的标准 npm `wigolo@0.2.1` 没有生产执行路线；不是第四核心引擎。
 
 其余缺省项用保守默认值继续，并在 `run_manifest.json` 标为工作假设。用户只要固定提示词而不执行本次研究时，交付 [便携总提示词](assets/master-prompt.md) 的参数化版本。
 
@@ -54,6 +57,10 @@ scope → discovery → fetch → extraction → worker_check
 - 官方/一手证据、创作者经验、社区讨论、代码/数据、视频/长文等不同视角；
 - 时效主题的年份、版本、生效日期和当前状态。
 
+把冻结范围编译为版本化 QueryPlan 时，运行 `scripts/research_planner.py`：每条记录分开保存平台专用 `search_query` 与跨平台可比的 `ranking_query`，并保存 query ID、意图、时间窗、CJK tokenizer 的实际实现和摘要。中文默认用零依赖 CJK bigram；只有明确可用时才使用可选 jieba，且回退必须入账。任何未知平台、未知意图、占位主题、无界查询数或摘要漂移都失败关闭。
+
+多后端召回需要融合时，用 `scripts/fuse_candidates.py` 执行 weighted RRF。融合只生成 `discovery_only` 候选和完整 rank provenance，可施加作者上限、第一方作者的有界例外及显式 discovery breadth floor；互动量不参与 RRF，也不能创建 curator acceptance。输入候选 ID 的 URL、标题、作者、日期或来源语义冲突时失败关闭。
+
 ### 2. 体检必须包含真实轻量探针
 
 执行真实网络检索前读取 [平台路由](references/platform-routing.md)。若 `agent-reach` 可用，先运行 `agent-reach doctor --json`；若 OpenCLI 是候选后端，再运行 `opencli doctor`。静态 doctor 只说明组件存在，不能证明浏览器桥接、账号、权限、配额或当前查询可用。
@@ -65,6 +72,8 @@ tool_readiness | bridge_state | auth_state | quota_state | authorization | probe
 ```
 
 probe 的 401/403、429、验证码、空响应与解析错误都必须进入路由账本。不得在研究中自动升级 CLI、安装扩展、购买配额或切换身份；这些是独立环境变更。
+
+用 `scripts/source_contract.py` 规范化每条路线 outcome：保留 adapter/backend/probe、访问方式、采集方式、可见内容层级、原始日期依据、错误、重试与 breaker。429/瞬时故障最多按冻结预算重试；认证、挑战、robots 或未授权是终止状态。搜索摘要始终 `discovered_only`，未知/推断日期不得冒充严格时间窗命中。登录接力通过同一脚本创建带 TTL、幂等键、错误历史和原子写入的 checkpoint；恢复必须重新做等价最小 probe，只返回 pending query IDs。
 
 ### 3. 三套执行后端长期保留、按阶段路由
 
@@ -80,6 +89,8 @@ probe 的 401/403、429、验证码、空响应与解析错误都必须进入路
 语言选择看总成本，不只看 Token：同时评估实现与返工时间、测试矩阵、依赖/部署、安全维护、平台变化适配、故障定位、运行资源和结果验证成本。三套结构长期保留不表示每次三跑；只让某个后端承担它能明显降低总成本或不确定性的阶段。
 
 `ego-browser` / ego-lite 只保留为 Python `browser_session` 的默认禁用候选，不是第四引擎。供应链、CLI 数据流、二进制许可和会话隔离门禁未关闭时，它不得进入 `auto` / `hybrid` 候选集；不得自动安装、移除 quarantine 或迁移日常 Chrome 数据。
+
+Wigolo 同样只是 Python 的默认禁用外部 Adapter。启用前读取 [Wigolo 外部适配合同](references/wigolo-adapter.md)，先验证兼容当前主机的原生单文件镜像及源码冻结的已审计发行 SHA-256，再执行其真实 probe，并保存版本、能力、入口 SHA-256、HMAC 认证执行计划和原始结果；跨进程 plan/execute 必须共享 owner-only key file，密钥不进入工件、argv 或子进程环境。当前发行摘要白名单为空；标准 npm `wigolo@0.2.1` 是 Node/npm CLI，会在 probe 前被拒绝，不得以自制 fixture、重命名解释器或 dispatch 绿灯冒充可执行。discovery/fetch/cache 都是只读，watch 仅允许 `list`。禁止 watch mutation、challenge/stealth/CAPTCHA solver/hosted egress/任意 shell/自定义身份等路径；CJK 必须显式 experimental，且结果仍经过本 Skill 的来源、提取和 curator 门禁。
 
 不得把 `OAI-SearchBot`、`ChatGPT-User`、`Claude-User`、`Claude-SearchBot`、`Bytespider` 或其它第三方官方爬虫 UA 当作失败重试身份；UA 表示请求软件/服务身份，不是内容解锁开关。公开页可使用透明自有 UA 与受控 `Accept` / `Accept-Language` 内容协商，但 robots disallow、401/403、验证码、登录墙或访问控制必须停止并入账。
 
@@ -126,6 +137,7 @@ python3 scripts/rank_candidates.py \
   --manifest <run-dir>/run_manifest.json \
   --queries <run-dir>/queries.tsv \
   --sources <run-dir>/sources.tsv \
+  --source-outcomes <run-dir>/source_outcomes.jsonl \
   --evidence-cards <run-dir>/evidence_cards.tsv \
   --platform-coverage <run-dir>/platform_coverage.tsv \
   --lineage-manifest <run-dir>/rank-input-manifest.json \
@@ -136,7 +148,7 @@ python3 scripts/rank_candidates.py \
 
 脚本必须失败关闭：缺少研究上下文、证据引用不可解析、required 平台仍 pending、非公共 URL、账本不守恒或审核不独立时，不能产生完成通过。评分为相关性 35、来源质量 20、证据 20、平台内可比互动 15、新鲜/适用性 10；未观测互动得 0，不因样本数得到默认奖励。热度不改变证据等级。
 
-`rank-input-manifest.json` 必须在 curator 决策前冻结 ranker 实际读取的六个文件及其原始 SHA-256、记录数与 ID-set 摘要；curator 工件再绑定该 manifest。router 和 standalone ranker 都要在创建输出目录前核对同一组文件、候选/证据/来源集合，禁止 curator 验收集合 A 而 ranker 读取集合 B。
+`rank-input-manifest.json` 必须在 curator 决策前冻结 ranker 实际读取的全部必需输入（包括 `source_outcomes.jsonl`）及其原始 SHA-256、记录数与 ID-set 摘要；curator 工件再绑定该 manifest。router 和 standalone ranker 都要在创建输出目录前核对同一组文件、候选/证据/来源/outcome 集合，禁止 curator 验收集合 A 而 ranker 读取集合 B。
 
 冻结命令：
 
@@ -148,14 +160,21 @@ python3 scripts/lineage_contract.py freeze-rank-inputs \
 
 合格去重后不足 `top_n` 时交付真实 Top K 与缺口，禁止填充或声称 Top N 完成。平台覆盖与最终入选分布分别报告，不设平台保底名额。
 
+### 7.1 可选横纵研究模式
+
+`research_mode=hengzong` 时，在常规候选、来源与证据账本建立后读取 [横纵研究模式](references/hengzong-research.md)，运行 `scripts/hengzong_contract.py`。该模式固定完整横向/纵向 workstream 拓扑、有界地域×语言矩阵、明确 `event_date/published_at/as_of/start_date`，并要求 claim-source ledger、independence group、反证、`past_event → present_effect → implication`、三个带 trigger/invalidator 的情景和目标匹配的机会/决策路径。缺口只有经过 query/query_path/route 均不同的至少两路补搜后才可 retained；最终 brief 必须由非 worker 的 curator 对精确文件和完整 claim/workstream 集合验收。
+
 ### 8. 先验收本地研究包
 
 最低产物为：
 
 - `run_manifest.json`、`queries.tsv`、`sources.tsv`、`candidates.json`、`evidence_cards.tsv`；
+- `query_plan.json`、`source_outcomes.jsonl` 与 `research_checkpoint.json`（发生暂停时）；多路召回融合时另有 `fusion_result.json`。
 - `ranking.json`、`top.json`、`rejected.json`、`run_summary.json`、`package_validation.json`、`report.md`；
 - `source_gap_backlog.md` 与 `platform_coverage.tsv`。
 - `engine_probe.json`、`engine_plan.json` 与 `engine_execution.json`（执行过三引擎路由时）；其中必须能解释为何选择/跳过/降级每个后端。
+- `hengzong_plan.json`、`hengzong_brief.json` 与 `hengzong_curator_acceptance.json`（启用横纵模式时）。
+- `wigolo_probe.json`、`wigolo_plan.json` 与 `wigolo_result.json`（显式启用 Wigolo 且实际执行时）。
 
 只在结构校验通过且 curator 完成语义验收后，把报告称为最终研究结果。机器绿灯不证明摘录真的支持主张。
 

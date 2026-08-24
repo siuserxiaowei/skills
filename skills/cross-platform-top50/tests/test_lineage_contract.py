@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -16,6 +17,14 @@ SPEC = importlib.util.spec_from_file_location("lineage_contract", SCRIPT)
 assert SPEC and SPEC.loader
 lineage = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(lineage)
+
+SOURCE_SCRIPT = SCRIPT.with_name("source_contract.py")
+SOURCE_SPEC = importlib.util.spec_from_file_location(
+    "lineage_source_contract_test", SOURCE_SCRIPT
+)
+assert SOURCE_SPEC and SOURCE_SPEC.loader
+source_contract = importlib.util.module_from_spec(SOURCE_SPEC)
+SOURCE_SPEC.loader.exec_module(source_contract)
 
 
 def write_tsv(path: Path, rows: list[dict[str, object]]) -> None:
@@ -30,7 +39,7 @@ def write_tsv(path: Path, rows: list[dict[str, object]]) -> None:
         writer.writerows(rows)
 
 
-def make_run(root: Path) -> None:
+def make_run(root: Path, *, include_source_outcomes: bool = True) -> None:
     candidates = [
         {
             "id": "candidate-001",
@@ -48,7 +57,8 @@ def make_run(root: Path) -> None:
         root / "queries.tsv",
         [
             {
-                "platform": "web",
+                "query_id": "query-001",
+                "platform": "github",
                 "query": "test",
                 "backend": "search",
                 "executed_at": "2026-08-24T00:00:00Z",
@@ -57,7 +67,16 @@ def make_run(root: Path) -> None:
     )
     write_tsv(
         root / "sources.tsv",
-        [{"source_id": "source-001", "url": "https://example.com/"}],
+        [
+            {
+                "source_id": "source-001",
+                "url": "https://example.com/",
+                "platform": "github",
+                "query_id": "query-001",
+                "status": "verified",
+                "source_outcome_digest_sha256": "a" * 64,
+            }
+        ],
     )
     write_tsv(
         root / "evidence_cards.tsv",
@@ -67,6 +86,57 @@ def make_run(root: Path) -> None:
         root / "platform_coverage.tsv",
         [{"platform": "web", "coverage_status": "complete"}],
     )
+    if include_source_outcomes:
+        outcome = source_contract.normalize_source_outcome(
+            {
+                "schema": "top50-source-observation/v1",
+                "run_id": "run-001",
+                "query_id": "query-001",
+                "route_id": "github:public_http",
+                "platform_id": "github",
+                "adapter_id": "lineage-fixture",
+                "access_kind": "public_http",
+                "acquisition_method": "direct_http",
+                "evidence_tier": "full_content",
+                "url": "https://example.com/",
+                "observed_at": "2026-08-24T00:00:00Z",
+                "http_status": 200,
+                "result_state": "success",
+                "attempt": 1,
+                "max_attempts": 1,
+                "breaker_failure_count": 0,
+                "breaker_threshold": 3,
+                "breaker_cooldown_seconds": 300,
+                "timeframe": {"start": "2026-01-01", "end": "2026-08-24"},
+                "window_timezone": "UTC",
+                "published_at": "2026-08-01T00:00:00Z",
+                "published_at_confidence": "observed",
+                "date_basis": "document_metadata",
+                "content_sha256": "b" * 64,
+                "response_endpoint": "https://example.com/",
+                "payload_shape": "content_cards",
+                "content_card_count": 1,
+                "backend_id": "lineage-fixture",
+                "probe_id": "probe-001",
+                "authorization": "not_required",
+                "error_code": None,
+                "error_summary": None,
+                "retry_after_seconds": None,
+            },
+            now=datetime(2026, 8, 24, tzinfo=timezone.utc),
+        )
+        with (root / "sources.tsv").open(
+            encoding="utf-8", newline=""
+        ) as handle:
+            rows = list(csv.DictReader(handle, delimiter="\t"))
+        rows[0]["source_outcome_digest_sha256"] = outcome[
+            "outcome_digest_sha256"
+        ]
+        write_tsv(root / "sources.tsv", rows)
+        (root / "source_outcomes.jsonl").write_text(
+            json.dumps(outcome, ensure_ascii=False, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
 
 
 def write_manifest(root: Path) -> tuple[dict[str, object], Path]:
@@ -74,6 +144,18 @@ def write_manifest(root: Path) -> tuple[dict[str, object], Path]:
     path = root / "rank-input-manifest.json"
     path.write_text(json.dumps(manifest), encoding="utf-8")
     return manifest, path
+
+
+def rewrite_source_outcomes(
+    root: Path, outcomes: list[dict[str, object]]
+) -> None:
+    (root / "source_outcomes.jsonl").write_text(
+        "".join(
+            json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n"
+            for row in outcomes
+        ),
+        encoding="utf-8",
+    )
 
 
 def make_curator(
@@ -189,6 +271,16 @@ def make_curator(
 
 
 class RankInputManifestTests(unittest.TestCase):
+    def test_freeze_requires_authoritative_source_outcomes_ledger(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            make_run(root, include_source_outcomes=False)
+
+            with self.assertRaisesRegex(
+                lineage.LineageError, "source_outcomes.jsonl"
+            ):
+                lineage.build_rank_input_manifest(root, "run-001")
+
     def test_build_and_validate_round_trip(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -205,6 +297,165 @@ class RankInputManifestTests(unittest.TestCase):
             set(validated["paths"]), set(lineage.RANK_INPUT_SPECS)
         )
         self.assertEqual(validated["record_ids"]["candidates"], ["candidate-001"])
+
+    def test_source_outcomes_reject_digest_tampering_and_blank_jsonl_records(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            make_run(root)
+            outcome = json.loads(
+                (root / "source_outcomes.jsonl").read_text(encoding="utf-8")
+            )
+            outcome["outcome_digest_sha256"] = "0" * 64
+            rewrite_source_outcomes(root, [outcome])
+            with self.assertRaisesRegex(lineage.LineageError, "digest"):
+                lineage.build_rank_input_manifest(root, "run-001")
+
+            make_run(root)
+            (root / "source_outcomes.jsonl").write_text(
+                json.dumps(outcome) + "\n\n", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(lineage.LineageError, "blank JSONL"):
+                lineage.build_rank_input_manifest(root, "run-001")
+
+    def test_source_outcomes_preserve_unreferenced_routes_and_reject_source_binding_drift(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            make_run(root)
+            outcome = json.loads(
+                (root / "source_outcomes.jsonl").read_text(encoding="utf-8")
+            )
+            extra = source_contract.normalize_source_outcome(
+                {
+                    "schema": "top50-source-observation/v1",
+                    "run_id": "run-001",
+                    "query_id": "query-001",
+                    "route_id": "github:blocked-route",
+                    "platform_id": "github",
+                    "adapter_id": "blocked-fixture",
+                    "access_kind": "public_http",
+                    "acquisition_method": "direct_http",
+                    "evidence_tier": "metadata_only",
+                    "url": "https://example.com/blocked",
+                    "observed_at": "2026-08-24T00:00:00Z",
+                    "http_status": 403,
+                    "result_state": "robots_blocked",
+                    "attempt": 1,
+                    "max_attempts": 1,
+                    "breaker_failure_count": 0,
+                    "breaker_threshold": 3,
+                    "breaker_cooldown_seconds": 300,
+                    "timeframe": {
+                        "start": "2026-01-01",
+                        "end": "2026-08-24",
+                    },
+                    "window_timezone": "UTC",
+                    "published_at": None,
+                    "published_at_confidence": "unknown",
+                    "date_basis": "unavailable",
+                    "content_sha256": None,
+                    "response_endpoint": "https://example.com/blocked",
+                    "payload_shape": "unknown",
+                    "content_card_count": 0,
+                    "backend_id": "blocked-fixture",
+                    "probe_id": "probe-blocked",
+                    "authorization": "not_required",
+                    "error_code": "robots_blocked",
+                    "error_summary": "robots disallow",
+                    "retry_after_seconds": None,
+                },
+                now=datetime(2026, 8, 24, tzinfo=timezone.utc),
+            )
+            rewrite_source_outcomes(root, [outcome, extra])
+            manifest = lineage.build_rank_input_manifest(root, "run-001")
+            outcome_descriptor = next(
+                row
+                for row in manifest["files"]
+                if row["input_id"] == "source_outcomes"
+            )
+            self.assertEqual(outcome_descriptor["record_count"], 2)
+            self.assertEqual(manifest["counts"]["source_outcomes"], 2)
+
+            for field, value, message in (
+                ("query_id", "query-other", "query, platform, or URL"),
+                ("platform", "youtube", "query, platform, or URL"),
+                ("url", "https://example.com/other", "query, platform, or URL"),
+                (
+                    "source_outcome_digest_sha256",
+                    "f" * 64,
+                    "does not resolve",
+                ),
+            ):
+                make_run(root)
+                with (root / "sources.tsv").open(
+                    encoding="utf-8", newline=""
+                ) as handle:
+                    rows = list(csv.DictReader(handle, delimiter="\t"))
+                rows[0][field] = value
+                write_tsv(root / "sources.tsv", rows)
+                with self.subTest(field=field), self.assertRaisesRegex(
+                    lineage.LineageError, message
+                ):
+                    lineage.build_rank_input_manifest(root, "run-001")
+
+    def test_source_summary_rejects_accepted_and_complete_statuses(self) -> None:
+        for status in ("accepted", "complete"):
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                make_run(root)
+                with (root / "sources.tsv").open(
+                    encoding="utf-8", newline=""
+                ) as handle:
+                    rows = list(csv.DictReader(handle, delimiter="\t"))
+                rows[0]["status"] = status
+                write_tsv(root / "sources.tsv", rows)
+
+                with self.subTest(status=status), self.assertRaisesRegex(
+                    lineage.LineageError, "summary status"
+                ):
+                    lineage.build_rank_input_manifest(root, "run-001")
+
+    def test_curator_rejects_discovery_only_as_accepted_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            make_run(root)
+            outcome = json.loads(
+                (root / "source_outcomes.jsonl").read_text(encoding="utf-8")
+            )
+            outcome["acquisition"]["evidence_tier"] = "search_snippet"
+            outcome["acquisition"]["content_sha256"] = None
+            outcome["source_status"] = "discovered_only"
+            outcome["eligibility"] = "discovery_only"
+            outcome["may_enter_time_bounded_ranking"] = False
+            outcome["may_enter_general_review"] = False
+            outcome["outcome_digest_sha256"] = source_contract._digest(
+                outcome, omit=("outcome_digest_sha256",)
+            )
+            source_contract.validate_source_outcome(outcome)
+            rewrite_source_outcomes(root, [outcome])
+            with (root / "sources.tsv").open(
+                encoding="utf-8", newline=""
+            ) as handle:
+                rows = list(csv.DictReader(handle, delimiter="\t"))
+            rows[0]["source_outcome_digest_sha256"] = outcome[
+                "outcome_digest_sha256"
+            ]
+            write_tsv(root / "sources.tsv", rows)
+            manifest, manifest_path = write_manifest(root)
+            bundle = lineage.validate_rank_input_manifest(
+                manifest_path, "run-001"
+            )
+            curator = make_curator(root, manifest, manifest_path)
+
+            with self.assertRaisesRegex(
+                lineage.LineageError, "reviewable fetched source outcome"
+            ):
+                lineage.validate_curator_against_rank_bundle(
+                    curator, bundle, "run-001"
+                )
 
     def test_rejects_replaced_file_same_id_set(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

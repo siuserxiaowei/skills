@@ -10,9 +10,11 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import re
+import stat
 import sys
 import tempfile
 import unicodedata
@@ -20,9 +22,23 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Mapping, Sequence
 
 
+_QUERY_PLANNER_PATH = Path(__file__).with_name("research_planner.py")
+_QUERY_PLANNER_SPEC = importlib.util.spec_from_file_location(
+    "top50_route_research_planner", _QUERY_PLANNER_PATH
+)
+if _QUERY_PLANNER_SPEC is None or _QUERY_PLANNER_SPEC.loader is None:
+    raise ImportError(f"cannot load research planner from {_QUERY_PLANNER_PATH}")
+_QUERY_PLANNER = importlib.util.module_from_spec(_QUERY_PLANNER_SPEC)
+sys.modules[_QUERY_PLANNER_SPEC.name] = _QUERY_PLANNER
+_QUERY_PLANNER_SPEC.loader.exec_module(_QUERY_PLANNER)
+QueryPlanError = _QUERY_PLANNER.QueryPlanError
+validate_query_plan = _QUERY_PLANNER.validate_query_plan
+
+
 REQUEST_SCHEMA = "top50-route-scope/v1"
 BUNDLE_SCHEMA = "top50-route-bundle/v1"
 ROUTER_REQUEST_SCHEMA = "top50-router-request/v1"
+QUERY_PLAN_SCHEMA = "top50-research-query-plan/v1"
 SHARD_RESULT_CONTRACT = "top50-route-shard-result/v1"
 SHARD_RESULT_MANIFEST_CONTRACT = "top50-route-shard-result-manifest/v1"
 
@@ -76,6 +92,7 @@ ROOT_FIELDS = frozenset(
         "local_candidate_count",
         "extraction_complete",
         "risk",
+        "query_plan_path",
     }
 )
 REQUIRED_ROOT_FIELDS = frozenset(
@@ -99,6 +116,15 @@ PUBLIC_HTTP_BINDING_FIELDS = frozenset(
         "job_count",
     }
 )
+QUERY_PLAN_BINDING_FIELDS = frozenset(
+    {
+        "path",
+        "artifact_sha256",
+        "plan_digest_sha256",
+        "query_count",
+        "query_ids_sha256",
+    }
+)
 BUNDLE_ROOT_FIELDS = frozenset(
     {
         "schema",
@@ -118,6 +144,7 @@ BUNDLE_ROOT_FIELDS = frozenset(
         "artifacts",
         "plan_filenames",
         "bundle_digest_sha256",
+        "query_plan_binding",
     }
 )
 ASSUMPTION_FIELDS = frozenset({"field", "value", "reason"})
@@ -160,7 +187,7 @@ ROUTER_REQUEST_REQUIRED_FIELDS = frozenset(
     }
 )
 ROUTER_REQUEST_FIELDS = ROUTER_REQUEST_REQUIRED_FIELDS | frozenset(
-    {"public_http_binding"}
+    {"public_http_binding", "query_plan_binding"}
 )
 CHECKPOINT_FIELDS = frozenset(
     {
@@ -211,6 +238,100 @@ PLACEHOLDERS = frozenset(
 
 class RouteBundleError(ValueError):
     """The deterministic route-scope contract is invalid or unroutable."""
+
+
+def _canonical_value_sha256(value: Any) -> str:
+    try:
+        raw = json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    except (TypeError, ValueError) as exc:
+        raise RouteBundleError(f"value is not canonically serializable: {exc}") from exc
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _read_query_plan_binding(
+    path_value: Any, expected_run_id: str, expected_topic: str
+) -> dict[str, Any]:
+    if not isinstance(path_value, str) or not path_value.strip() or "\x00" in path_value:
+        raise RouteBundleError("query_plan_path must be a non-empty path string")
+    path = Path(path_value).expanduser().resolve(strict=False)
+    try:
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+        descriptor = os.open(path, flags)
+        with os.fdopen(descriptor, "rb") as handle:
+            before = os.fstat(handle.fileno())
+            if not stat.S_ISREG(before.st_mode):
+                raise OSError("query plan must be a regular file")
+            raw = handle.read()
+            after = os.fstat(handle.fileno())
+        if (before.st_dev, before.st_ino, before.st_size) != (
+            after.st_dev,
+            after.st_ino,
+            after.st_size,
+        ) or len(raw) != after.st_size:
+            raise OSError("query plan changed while it was read")
+        plan = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise RouteBundleError(f"cannot freeze query plan {path}: {exc}") from exc
+    if not isinstance(plan, Mapping) or plan.get("schema") != QUERY_PLAN_SCHEMA:
+        raise RouteBundleError(f"query plan schema must be {QUERY_PLAN_SCHEMA}")
+    if plan.get("run_id") != expected_run_id:
+        raise RouteBundleError("query plan run_id does not match the route scope")
+    if plan.get("topic") != expected_topic:
+        raise RouteBundleError("query plan topic does not match the route scope")
+    plan_digest = plan.get("plan_digest_sha256")
+    if not isinstance(plan_digest, str) or re.fullmatch(r"[0-9a-f]{64}", plan_digest) is None:
+        raise RouteBundleError("query plan digest must be lowercase SHA-256")
+    material = {key: value for key, value in plan.items() if key != "plan_digest_sha256"}
+    if plan_digest != _canonical_value_sha256(material):
+        raise RouteBundleError("query plan digest does not match its contents")
+    try:
+        validate_query_plan(plan)
+    except QueryPlanError as exc:
+        raise RouteBundleError(f"query plan semantic validation failed: {exc}") from exc
+    queries = plan.get("queries")
+    if not isinstance(queries, list) or not queries or any(
+        not isinstance(row, Mapping) for row in queries
+    ):
+        raise RouteBundleError("query plan queries must be a non-empty object array")
+    query_ids = [row.get("query_id") for row in queries]
+    if any(not isinstance(value, str) or not value for value in query_ids):
+        raise RouteBundleError("query plan query IDs must be non-empty strings")
+    if len(query_ids) != len(set(query_ids)):
+        raise RouteBundleError("query plan query IDs must be unique")
+    counts = plan.get("counts")
+    if not isinstance(counts, Mapping) or counts.get("queries") != len(query_ids):
+        raise RouteBundleError("query plan query count does not match its contents")
+    return {
+        "path": str(path),
+        "artifact_sha256": hashlib.sha256(raw).hexdigest(),
+        "plan_digest_sha256": plan_digest,
+        "query_count": len(query_ids),
+        "query_ids_sha256": _canonical_value_sha256(sorted(query_ids)),
+    }
+
+
+def _validate_query_plan_binding(value: Any, *, field: str) -> dict[str, Any]:
+    if not isinstance(value, dict) or set(value) != QUERY_PLAN_BINDING_FIELDS:
+        raise RouteBundleError(f"{field} fields are invalid")
+    if not isinstance(value.get("path"), str) or not value["path"]:
+        raise RouteBundleError(f"{field}.path must be non-empty")
+    for digest_field in (
+        "artifact_sha256",
+        "plan_digest_sha256",
+        "query_ids_sha256",
+    ):
+        if not isinstance(value.get(digest_field), str) or re.fullmatch(
+            r"[0-9a-f]{64}", str(value.get(digest_field))
+        ) is None:
+            raise RouteBundleError(f"{field}.{digest_field} must be lowercase SHA-256")
+    _validated_integer(value.get("query_count"), f"{field}.query_count", 1, 500)
+    return dict(value)
 
 
 def _is_bool(value: Any) -> bool:
@@ -385,6 +506,9 @@ def validate_scope(payload: Any) -> dict[str, Any]:
     )
     risk = _validated_enum(payload.get("risk", "low"), "risk", ("low", "medium", "high"))
     routes = _validate_routes(payload.get("platform_routes"))
+    query_plan_binding = _read_query_plan_binding(
+        payload.get("query_plan_path"), run_id, topic
+    )
     public_url_count = _validated_integer(payload.get("public_url_count", 0), "public_url_count", 0)
     local_candidate_count = _validated_integer(
         payload.get("local_candidate_count", 0), "local_candidate_count", 0
@@ -428,6 +552,7 @@ def validate_scope(payload: Any) -> dict[str, Any]:
         "local_candidate_count": local_candidate_count,
         "extraction_complete": extraction_complete,
         "risk": risk,
+        "query_plan_binding": query_plan_binding,
         "_scope_mode_was_defaulted": "platform_scope_mode" not in payload,
         "_risk_was_defaulted": "risk" not in payload,
     }
@@ -443,7 +568,7 @@ def _router_request(
     engine_mode: str,
     dual_run: bool,
 ) -> dict[str, Any]:
-    return {
+    request = {
         "schema": ROUTER_REQUEST_SCHEMA,
         "run_id": scope["run_id"],
         "stage": stage,
@@ -456,6 +581,9 @@ def _router_request(
         "run_dir": run_dir,
         "top_n": scope["top_n"],
     }
+    if stage == "discovery":
+        request["query_plan_binding"] = dict(scope["query_plan_binding"])
+    return request
 
 
 def _paths(root: PurePosixPath, shard_id: str) -> tuple[str, str]:
@@ -957,6 +1085,9 @@ def _validate_plan_paths(
     shard_ids: Sequence[str],
     root: PurePosixPath,
 ) -> None:
+    root_query_binding = _validate_query_plan_binding(
+        bundle.get("query_plan_binding"), field="query_plan_binding"
+    )
     plan_filenames = _bundle_object(bundle.get("plan_filenames"), "plan_filenames")
     if set(plan_filenames) != set(shard_ids):
         raise RouteBundleError("plan_filenames keys must equal the shard_id set")
@@ -977,6 +1108,19 @@ def _validate_plan_paths(
             if router_request.get("run_dir") != expected_run_dir:
                 raise RouteBundleError(
                     f"shard {shard_id} router_request.run_dir is inconsistent"
+                )
+            if row.get("stage") == "discovery":
+                binding = _validate_query_plan_binding(
+                    router_request.get("query_plan_binding"),
+                    field=f"shard {shard_id}.router_request.query_plan_binding",
+                )
+                if binding != root_query_binding:
+                    raise RouteBundleError(
+                        f"shard {shard_id} query plan binding does not match the route bundle"
+                    )
+            elif "query_plan_binding" in router_request:
+                raise RouteBundleError(
+                    f"shard {shard_id}.router_request.query_plan_binding is only allowed for discovery"
                 )
             if row.get("source_kind") == "public_http":
                 binding = _validate_public_http_binding(
@@ -1065,6 +1209,7 @@ def _validate_canonical_shard_semantics(
         "public_http_binding": public_binding,
         "local_candidate_count": local_count,
         "extraction_complete": extraction_complete,
+        "query_plan_binding": dict(bundle["query_plan_binding"]),
     }
     if bundle["engine_mode"] == "hybrid" and not (
         public_authorized or extraction_complete
@@ -1337,6 +1482,7 @@ def compile_route_bundle(payload: Any) -> dict[str, Any]:
         "login_mode": scope["login_mode"],
         "risk": scope["risk"],
         "platform_scope_mode": scope["platform_scope_mode"],
+        "query_plan_binding": dict(scope["query_plan_binding"]),
         "assumptions": assumptions,
         "coverage_targets": _coverage_targets(scope),
         "shards": shards,

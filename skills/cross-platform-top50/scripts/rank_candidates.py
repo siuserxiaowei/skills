@@ -27,6 +27,7 @@ try:
         LineageError,
         validate_curator_against_rank_bundle,
         validate_rank_input_manifest,
+        validate_source_outcome_bindings,
     )
 except ImportError:  # pragma: no cover - supports importlib-based unit tests
     import importlib.util
@@ -44,6 +45,7 @@ except ImportError:  # pragma: no cover - supports importlib-based unit tests
         _LINEAGE.validate_curator_against_rank_bundle
     )
     validate_rank_input_manifest = _LINEAGE.validate_rank_input_manifest
+    validate_source_outcome_bindings = _LINEAGE.validate_source_outcome_bindings
 
 
 TRACKING_PARAMETERS = {
@@ -74,7 +76,8 @@ ENGAGEMENT_COEFFICIENTS = {
     "shares": 3.0, "stars": 1.0, "forks": 2.0,
 }
 HANDLED_COVERAGE = {"complete", "partial", "blocked", "rejected", "not_applicable"}
-SOURCE_ALLOWED = {"fetched", "verified", "accepted", "complete"}
+SOURCE_SUMMARY_STATUSES = {"fetched", "verified", "blocked", "rejected"}
+SOURCE_REVIEWABLE_SUMMARIES = {"fetched", "verified"}
 PRIMARY_SOURCE_TYPES = {
     "primary", "official", "original_author", "original_data",
     "original_code", "original_document", "direct_observation",
@@ -83,7 +86,7 @@ PLACEHOLDERS = {"", "主题", "请填写主题", "请替换为真实主题", "{{
 PACKAGE_FILES = {
     "ranking.json", "top.json", "rejected.json", "run_summary.json",
     "package_validation.json", "run_manifest.json", "candidates.json",
-    "queries.tsv", "sources.tsv", "evidence_cards.tsv",
+    "queries.tsv", "sources.tsv", "source_outcomes.jsonl", "evidence_cards.tsv",
     "platform_coverage.tsv", "source_gap_backlog.md", "report.md",
 }
 
@@ -93,6 +96,7 @@ class ResearchContext:
     manifest: dict[str, Any]
     queries: list[dict[str, Any]]
     sources: list[dict[str, Any]]
+    source_outcomes: list[dict[str, Any]]
     evidence_cards: list[dict[str, Any]]
     platform_coverage: list[dict[str, Any]]
 
@@ -545,17 +549,62 @@ def validate_context(context: ResearchContext, rows: list[Any], topic: str) -> N
         if handled < 20 or recalled < 12:
             raise ValueError("20+ platform completion claim lacks 20 handled and 12 recalled platforms")
 
+    # Check the source ledger's local coverage invariant before validating its
+    # cross-artifact outcome binding.  This preserves the most actionable
+    # failure when a source names a platform absent from the coverage ledger.
+    for source in context.sources:
+        platform = _platform_value(source, "source row")
+        if platform not in coverage_by_platform:
+            raise ValueError(f"source platform lacks coverage: {platform}")
+
+    try:
+        validate_source_outcome_bindings(
+            run_id=str(manifest["run_id"]),
+            queries=context.queries,
+            sources=context.sources,
+            source_outcomes=context.source_outcomes,
+        )
+    except LineageError as exc:
+        raise ValueError(f"source outcome contract validation failed: {exc}") from exc
+
     source_index = _id_index(context.sources, "source_id", "source")
+    outcome_index = _id_index(
+        context.source_outcomes,
+        "outcome_digest_sha256",
+        "source outcome",
+    )
+    referenced_outcomes: set[str] = set()
     successful_source_counts: dict[str, int] = {}
     for source in context.sources:
         platform = _platform_value(source, "source row")
         if platform not in coverage_by_platform:
             raise ValueError(f"source platform lacks coverage: {platform}")
-        if source.get("status") not in SOURCE_ALLOWED | {"blocked", "rejected"}:
+        if source.get("status") not in SOURCE_SUMMARY_STATUSES:
             raise ValueError(f"source has pending or invalid status: {source.get('source_id')}")
-        if source.get("status") in SOURCE_ALLOWED and not is_safe_public_url(source.get("url")):
+        source_outcome_digest = str(
+            source.get("source_outcome_digest_sha256")
+        )
+        outcome = outcome_index.get(source_outcome_digest)
+        if outcome is None:
+            raise ValueError(
+                f"source outcome is missing: {source.get('source_id')}"
+            )
+        if source_outcome_digest in referenced_outcomes:
+            raise ValueError(
+                "multiple source rows must not share one source outcome"
+            )
+        referenced_outcomes.add(source_outcome_digest)
+        if (
+            source.get("query_id") != outcome.get("query_id")
+            or platform != outcome.get("platform_id")
+            or source.get("url") != outcome.get("url")
+        ):
+            raise ValueError(
+                f"source outcome binding mismatch: {source.get('source_id')}"
+            )
+        if source.get("status") in SOURCE_REVIEWABLE_SUMMARIES and not is_safe_public_url(source.get("url")):
             raise ValueError(f"source is not a safe public URL: {source.get('source_id')}")
-        if source.get("status") in SOURCE_ALLOWED:
+        if source.get("status") in SOURCE_REVIEWABLE_SUMMARIES:
             successful_source_counts[platform] = successful_source_counts.get(platform, 0) + 1
     evidence_index = _id_index(context.evidence_cards, "evidence_id", "evidence card")
     for card in context.evidence_cards:
@@ -564,7 +613,16 @@ def validate_context(context: ResearchContext, rows: list[Any], topic: str) -> N
         source = source_index.get(str(card.get("source_id")))
         if source is None:
             raise ValueError(f"evidence card source is missing: {card.get('evidence_id')}")
-        if source.get("status") not in SOURCE_ALLOWED:
+        outcome = outcome_index.get(
+            str(source.get("source_outcome_digest_sha256"))
+        )
+        if source.get("status") not in SOURCE_REVIEWABLE_SUMMARIES:
+            continue
+        if (
+            outcome is None
+            or outcome.get("source_status") != "fetched"
+            or outcome.get("may_enter_general_review") is not True
+        ):
             continue
         if not is_safe_public_url(card.get("source_url")):
             raise ValueError(f"evidence card source is not a safe public URL: {card.get('evidence_id')}")
@@ -597,7 +655,7 @@ def validate_context(context: ResearchContext, rows: list[Any], topic: str) -> N
             source = source_index.get(str(card.get("source_id"))) if card else None
             if (
                 source is not None
-                and source.get("status") in SOURCE_ALLOWED
+                and source.get("status") in SOURCE_REVIEWABLE_SUMMARIES
                 and canonical_url(str(source.get("url", ""))) == candidate_url
                 and _platform_value(source, "source row") != candidate_platform
             ):
@@ -654,6 +712,10 @@ def publication_reasons(row: Any, context: ResearchContext) -> list[str]:
         return reasons
     card_index = {str(item.get("evidence_id")): item for item in context.evidence_cards}
     source_index = {str(item.get("source_id")): item for item in context.sources}
+    outcome_index = {
+        str(item.get("outcome_digest_sha256")): item
+        for item in context.source_outcomes
+    }
     accepted_grades: list[str] = []
     accepted_urls: list[str] = []
     scope = context.manifest.get("scope", {})
@@ -670,8 +732,20 @@ def publication_reasons(row: Any, context: ResearchContext) -> list[str]:
             reasons.append(f"evidence_card_not_publishable:{evidence_id}")
             continue
         source = source_index.get(str(card.get("source_id")))
-        if source is None or source.get("status") not in SOURCE_ALLOWED:
+        if source is None or source.get("status") not in SOURCE_REVIEWABLE_SUMMARIES:
             reasons.append(f"evidence_source_not_publishable:{evidence_id}")
+            continue
+        outcome = outcome_index.get(
+            str(source.get("source_outcome_digest_sha256"))
+        )
+        if (
+            outcome is None
+            or outcome.get("source_status") != "fetched"
+            or outcome.get("may_enter_general_review") is not True
+        ):
+            reasons.append(
+                f"evidence_source_outcome_not_reviewable:{evidence_id}"
+            )
             continue
         if primary_only:
             source_type = str(source.get("source_type") or "").strip().casefold()
@@ -914,6 +988,7 @@ def load_bundle(args: argparse.Namespace) -> tuple[str, list[Any], ResearchConte
         "manifest": args.manifest,
         "queries": args.queries,
         "sources": args.sources,
+        "source_outcomes": args.source_outcomes,
         "evidence_cards": args.evidence_cards,
         "platform_coverage": args.platform_coverage,
     }
@@ -922,6 +997,7 @@ def load_bundle(args: argparse.Namespace) -> tuple[str, list[Any], ResearchConte
         "manifest": "run_manifest",
         "queries": "queries",
         "sources": "sources",
+        "source_outcomes": "source_outcomes",
         "evidence_cards": "evidence_cards",
         "platform_coverage": "platform_coverage",
     }
@@ -945,6 +1021,7 @@ def load_bundle(args: argparse.Namespace) -> tuple[str, list[Any], ResearchConte
         manifest=parsed["run_manifest"],
         queries=parsed["queries"],
         sources=parsed["sources"],
+        source_outcomes=parsed["source_outcomes"],
         evidence_cards=parsed["evidence_cards"],
         platform_coverage=parsed["platform_coverage"],
     )
@@ -1128,6 +1205,13 @@ def write_package(output_dir: Path, topic: str, rows: list[Any], context: Resear
             (temporary / name).write_text(json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         _write_tsv(temporary / "queries.tsv", context.queries)
         _write_tsv(temporary / "sources.tsv", context.sources)
+        (temporary / "source_outcomes.jsonl").write_text(
+            "".join(
+                json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n"
+                for row in context.source_outcomes
+            ),
+            encoding="utf-8",
+        )
         _write_tsv(temporary / "evidence_cards.tsv", context.evidence_cards)
         _write_tsv(temporary / "platform_coverage.tsv", context.platform_coverage)
         (temporary / "source_gap_backlog.md").write_text(
@@ -1153,6 +1237,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--manifest", type=Path, help="run_manifest.json; overrides bundled manifest")
     parser.add_argument("--queries", type=Path, help="queries.tsv; overrides bundled queries")
     parser.add_argument("--sources", type=Path, help="sources.tsv; overrides bundled sources")
+    parser.add_argument(
+        "--source-outcomes",
+        type=Path,
+        help="source_outcomes.jsonl; authoritative route outcomes",
+    )
     parser.add_argument("--evidence-cards", type=Path, help="evidence_cards.tsv; overrides bundled cards")
     parser.add_argument("--platform-coverage", type=Path, help="platform_coverage.tsv; optional when manifest embeds coverage")
     parser.add_argument(

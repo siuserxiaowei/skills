@@ -6,6 +6,9 @@
 
 输入使用 `top50-route-scope/v1`，合同见 [route-bundle-request.schema.json](../assets/engine-contracts/route-bundle-request.schema.json)。调用方先完成以下工作，再运行编译器：
 
+- 先用 `scripts/research_planner.py` 生成并落盘 `top50-research-query-plan/v1`；route scope 的 `query_plan_path` 必须指向这个不可变工件。编译器读取同一份原始字节快照，冻结规范化绝对路径、原始 SHA-256、计划自身 `plan_digest_sha256`、查询数与 query-ID set digest。
+- 每个 discovery shard 的 router request 必须携带与 bundle 根完全相同的 `query_plan_binding`；fetch/process/rank 不得携带。router 在计划时再次读取该路径并核对五项描述符，discovery 完成工件再绑定同一 QueryPlan。旧 `top50-scope-query-plan/v1`、重签后的替换包、文件漂移、集合漂移或没有绑定的旁路都失败关闭。
+
 - 把真实主题写入 `topic`；占位符、空白或纯标点失败关闭。
 - 为已 probe 和分类的平台显式给出 `platform_id`、`access_kind=platform_cli|browser_session` 和 `required`。不要为未检查的平台猜访问方式。
 - `platform_scope_mode=required_plus_default` 表示保留 canonical 28 覆盖目标；未显式分类的默认渠道只进入 `pending_classification`，不产生可执行 shard。只有用户明确表达“只/仅/include_only”时使用 `include_only`。
@@ -24,6 +27,7 @@
   "engine_mode": "auto",
   "dual_run": false,
   "login_mode": "user-assisted",
+  "query_plan_path": "research-runs/agent-search-001/query_plan.json",
   "platform_scope_mode": "required_plus_default",
   "platform_routes": [
     {"platform_id": "github", "access_kind": "platform_cli", "required": true},
@@ -54,6 +58,7 @@ python3 scripts/compile_route_bundle.py \
 
 - `platform_cli` 按 access kind 聚合为 Python discovery/fetch 两个 shard，不按平台复制计划。
 - `browser_session` 在 `public-only` 下生成 `blocked` 记录且 `login_requested=false`；在 `user-assisted` 下生成共享 `pending_checkpoint`，通过真实认证 probe 前没有 `router_request`。
+- bundle 中的 `top50-login-checkpoint/v1` 只是尚未执行的 checkpoint locator/创建意图：它冻结目标路径、平台集合和下一门禁，不含认证状态、查询进度或错误历史。真正暂停时，控制面必须用 `scripts/source_contract.py` 在该路径生成完整 `top50-research-checkpoint/v1`，再以其 TTL、摘要、幂等键和 pending IDs 恢复；不得把 locator 当成可恢复运行态或已完成登录。
 - 已授权公共 URL 生成 `public_http/fetch`，并把 `public_http_binding` 原样写入其 `router_request`，避免只凭数量把计划换绑到另一批 URL；已完成 extraction 的本地候选生成 `local_bundle/process` 与 `local_bundle/rank`。
 - `ready_to_plan` shard 的 `router_request` 可以直接作为 `engine_router.py plan --input` 的输入；`run_dir`、`plan_filename` 和 merge contract 已冻结。`blocked` / `pending_checkpoint` shard 不得送入 router。
 - `shared_handoffs` 固定保存 shard merge、独立 curator acceptance 和 rank 的失败关闭交接；它是后续主编排器的合同，不代表这些阶段已经完成。`shards-to-merge.input_shard_ids` 按 bundle 顺序精确列出 `status=ready_to_plan && stage!=rank` 的 shard；`blocked` / `pending_checkpoint` 只保留在 shard 与 coverage 状态中，不成为必须 `complete` 的 merge 输入。该集合可以为空，调用方不得自行补入待登录 shard。merge 输入工件使用严格的 [`top50-route-shard-result-manifest/v1`](../assets/engine-contracts/route-shard-result-manifest.schema.json)，其中每个单项结果仍使用 `top50-route-shard-result/v1`；manifest 只有在顶层 `status=complete` 且所有记录均 complete 时才能满足 handoff。`local-bundle-rank` 明确排除：rank 只能在 `merge-to-curate` 产出独立验收结果且 `curate-to-rank.required_status=accepted` 后执行。

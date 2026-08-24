@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import importlib.util
 import csv
 import hashlib
+import importlib.util
 import json
 import subprocess
 import sys
@@ -25,6 +25,60 @@ LINEAGE_SPEC = importlib.util.spec_from_file_location("lineage_contract_test", L
 assert LINEAGE_SPEC and LINEAGE_SPEC.loader
 lineage = importlib.util.module_from_spec(LINEAGE_SPEC)
 LINEAGE_SPEC.loader.exec_module(lineage)
+
+SOURCE_CONTRACT_SCRIPT = SCRIPT.with_name("source_contract.py")
+SOURCE_CONTRACT_SPEC = importlib.util.spec_from_file_location(
+    "rank_source_contract_test", SOURCE_CONTRACT_SCRIPT
+)
+assert SOURCE_CONTRACT_SPEC and SOURCE_CONTRACT_SPEC.loader
+source_contract = importlib.util.module_from_spec(SOURCE_CONTRACT_SPEC)
+SOURCE_CONTRACT_SPEC.loader.exec_module(source_contract)
+
+
+def authoritative_source_outcome(
+    row: dict[str, object],
+    *,
+    run_id: str = "run-test",
+    query_id: str | None = None,
+) -> dict[str, object]:
+    source_key = hashlib.sha256(str(row["id"]).encode("utf-8")).hexdigest()[:24]
+    return source_contract.normalize_source_outcome(
+        {
+        "schema": "top50-source-observation/v1",
+        "run_id": run_id,
+        "query_id": query_id or f"query-source-{source_key}",
+        "route_id": f"{row['platform']}:public_http",
+        "platform_id": row["platform"],
+        "adapter_id": "rank-fixture-public-http",
+        "access_kind": "public_http",
+        "acquisition_method": "direct_http",
+        "evidence_tier": "full_content",
+        "url": row["url"],
+        "observed_at": "2026-08-23T09:00:00+08:00",
+        "http_status": 200,
+        "result_state": "success",
+        "attempt": 1,
+        "max_attempts": 1,
+        "breaker_failure_count": 0,
+        "breaker_threshold": 3,
+        "breaker_cooldown_seconds": 300,
+        "timeframe": {"start": "2026-01-01", "end": "2026-08-24"},
+        "window_timezone": "UTC",
+        "published_at": "2026-07-01T00:00:00Z",
+        "published_at_confidence": "observed",
+        "date_basis": "document_metadata",
+        "content_sha256": "a" * 64,
+        "response_endpoint": row["url"],
+        "payload_shape": "content_cards",
+        "content_card_count": 1,
+        "backend_id": "rank-fixture",
+        "probe_id": "probe-rank-fixture",
+        "authorization": "not_required",
+        "error_code": None,
+        "error_summary": None,
+        "retry_after_seconds": None,
+        },
+    )
 
 
 def candidate(identifier: str, *, url: str | None = None) -> dict[str, object]:
@@ -57,6 +111,12 @@ def bundle(rows: list[dict[str, object]]) -> dict[str, object]:
         platform = str(row["platform"])
         platforms[platform] = platforms.get(platform, 0) + 1
 
+    source_outcomes = [
+        authoritative_source_outcome(
+            row, query_id=f"query-{row['platform']}-exact"
+        )
+        for row in rows
+    ]
     sources = [
         {
             "source_id": f"src-{row['id']}",
@@ -64,8 +124,10 @@ def bundle(rows: list[dict[str, object]]) -> dict[str, object]:
             "status": "verified",
             "source_type": "primary",
             "platform": row["platform"],
+            "query_id": outcome["query_id"],
+            "source_outcome_digest_sha256": outcome["outcome_digest_sha256"],
         }
-        for row in rows
+        for row, outcome in zip(rows, source_outcomes)
     ]
     cards = [
         {
@@ -87,6 +149,7 @@ def bundle(rows: list[dict[str, object]]) -> dict[str, object]:
         queries.extend(
             [
                 {
+                    "query_id": f"query-{platform}-exact",
                     "platform": platform,
                     "query": "topic exact",
                     "backend": "public_search",
@@ -95,6 +158,7 @@ def bundle(rows: list[dict[str, object]]) -> dict[str, object]:
                     "candidate_count": platforms[platform],
                 },
                 {
+                    "query_id": f"query-{platform}-practice",
                     "platform": platform,
                     "query": "topic practical guide",
                     "backend": "public_search",
@@ -153,6 +217,7 @@ def bundle(rows: list[dict[str, object]]) -> dict[str, object]:
         "run_manifest": manifest,
         "queries": queries,
         "sources": sources,
+        "source_outcomes": source_outcomes,
         "evidence_cards": cards,
         "platform_coverage": coverage,
     }
@@ -163,6 +228,7 @@ def context_from(payload: dict[str, object]):
         manifest=payload["run_manifest"],
         queries=payload["queries"],
         sources=payload["sources"],
+        source_outcomes=payload["source_outcomes"],
         evidence_cards=payload["evidence_cards"],
         platform_coverage=payload["platform_coverage"],
     )
@@ -174,6 +240,7 @@ def write_frozen_rank_inputs(root: Path, payload: dict[str, object]) -> dict[str
         "run_manifest": root / "run_manifest.json",
         "queries": root / "queries.tsv",
         "sources": root / "sources.tsv",
+        "source_outcomes": root / "source_outcomes.jsonl",
         "evidence_cards": root / "evidence_cards.tsv",
         "platform_coverage": root / "platform_coverage.tsv",
     }
@@ -182,6 +249,13 @@ def write_frozen_rank_inputs(root: Path, payload: dict[str, object]) -> dict[str
         encoding="utf-8",
     )
     paths["run_manifest"].write_text(json.dumps(payload["run_manifest"]), encoding="utf-8")
+    paths["source_outcomes"].write_text(
+        "".join(
+            json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n"
+            for row in payload["source_outcomes"]
+        ),
+        encoding="utf-8",
+    )
 
     def write_tsv(path: Path, rows: list[dict[str, object]]) -> None:
         with path.open("w", encoding="utf-8", newline="") as handle:
@@ -293,6 +367,8 @@ def frozen_rank_cli_command(
         str(paths["queries"]),
         "--sources",
         str(paths["sources"]),
+        "--source-outcomes",
+        str(paths["source_outcomes"]),
         "--evidence-cards",
         str(paths["evidence_cards"]),
         "--platform-coverage",
@@ -309,6 +385,330 @@ def frozen_rank_cli_command(
 
 
 class RankingGateTests(unittest.TestCase):
+    def test_direct_api_rejects_invalid_or_forged_source_outcomes(self) -> None:
+        def bind_outcome_digest(payload: dict[str, object]) -> None:
+            payload["sources"][0]["source_outcome_digest_sha256"] = (
+                payload["source_outcomes"][0]["outcome_digest_sha256"]
+            )
+
+        def reseal(payload: dict[str, object]) -> None:
+            outcome = payload["source_outcomes"][0]
+            outcome["outcome_digest_sha256"] = source_contract._digest(
+                outcome,
+                omit=("outcome_digest_sha256",),
+            )
+            bind_outcome_digest(payload)
+
+        cases = (
+            (
+                "unknown field",
+                lambda payload: (
+                    payload["source_outcomes"][0].__setitem__(
+                        "reviewer_authority", "accepted"
+                    ),
+                    reseal(payload),
+                ),
+                "source outcome contract validation failed",
+            ),
+            (
+                "fake digest",
+                lambda payload: (
+                    payload["source_outcomes"][0].__setitem__(
+                        "outcome_digest_sha256", "f" * 64
+                    ),
+                    bind_outcome_digest(payload),
+                ),
+                "source outcome contract validation failed",
+            ),
+            (
+                "forged derived status",
+                lambda payload: (
+                    payload["source_outcomes"][0].__setitem__(
+                        "source_status", "discovered_only"
+                    ),
+                    reseal(payload),
+                ),
+                "source outcome contract validation failed",
+            ),
+        )
+        for label, mutate, message in cases:
+            with self.subTest(label=label):
+                rows = [candidate(f"forged-{label.replace(' ', '-')}")]
+                payload = bundle(rows)
+                mutate(payload)
+                with self.assertRaisesRegex(ValueError, message):
+                    ranking.rank_candidates(
+                        rows,
+                        top_n=1,
+                        context=context_from(payload),
+                        topic="test topic",
+                    )
+
+    def test_direct_api_rejects_resigned_outcome_and_source_binding_drift(self) -> None:
+        def reseal(outcome: dict[str, object]) -> None:
+            outcome["outcome_digest_sha256"] = source_contract._digest(
+                outcome,
+                omit=("outcome_digest_sha256",),
+            )
+
+        def mutate_outcome(
+            payload: dict[str, object], field: str, value: str
+        ) -> None:
+            outcome = payload["source_outcomes"][0]
+            outcome[field] = value
+            reseal(outcome)
+            payload["sources"][0]["source_outcome_digest_sha256"] = outcome[
+                "outcome_digest_sha256"
+            ]
+
+        def mutate_outcome_platform(payload: dict[str, object]) -> None:
+            outcome = payload["source_outcomes"][0]
+            outcome["platform_id"] = "youtube"
+            outcome["breaker"]["scope"] = (
+                f"youtube:{outcome['adapter_id']}"
+            )
+            reseal(outcome)
+            payload["sources"][0]["source_outcome_digest_sha256"] = outcome[
+                "outcome_digest_sha256"
+            ]
+
+        cases = (
+            (
+                "run",
+                lambda payload: mutate_outcome(
+                    payload, "run_id", "run-attacker"
+                ),
+                "another run",
+            ),
+            (
+                "query",
+                lambda payload: mutate_outcome(
+                    payload, "query_id", "query-attacker"
+                ),
+                "frozen query ledger",
+            ),
+            (
+                "platform",
+                mutate_outcome_platform,
+                "frozen query ledger",
+            ),
+            (
+                "url",
+                lambda payload: mutate_outcome(
+                    payload, "url", "https://example.com/replacement"
+                ),
+                "source row query, platform, or URL",
+            ),
+            (
+                "source query",
+                lambda payload: payload["sources"][0].__setitem__(
+                    "query_id", "query-attacker"
+                ),
+                "source row query, platform, or URL",
+            ),
+        )
+        for label, mutate, message in cases:
+            with self.subTest(label=label):
+                rows = [candidate(f"binding-{label.replace(' ', '-')}")]
+                payload = bundle(rows)
+                mutate(payload)
+                with self.assertRaisesRegex(ValueError, message):
+                    ranking.rank_candidates(
+                        rows,
+                        top_n=1,
+                        context=context_from(payload),
+                        topic="test topic",
+                    )
+
+    def test_unreferenced_blocked_route_outcome_is_preserved_without_blocking_rank(
+        self,
+    ) -> None:
+        rows = [candidate("one")]
+        payload = bundle(rows)
+        extra = source_contract.normalize_source_outcome(
+            {
+                "schema": "top50-source-observation/v1",
+                "run_id": "run-test",
+                "query_id": "query-github-exact",
+                "route_id": "github:blocked-route",
+                "platform_id": "github",
+                "adapter_id": "blocked-fixture",
+                "access_kind": "public_http",
+                "acquisition_method": "direct_http",
+                "evidence_tier": "metadata_only",
+                "url": "https://example.com/blocked-route",
+                "observed_at": "2026-08-23T09:00:00+08:00",
+                "http_status": 403,
+                "result_state": "robots_blocked",
+                "attempt": 1,
+                "max_attempts": 1,
+                "breaker_failure_count": 0,
+                "breaker_threshold": 3,
+                "breaker_cooldown_seconds": 300,
+                "timeframe": {"start": "2026-01-01", "end": "2026-08-24"},
+                "window_timezone": "UTC",
+                "published_at": None,
+                "published_at_confidence": "unknown",
+                "date_basis": "unavailable",
+                "content_sha256": None,
+                "response_endpoint": "https://example.com/blocked-route",
+                "payload_shape": "unknown",
+                "content_card_count": 0,
+                "backend_id": "blocked-fixture",
+                "probe_id": "probe-blocked",
+                "authorization": "not_required",
+                "error_code": "robots_blocked",
+                "error_summary": "robots disallow",
+                "retry_after_seconds": None,
+            }
+        )
+        payload["source_outcomes"].append(extra)
+
+        result = ranking.rank_candidates(
+            rows,
+            top_n=1,
+            context=context_from(payload),
+            topic="test topic",
+        )
+
+        self.assertEqual([row["id"] for row in result.selected], ["one"])
+        self.assertEqual(len(payload["source_outcomes"]), 2)
+
+    def test_cli_rejects_sources_accepted_without_authoritative_source_outcomes(
+        self,
+    ) -> None:
+        rows = [candidate("outcome-bypass")]
+        payload = bundle(rows)
+        payload["sources"][0]["status"] = "accepted"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = {
+                "candidates": root / "candidates.json",
+                "run_manifest": root / "run_manifest.json",
+                "queries": root / "queries.tsv",
+                "sources": root / "sources.tsv",
+                "evidence_cards": root / "evidence_cards.tsv",
+                "platform_coverage": root / "platform_coverage.tsv",
+            }
+            paths["candidates"].write_text(
+                json.dumps({"topic": payload["topic"], "candidates": rows}),
+                encoding="utf-8",
+            )
+            paths["run_manifest"].write_text(
+                json.dumps(payload["run_manifest"]), encoding="utf-8"
+            )
+
+            def write_tsv(path: Path, values: list[dict[str, object]]) -> None:
+                with path.open("w", encoding="utf-8", newline="") as handle:
+                    writer = csv.DictWriter(
+                        handle,
+                        fieldnames=list(values[0]),
+                        delimiter="\t",
+                        lineterminator="\n",
+                    )
+                    writer.writeheader()
+                    writer.writerows(values)
+
+            write_tsv(paths["queries"], payload["queries"])
+            write_tsv(paths["sources"], payload["sources"])
+            write_tsv(paths["evidence_cards"], payload["evidence_cards"])
+            write_tsv(paths["platform_coverage"], payload["platform_coverage"])
+            manifest = {
+                "contract_version": "top50-rank-input-manifest/v1",
+                "run_id": "run-test",
+                "stage": "worker_check",
+                "status": "complete",
+                "producer": {
+                    "engine_id": "python-control-plane",
+                    "engine_version": "legacy-six-file-fixture",
+                },
+                "files": [],
+                "counts": {"files": 6},
+            }
+            for input_id, path in paths.items():
+                media_type = (
+                    "application/json"
+                    if input_id in {"candidates", "run_manifest"}
+                    else "text/tab-separated-values"
+                )
+                if media_type == "application/json":
+                    parsed = json.loads(path.read_text(encoding="utf-8"))
+                else:
+                    with path.open(
+                        encoding="utf-8", newline=""
+                    ) as handle:
+                        parsed = list(csv.DictReader(handle, delimiter="\t"))
+                ids = lineage.record_ids(input_id, parsed)
+                _, _, record_kind = lineage.RANK_INPUT_SPECS[input_id]
+                manifest["files"].append(
+                    {
+                        "input_id": input_id,
+                        "role": f"{record_kind}_ledger",
+                        "path": str(path),
+                        "media_type": media_type,
+                        "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                        "record_kind": record_kind,
+                        "record_count": len(ids),
+                        "record_ids_sha256": lineage.canonical_json_sha256(ids),
+                    }
+                )
+                manifest["counts"][input_id] = len(ids)
+            manifest["result_digest_sha256"] = lineage.canonical_json_sha256(
+                manifest
+            )
+            paths["lineage"] = root / "rank-input-manifest.json"
+            paths["lineage"].write_text(json.dumps(manifest), encoding="utf-8")
+            paths["curator"] = root / "curate-result.json"
+            paths["curator"].write_text(
+                json.dumps(
+                    {
+                        "run_id": "run-test",
+                        "status": "accepted",
+                        "accepted_candidate_ids": ["outcome-bypass"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output = root / "ranking-output"
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--input",
+                    str(paths["candidates"]),
+                    "--manifest",
+                    str(paths["run_manifest"]),
+                    "--queries",
+                    str(paths["queries"]),
+                    "--sources",
+                    str(paths["sources"]),
+                    "--source-outcomes",
+                    str(root / "source_outcomes.jsonl"),
+                    "--evidence-cards",
+                    str(paths["evidence_cards"]),
+                    "--platform-coverage",
+                    str(paths["platform_coverage"]),
+                    "--lineage-manifest",
+                    str(paths["lineage"]),
+                    "--curator-acceptance",
+                    str(paths["curator"]),
+                    "--output-dir",
+                    str(output),
+                    "--top",
+                    "1",
+                ],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 2, completed.stderr)
+            self.assertRegex(
+                completed.stderr, "source_outcomes.jsonl|exactly seven files"
+            )
+            self.assertFalse(output.exists())
+
     def test_candidate_self_report_cannot_replace_run_and_evidence_context(self) -> None:
         with self.assertRaisesRegex(ValueError, "research context"):
             ranking.rank_candidates([candidate("one")], top_n=1)
@@ -422,6 +822,7 @@ class RankingGateTests(unittest.TestCase):
         rows = [candidate("one"), candidate("two")]
         payload = bundle(rows)
         payload["sources"] = payload["sources"][:1]
+        payload["source_outcomes"] = payload["source_outcomes"][:1]
         payload["evidence_cards"] = payload["evidence_cards"][:1]
         payload["run_manifest"]["counts"]["sources"] = 1
         payload["run_manifest"]["counts"]["evidence_cards"] = 1
@@ -434,7 +835,18 @@ class RankingGateTests(unittest.TestCase):
     def test_candidate_direct_source_cannot_claim_another_platform(self) -> None:
         rows = [candidate("one")]
         payload = bundle(rows)
+        youtube_row = dict(rows[0])
+        youtube_row["platform"] = "youtube"
+        youtube_outcome = authoritative_source_outcome(
+            youtube_row,
+            query_id="query-youtube-exact",
+        )
         payload["sources"][0]["platform"] = "youtube"
+        payload["sources"][0]["query_id"] = "query-youtube-exact"
+        payload["source_outcomes"][0] = youtube_outcome
+        payload["sources"][0]["source_outcome_digest_sha256"] = (
+            youtube_outcome["outcome_digest_sha256"]
+        )
         youtube_coverage = {
             "platform": "youtube",
             "coverage_status": "complete",
@@ -449,6 +861,7 @@ class RankingGateTests(unittest.TestCase):
         payload["queries"].extend(
             [
                 {
+                    "query_id": "query-youtube-exact",
                     "platform": "youtube",
                     "query": "topic exact",
                     "backend": "public_search",
@@ -457,6 +870,7 @@ class RankingGateTests(unittest.TestCase):
                     "candidate_count": 0,
                 },
                 {
+                    "query_id": "query-youtube-practice",
                     "platform": "youtube",
                     "query": "topic practical guide",
                     "backend": "public_search",
@@ -749,6 +1163,7 @@ class EngagementAndCliTests(unittest.TestCase):
                 "candidates.json",
                 "queries.tsv",
                 "sources.tsv",
+                "source_outcomes.jsonl",
                 "evidence_cards.tsv",
                 "platform_coverage.tsv",
                 "source_gap_backlog.md",
@@ -774,6 +1189,8 @@ class EngagementAndCliTests(unittest.TestCase):
                 str(paths["queries"]),
                 "--sources",
                 str(paths["sources"]),
+                "--source-outcomes",
+                str(paths["source_outcomes"]),
                 "--evidence-cards",
                 str(paths["evidence_cards"]),
                 "--platform-coverage",
@@ -958,7 +1375,30 @@ class ExtendedBehaviorTests(unittest.TestCase):
             (lambda payload: payload["run_manifest"]["phases"].__setitem__("fetch", "pending"), "phase"),
             (lambda payload: payload["platform_coverage"][0].__setitem__("coverage_status", "pending"), "coverage"),
             (lambda payload: payload["evidence_cards"][0].__setitem__("reviewer_id", "worker-1"), "reviewer"),
-            (lambda payload: payload["sources"][0].__setitem__("url", "http://127.0.0.1/a"), "safe public URL"),
+            (
+                lambda payload: (
+                    payload["sources"][0].__setitem__(
+                        "url", "http://127.0.0.1/a"
+                    ),
+                    payload["source_outcomes"][0].__setitem__(
+                        "url", "http://127.0.0.1/a"
+                    ),
+                    payload["source_outcomes"][0].__setitem__(
+                        "outcome_digest_sha256",
+                        source_contract._digest(
+                            payload["source_outcomes"][0],
+                            omit=("outcome_digest_sha256",),
+                        ),
+                    ),
+                    payload["sources"][0].__setitem__(
+                        "source_outcome_digest_sha256",
+                        payload["source_outcomes"][0][
+                            "outcome_digest_sha256"
+                        ],
+                    ),
+                ),
+                "safe public URL",
+            ),
         )
         for mutate, message in mutations:
             rows = [candidate("one")]
@@ -1153,6 +1593,8 @@ class ExtendedBehaviorTests(unittest.TestCase):
                     str(paths["queries"]),
                     "--sources",
                     str(paths["sources"]),
+                    "--source-outcomes",
+                    str(paths["source_outcomes"]),
                     "--evidence-cards",
                     str(paths["evidence_cards"]),
                     "--platform-coverage",

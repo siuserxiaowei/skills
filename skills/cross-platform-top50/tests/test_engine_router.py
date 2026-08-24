@@ -24,9 +24,19 @@ router = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = router
 SPEC.loader.exec_module(router)
 
+PLANNER_SCRIPT = SCRIPT.with_name("research_planner.py")
+PLANNER_SPEC = importlib.util.spec_from_file_location(
+    "research_planner_for_engine_router_tests", PLANNER_SCRIPT
+)
+assert PLANNER_SPEC and PLANNER_SPEC.loader
+planner = importlib.util.module_from_spec(PLANNER_SPEC)
+sys.modules[PLANNER_SPEC.name] = planner
+PLANNER_SPEC.loader.exec_module(planner)
+
 _ARTIFACT_FIXTURES = tempfile.TemporaryDirectory(prefix="top50-router-test-artifacts-")
 atexit.register(_ARTIFACT_FIXTURES.cleanup)
 _ARTIFACT_SEQUENCE = 0
+_QUERY_PLAN_SEQUENCE = 0
 
 
 def probe(
@@ -115,6 +125,15 @@ def request(**overrides: object) -> dict[str, object]:
         "dual_run": False,
     }
     value.update(overrides)
+    if value["stage"] in {"discovery", "full"} and "query_plan_binding" not in overrides:
+        plan_run_id = str(value["run_id"])
+        if not plan_run_id or any(
+            character
+            not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
+            for character in plan_run_id
+        ):
+            plan_run_id = "run-001"
+        value["query_plan_binding"] = query_plan_binding(plan_run_id)
     if (
         value["source_kind"] == "public_http"
         and value["stage"] in {"fetch", "full"}
@@ -128,6 +147,52 @@ def request(**overrides: object) -> dict[str, object]:
             "job_count": 1,
         }
     return value
+
+
+def query_plan_binding(run_id: str, query_ids: list[str] | None = None) -> dict[str, object]:
+    global _QUERY_PLAN_SEQUENCE
+    _QUERY_PLAN_SEQUENCE += 1
+    requested_count = max(1, len(query_ids)) if query_ids is not None else 1
+    intents = (
+        "exact",
+        "tutorial",
+        "practice",
+        "review",
+        "case_study",
+        "controversy",
+        "failure",
+        "primary_source",
+    )[:requested_count]
+    intents = list(intents)
+    if len(intents) != requested_count:
+        raise AssertionError("router QueryPlan fixture supports at most eight queries")
+    plan: dict[str, object] = planner.compile_query_plan(
+        {
+            "schema": "top50-research-query-request/v1",
+            "run_id": run_id,
+            "topic": "Agent research",
+            "purpose": "Router contract testing",
+            "platforms": [{"platform_id": "github", "required": True}],
+            "aliases": [],
+            "languages": ["en"],
+            "intents": intents,
+            "timeframe": {"start": "2026-07-25", "end": "2026-08-24"},
+            "tokenizer_mode": "cjk_bigram",
+        }
+    )
+    actual_ids = [str(row["query_id"]) for row in plan["queries"]]
+    path = (
+        Path(_ARTIFACT_FIXTURES.name)
+        / f"query-plan-{_QUERY_PLAN_SEQUENCE:05d}.json"
+    )
+    path.write_text(json.dumps(plan), encoding="utf-8")
+    return {
+        "path": str(path),
+        "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "plan_digest_sha256": plan["plan_digest_sha256"],
+        "query_count": len(actual_ids),
+        "query_ids_sha256": canonical_digest(sorted(actual_ids)),
+    }
 
 
 def make_engine(path: Path, body: str) -> Path:
@@ -157,6 +222,23 @@ def canonical_digest(value: object) -> str:
         value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     ).encode("utf-8")
     return hashlib.sha256(canonical).hexdigest()
+
+
+def discovery_binding_from_plan(binding: dict[str, object]) -> dict[str, object]:
+    return {
+        "relation": "research_query_plan",
+        "path": binding["path"],
+        "artifact_sha256": binding["artifact_sha256"],
+        "contract": "top50-research-query-plan/v1",
+        "run_id": json.loads(Path(str(binding["path"])).read_text())["run_id"],
+        "stage": "scope",
+        "required_status": "complete",
+        "producer_engine_id": "research-planner",
+        "result_digest_sha256": binding["plan_digest_sha256"],
+        "record_kind": "query",
+        "record_count": binding["query_count"],
+        "record_ids_sha256": binding["query_ids_sha256"],
+    }
 
 
 def bound_artifact(
@@ -298,16 +380,9 @@ def stage_artifact(
     if not value["input_bindings"]:
         if stage == "discovery":
             query_ids = [str(row["query_id"]) for row in value["queries"]]
-            upstream = {
-                "contract_version": "top50-scope-query-plan/v1",
-                "run_id": run_id,
-                "stage": "scope",
-                "queries": [{"query_id": item} for item in query_ids],
-            }
+            plan_binding = query_plan_binding(run_id, query_ids)
             value["input_bindings"] = [
-                bound_artifact(
-                    "scope_query_plan", upstream, record_kind="query", record_ids=query_ids
-                )
+                discovery_binding_from_plan(plan_binding)
             ]
         elif stage == "fetch":
             discoveries = [
@@ -469,6 +544,55 @@ def fetch_result(
 
 
 class RequestValidationTests(unittest.TestCase):
+    def test_discovery_requires_exact_research_query_plan_snapshot(self) -> None:
+        binding = query_plan_binding("run-001")
+        normalized = router.validate_request(
+            request(stage="discovery", query_plan_binding=binding)
+        )
+        self.assertEqual(normalized["query_plan_binding"], binding)
+
+        old_path = Path(str(binding["path"]))
+        old = json.loads(old_path.read_text(encoding="utf-8"))
+        old["schema"] = "top50-scope-query-plan/v1"
+        old["plan_digest_sha256"] = canonical_digest(
+            {key: value for key, value in old.items() if key != "plan_digest_sha256"}
+        )
+        old_path.write_text(json.dumps(old), encoding="utf-8")
+        old_binding = {
+            **binding,
+            "artifact_sha256": hashlib.sha256(old_path.read_bytes()).hexdigest(),
+            "plan_digest_sha256": old["plan_digest_sha256"],
+        }
+        with self.assertRaisesRegex(router.RouterError, "research-query-plan"):
+            router.validate_request(
+                request(stage="discovery", query_plan_binding=old_binding)
+            )
+
+    def test_discovery_rejects_query_plan_drift_replacement_and_bypass(self) -> None:
+        missing = request(stage="fetch", source_kind="platform_cli")
+        missing["stage"] = "discovery"
+        with self.assertRaisesRegex(router.RouterError, "query_plan_binding"):
+            router.validate_request(missing)
+
+        for field, value in (
+            ("artifact_sha256", "0" * 64),
+            ("plan_digest_sha256", "1" * 64),
+            ("query_count", 99),
+            ("query_ids_sha256", "2" * 64),
+        ):
+            binding = query_plan_binding("run-001")
+            tampered = {**binding, field: value}
+            with self.subTest(field=field), self.assertRaises(router.RouterError):
+                router.validate_request(
+                    request(stage="discovery", query_plan_binding=tampered)
+                )
+
+        replacement = query_plan_binding("other-run")
+        with self.assertRaisesRegex(router.RouterError, "run_id"):
+            router.validate_request(
+                request(stage="discovery", query_plan_binding=replacement)
+            )
+
     def test_public_fetch_requires_a_frozen_manifest_binding(self) -> None:
         jobs = [
             {
@@ -2092,6 +2216,134 @@ class ExecutionTests(unittest.TestCase):
                     )
                     or "",
                 )
+
+    def test_discovery_consumes_the_same_query_plan_bound_by_router_request(self) -> None:
+        plan_binding = query_plan_binding("run-execute")
+        plan_payload = json.loads(Path(str(plan_binding["path"])).read_text())
+        frozen_query_id = str(plan_payload["queries"][0]["query_id"])
+        frozen_platform = str(plan_payload["queries"][0]["platform_id"])
+        payload = stage_artifact(
+            "discovery",
+            queries=[
+                {
+                    "query_id": frozen_query_id,
+                    "discovered_ids": [],
+                    "status": "empty",
+                    "platform": frozen_platform,
+                    "backend_id": "github-cli",
+                    "probe_id": "probe-001",
+                    "authorization": "not_required",
+                }
+            ],
+            counts={"queries": 1, "discoveries": 0},
+        )
+        payload["input_bindings"] = [discovery_binding_from_plan(plan_binding)]
+        payload["result_digest_sha256"] = canonical_digest(
+            {
+                key: value
+                for key, value in payload.items()
+                if key != "result_digest_sha256"
+            }
+        )
+        binding = payload["input_bindings"][0]
+        request_binding = {
+            "path": binding["path"],
+            "artifact_sha256": binding["artifact_sha256"],
+            "plan_digest_sha256": binding["result_digest_sha256"],
+            "query_count": binding["record_count"],
+            "query_ids_sha256": binding["record_ids_sha256"],
+        }
+        self.assertIsNone(
+            router._validate_stage_artifact(
+                "discovery",
+                payload,
+                "run-execute",
+                query_plan_binding=request_binding,
+            )
+        )
+
+        other_binding = query_plan_binding("run-execute")
+        self.assertIn(
+            "exact router QueryPlan",
+            router._validate_stage_artifact(
+                "discovery",
+                payload,
+                "run-execute",
+                query_plan_binding=other_binding,
+            )
+            or "",
+        )
+
+        wrong_query_platform = copy.deepcopy(payload)
+        wrong_query_platform["queries"][0]["platform"] = "youtube"
+        wrong_query_platform["result_digest_sha256"] = canonical_digest(
+            {
+                key: value
+                for key, value in wrong_query_platform.items()
+                if key != "result_digest_sha256"
+            }
+        )
+        self.assertIn(
+            "platform",
+            router._validate_stage_artifact(
+                "discovery",
+                wrong_query_platform,
+                "run-execute",
+                query_plan_binding=request_binding,
+            )
+            or "",
+        )
+
+        wrong_discovery_platform = copy.deepcopy(payload)
+        wrong_discovery_platform["queries"][0].update(
+            {"status": "complete", "discovered_ids": ["discovery-001"]}
+        )
+        wrong_discovery_platform["discoveries"] = [
+            {
+                "discovery_id": "discovery-001",
+                "query_id": frozen_query_id,
+                "platform": "youtube",
+                "url": "https://example.com/article",
+                "canonical_url": "https://example.com/article",
+                "access_kind": "public_http",
+            }
+        ]
+        wrong_discovery_platform["counts"] = {"queries": 1, "discoveries": 1}
+        wrong_discovery_platform["result_digest_sha256"] = canonical_digest(
+            {
+                key: value
+                for key, value in wrong_discovery_platform.items()
+                if key != "result_digest_sha256"
+            }
+        )
+        self.assertIn(
+            "platform",
+            router._validate_stage_artifact(
+                "discovery",
+                wrong_discovery_platform,
+                "run-execute",
+                query_plan_binding=request_binding,
+            )
+            or "",
+        )
+
+        legacy = copy.deepcopy(payload)
+        legacy["input_bindings"][0]["relation"] = "scope_query_plan"
+        legacy["result_digest_sha256"] = canonical_digest(
+            {
+                key: value
+                for key, value in legacy.items()
+                if key != "result_digest_sha256"
+            }
+        )
+        self.assertIsNotNone(
+            router._validate_stage_artifact(
+                "discovery",
+                legacy,
+                "run-execute",
+                query_plan_binding=request_binding,
+            )
+        )
 
     def test_stage_input_binding_rejects_replacement_and_identity_drift(self) -> None:
         payload = stage_artifact("process")

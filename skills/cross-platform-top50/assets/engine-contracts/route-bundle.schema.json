@@ -21,6 +21,7 @@
     "shared_handoffs",
     "artifacts",
     "plan_filenames",
+    "query_plan_binding",
     "bundle_digest_sha256"
   ],
   "$defs": {
@@ -44,6 +45,24 @@
           "pattern": "^[0-9a-f]{64}$"
         },
         "job_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "queryPlanBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "artifact_sha256",
+        "plan_digest_sha256",
+        "query_count",
+        "query_ids_sha256"
+      ],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "plan_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "query_count": {"type": "integer", "minimum": 1, "maximum": 500},
+        "query_ids_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
     },
     "routerRequest": {
@@ -80,7 +99,8 @@
         "dual_run": {"type": "boolean"},
         "run_dir": {"type": "string", "minLength": 1},
         "top_n": {"type": "integer", "minimum": 1, "maximum": 100},
-        "public_http_binding": {"$ref": "#/$defs/publicHttpBinding"}
+        "public_http_binding": {"$ref": "#/$defs/publicHttpBinding"},
+        "query_plan_binding": {"$ref": "#/$defs/queryPlanBinding"}
       },
       "allOf": [
         {
@@ -90,6 +110,14 @@
           },
           "then": {"required": ["public_http_binding"]},
           "else": {"not": {"required": ["public_http_binding"]}}
+        },
+        {
+          "if": {
+            "required": ["stage"],
+            "properties": {"stage": {"const": "discovery"}}
+          },
+          "then": {"required": ["query_plan_binding"]},
+          "else": {"not": {"required": ["query_plan_binding"]}}
         }
       ]
     },
@@ -224,6 +252,7 @@
     "login_mode": {"enum": ["public-only", "user-assisted"]},
     "risk": {"enum": ["low", "medium", "high"]},
     "platform_scope_mode": {"enum": ["required_plus_default", "include_only"]},
+    "query_plan_binding": {"$ref": "#/$defs/queryPlanBinding"},
     "assumptions": {
       "type": "array",
       "uniqueItems": true,

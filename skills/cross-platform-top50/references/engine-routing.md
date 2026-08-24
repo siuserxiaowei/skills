@@ -100,7 +100,7 @@ Python orchestrated completion 不是四字段状态空壳。discovery/fetch/ext
 
 `input_bindings` 是固定 DAG，不是自报字符串数组。每个绑定都要从同一文件描述符解析并核对原始文件 SHA-256、contract/run/stage/status、producer、内嵌 result digest、记录数与记录 ID-set 摘要；空数组、额外前驱或替换后的同路径文件都失败。阶段前驱为 scope→discovery、discovery/frozen manifest→fetch、fetch→extraction、extraction→process、process+rank-input manifest→curate。Rust process 的 canonical 输入由已验证 extraction 工件原子生成，候选 ID 必须三方守恒，不能消费预放的陈旧 `rust-processor-input.json`。
 
-rank 前先冻结 `top50-rank-input-manifest/v1`，精确绑定 `candidates.json`、`run_manifest.json`、`queries.tsv`、`sources.tsv`、`evidence_cards.tsv`、`platform_coverage.tsv` 六个文件。curator acceptance 必须绑定同一 manifest；router 与 standalone ranker 都在 subprocess 和输出目录创建前复验文件 SHA、记录 ID、候选 decision/accepted 集合及 evidence→source 引用。任意 A/B 换包都返回失败，不产生部分排名目录。
+rank 前先冻结 `top50-rank-input-manifest/v1`，精确绑定 `candidates.json`、`run_manifest.json`、`queries.tsv`、`sources.tsv`、`source_outcomes.jsonl`、`evidence_cards.tsv`、`platform_coverage.tsv` 七个文件。每条 source 必须以唯一 digest 解析到通过规范校验的 source outcome；outcome 账本可以额外保留没有汇总成 source 行的 blocked/error/备用路线记录，且全部仍受 manifest 摘要绑定，失败不能从 provenance 中消失。`accepted|complete` 不能作为来源汇总状态，`discovered_only` 也不能进入 accepted evidence。curator acceptance 必须绑定同一 manifest；router 与 standalone ranker 都在 subprocess 和输出目录创建前复验文件 SHA、记录 ID、候选 decision/accepted 集合、source→outcome 与 evidence→source 引用。任意 A/B 换包都返回失败，不产生部分排名目录。
 
 先生成并核对每一阶段的输入文件，再运行 `execute`。每个 `orchestrated` 步骤在计划中绑定不可变的 `completion_artifact` 路径、contract、status、run_id 和 stage：缺失时返回 `pending_orchestrator`；主研究工作流完成该步并原子落盘后，重放同一 plan 会把它记为 `covered` 并继续。artifact 存在但 contract/status/run_id/stage 任一不符时失败关闭，不能通过手改 plan 或借用其它 run 的结果续跑。
 
@@ -119,6 +119,10 @@ JSON Schema 是跨语言交换规范；Python CLI 仍执行同等级的标准库
 ## 可选登录浏览器
 
 `ego-browser` / ego-lite 可以补足动态 DOM、用户登录接力与独立浏览器 Task Space，但它属于 Python 的候选 `browser_session` 访问后端，不是第四套处理引擎，也不替代 OpenCLI 专用适配器。当前默认禁用；先读取并关闭 [ego-lite 适配评估](ego-lite-assessment.md) 的供应链、数据流、许可与会话隔离门禁，再要求用户显式 opt-in、低敏感独立 profile 和真实最小 probe。默认不安装、不迁移 Chrome 数据、不自动升级。原始 CDP、任意 fetch、上传/下载和会话变更默认不在只读研究授权内。
+
+## 可选公开 Web Adapter
+
+Wigolo 只能作为 Python 控制面下默认关闭的外部 CLI Adapter，不能进入 `engine_mode` 枚举，也不能替代 Go 的冻结 URL fetch、Rust 的本地处理或 Python curator/ranker。启用前读取 [Wigolo 外部适配合同](wigolo-adapter.md)，由适配脚本在任何 runner/probe 前执行兼容当前主机的原生单文件 magic 与源码冻结发行 SHA-256 门禁，再执行真实 probe、能力白名单和严格 argv 计划；JavaScript、Node/npm CLI、所有 shebang/解释型脚本、无后缀包装器和未审计/重命名原生程序均拒绝。CJK 默认拒绝，只有显式 experimental 才允许试用。当前摘要白名单为空，标准 npm `wigolo@0.2.1` 明确 No-go，没有生产执行路线；未来只有兼容的原生单文件发行镜像通过来源/摘要复审、同一 FD 验证与私有快照、真实 probe 和能力门禁，并经代码更新加入白名单后才可能启用。该入口门禁不声称封装系统动态加载器或共享库。任何未来可执行输出仍须规范为 source outcome 或 `discovery_only` 候选，并继续经过 extraction、证据与 curator 门禁。
 
 ## HTTP 身份依据
 

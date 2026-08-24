@@ -30,8 +30,8 @@
     },
     "files": {
       "type": "array",
-      "minItems": 6,
-      "maxItems": 6,
+      "minItems": 7,
+      "maxItems": 7,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -52,6 +52,7 @@
               "run_manifest",
               "queries",
               "sources",
+              "source_outcomes",
               "evidence_cards",
               "platform_coverage"
             ]
@@ -59,11 +60,23 @@
           "role": {"type": "string", "minLength": 1},
           "path": {"type": "string", "minLength": 1},
           "media_type": {
-            "enum": ["application/json", "text/tab-separated-values"]
+            "enum": [
+              "application/json",
+              "application/x-ndjson",
+              "text/tab-separated-values"
+            ]
           },
           "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
           "record_kind": {
-            "enum": ["candidate", "run", "query", "source", "evidence", "platform"]
+            "enum": [
+              "candidate",
+              "run",
+              "query",
+              "source",
+              "source_outcome",
+              "evidence",
+              "platform"
+            ]
           },
           "record_count": {"type": "integer", "minimum": 0},
           "record_ids_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
@@ -79,15 +92,17 @@
         "run_manifest",
         "queries",
         "sources",
+        "source_outcomes",
         "evidence_cards",
         "platform_coverage"
       ],
       "properties": {
-        "files": {"const": 6},
+        "files": {"const": 7},
         "candidates": {"type": "integer", "minimum": 0},
         "run_manifest": {"const": 1},
         "queries": {"type": "integer", "minimum": 0},
         "sources": {"type": "integer", "minimum": 0},
+        "source_outcomes": {"type": "integer", "minimum": 0},
         "evidence_cards": {"type": "integer", "minimum": 0},
         "platform_coverage": {"type": "integer", "minimum": 0}
       }

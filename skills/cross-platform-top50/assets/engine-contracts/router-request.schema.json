@@ -67,6 +67,24 @@
         "job_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "job_count": {"type": "integer", "minimum": 1}
       }
+    },
+    "query_plan_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "artifact_sha256",
+        "plan_digest_sha256",
+        "query_count",
+        "query_ids_sha256"
+      ],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "plan_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "query_count": {"type": "integer", "minimum": 1, "maximum": 500},
+        "query_ids_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
     }
   },
   "allOf": [
@@ -80,6 +98,14 @@
       },
       "then": {"required": ["public_http_binding"]},
       "else": {"not": {"required": ["public_http_binding"]}}
+    },
+    {
+      "if": {
+        "properties": {"stage": {"enum": ["discovery", "full"]}},
+        "required": ["stage"]
+      },
+      "then": {"required": ["query_plan_binding"]},
+      "else": {"not": {"required": ["query_plan_binding"]}}
     }
   ]
 }

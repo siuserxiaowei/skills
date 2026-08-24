@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-fusion-input/v1",
+  "title": "Cross-platform discovery candidate fusion request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "run_id",
+    "topic",
+    "lists",
+    "selection",
+    "time_policy",
+    "subject_author_ids"
+  ],
+  "properties": {
+    "contract_version": {"const": "top50-fusion-input/v1"},
+    "run_id": {"$ref": "#/$defs/nonEmptyText"},
+    "topic": {"$ref": "#/$defs/nonEmptyText"},
+    "lists": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/rankedList"}
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_results",
+        "max_per_author",
+        "max_first_party_per_author",
+        "min_per_platform"
+      ],
+      "properties": {
+        "max_results": {"type": "integer", "minimum": 1},
+        "max_per_author": {"type": "integer", "minimum": 1},
+        "max_first_party_per_author": {"type": "integer", "minimum": 1},
+        "min_per_platform": {"type": "integer", "minimum": 0}
+      }
+    },
+    "time_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "from_date", "to_date"],
+      "properties": {
+        "mode": {"enum": ["strict", "advisory", "unbounded"]},
+        "from_date": {"$ref": "#/$defs/isoDate"},
+        "to_date": {"$ref": "#/$defs/isoDate"}
+      }
+    },
+    "subject_author_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/nonEmptyText"}
+    }
+  },
+  "$defs": {
+    "nonEmptyText": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^\\S(?:.*\\S)?$"
+    },
+    "isoDate": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "rankedList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["list_id", "platform", "query_id", "weight", "items"],
+      "properties": {
+        "list_id": {"$ref": "#/$defs/nonEmptyText"},
+        "platform": {"$ref": "#/$defs/nonEmptyText"},
+        "query_id": {"$ref": "#/$defs/nonEmptyText"},
+        "weight": {"type": "number", "exclusiveMinimum": 0},
+        "items": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/candidate"}
+        }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "url",
+        "title",
+        "author_id",
+        "published_at",
+        "date_confidence",
+        "source_role",
+        "acquisition_method",
+        "evidence_status"
+      ],
+      "properties": {
+        "candidate_id": {"$ref": "#/$defs/nonEmptyText"},
+        "url": {"$ref": "#/$defs/nonEmptyText"},
+        "title": {"$ref": "#/$defs/nonEmptyText"},
+        "author_id": {"$ref": "#/$defs/nonEmptyText"},
+        "published_at": {"$ref": "#/$defs/nonEmptyText"},
+        "date_confidence": {"enum": ["verified", "inferred", "unknown"]},
+        "source_role": {"$ref": "#/$defs/nonEmptyText"},
+        "acquisition_method": {"$ref": "#/$defs/nonEmptyText"},
+        "evidence_status": {"const": "discovery_only"},
+        "engagement": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}

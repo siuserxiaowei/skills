@@ -15,6 +15,22 @@ import tempfile
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+try:
+    from source_contract import SourceContractError, validate_source_outcome
+except ImportError:  # pragma: no cover - supports importlib-based unit tests
+    import importlib.util
+
+    _SOURCE_CONTRACT_PATH = Path(__file__).with_name("source_contract.py")
+    _SOURCE_CONTRACT_SPEC = importlib.util.spec_from_file_location(
+        "top50_lineage_source_contract", _SOURCE_CONTRACT_PATH
+    )
+    if _SOURCE_CONTRACT_SPEC is None or _SOURCE_CONTRACT_SPEC.loader is None:
+        raise
+    _SOURCE_CONTRACT = importlib.util.module_from_spec(_SOURCE_CONTRACT_SPEC)
+    _SOURCE_CONTRACT_SPEC.loader.exec_module(_SOURCE_CONTRACT)
+    SourceContractError = _SOURCE_CONTRACT.SourceContractError
+    validate_source_outcome = _SOURCE_CONTRACT.validate_source_outcome
+
 
 RANK_INPUT_CONTRACT = "top50-rank-input-manifest/v1"
 CURATOR_CONTRACT = "top50-curator-acceptance/v1"
@@ -23,6 +39,11 @@ RANK_INPUT_SPECS = {
     "run_manifest": ("run_manifest.json", "application/json", "run"),
     "queries": ("queries.tsv", "text/tab-separated-values", "query"),
     "sources": ("sources.tsv", "text/tab-separated-values", "source"),
+    "source_outcomes": (
+        "source_outcomes.jsonl",
+        "application/x-ndjson",
+        "source_outcome",
+    ),
     "evidence_cards": (
         "evidence_cards.tsv",
         "text/tab-separated-values",
@@ -94,6 +115,8 @@ CURATOR_BINDING_SPECS = {
     "process_result": ("top50-process-result/v1", "process", "complete", "candidate"),
     "rank_input_manifest": (RANK_INPUT_CONTRACT, "worker_check", "complete", "file"),
 }
+SOURCE_SUMMARY_STATUSES = {"fetched", "verified", "blocked", "rejected"}
+SOURCE_REVIEWABLE_SUMMARIES = {"fetched", "verified"}
 
 
 class LineageError(ValueError):
@@ -172,6 +195,31 @@ def parse_tsv_bytes(raw: bytes, label: str) -> list[dict[str, str]]:
     return rows
 
 
+def parse_jsonl_bytes(raw: bytes, label: str) -> list[dict[str, Any]]:
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeError as exc:
+        raise LineageError(f"{label} is not valid UTF-8 JSONL: {exc}") from exc
+    rows: list[dict[str, Any]] = []
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        if not line.strip():
+            raise LineageError(f"{label} has a blank JSONL record at line {line_number}")
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise LineageError(
+                f"{label} has invalid JSON at line {line_number}: {exc}"
+            ) from exc
+        if not isinstance(row, dict):
+            raise LineageError(
+                f"{label} record {line_number} must be a JSON object"
+            )
+        rows.append(row)
+    if not rows:
+        raise LineageError(f"{label} JSONL is empty")
+    return rows
+
+
 def _unique_identifiers(values: Sequence[Any], label: str) -> list[str]:
     if any(not nonempty(value) for value in values):
         raise LineageError(f"{label} record IDs must be non-empty strings")
@@ -221,6 +269,7 @@ def record_ids(input_id: str, parsed: Any) -> list[str]:
         return _unique_identifiers([_query_id(row) for row in parsed], input_id)
     field = {
         "sources": "source_id",
+        "source_outcomes": "outcome_digest_sha256",
         "evidence_cards": "evidence_id",
         "platform_coverage": "platform",
     }[input_id]
@@ -237,7 +286,113 @@ def _parse_rank_input(input_id: str, raw: bytes) -> Any:
     filename, media_type, _ = RANK_INPUT_SPECS[input_id]
     if media_type == "application/json":
         return parse_json_bytes(raw, filename)
+    if media_type == "application/x-ndjson":
+        return parse_jsonl_bytes(raw, filename)
     return parse_tsv_bytes(raw, filename)
+
+
+def _validate_source_outcome_bindings(
+    *,
+    run_id: str,
+    queries: Any,
+    sources: Any,
+    source_outcomes: Any,
+) -> None:
+    if (
+        not isinstance(queries, list)
+        or not isinstance(sources, list)
+        or not isinstance(source_outcomes, list)
+    ):
+        raise LineageError("source ledgers must contain record arrays")
+    query_ids = set(record_ids("queries", queries))
+    query_platforms: dict[str, str] = {}
+    for query in queries:
+        if not isinstance(query, Mapping):
+            raise LineageError("query ledger rows must be objects")
+        query_id = _query_id(query)
+        platform = query.get("platform")
+        platform_id = query.get("platform_id")
+        if (
+            platform is not None
+            and platform_id is not None
+            and platform != platform_id
+        ):
+            raise LineageError("query platform aliases conflict")
+        resolved_platform = platform if platform is not None else platform_id
+        if not nonempty(resolved_platform):
+            raise LineageError("query ledger platform must be non-empty")
+        query_platforms[query_id] = str(resolved_platform).strip()
+    outcome_by_digest: dict[str, Mapping[str, Any]] = {}
+    for outcome in source_outcomes:
+        if not isinstance(outcome, Mapping):
+            raise LineageError("source outcome records must be objects")
+        try:
+            validate_source_outcome(outcome)
+        except SourceContractError as exc:
+            raise LineageError(f"source outcome contract validation failed: {exc}") from exc
+        digest = outcome.get("outcome_digest_sha256")
+        if not is_sha256(digest) or digest in outcome_by_digest:
+            raise LineageError("source outcome digests must be valid and unique")
+        if outcome.get("run_id") != run_id:
+            raise LineageError("source outcome belongs to another run")
+        if outcome.get("query_id") not in query_ids:
+            raise LineageError(
+                "source outcome query does not resolve through the frozen query ledger"
+            )
+        if query_platforms[str(outcome["query_id"])] != outcome.get("platform_id"):
+            raise LineageError(
+                "source outcome platform does not match the frozen query ledger"
+            )
+        outcome_by_digest[str(digest)] = outcome
+
+    referenced: set[str] = set()
+    for source in sources:
+        if not isinstance(source, Mapping):
+            raise LineageError("source ledger rows must be objects")
+        if source.get("status") not in SOURCE_SUMMARY_STATUSES:
+            raise LineageError(
+                "source summary status must be fetched, verified, blocked, or rejected"
+            )
+        digest = source.get("source_outcome_digest_sha256")
+        if not is_sha256(digest):
+            raise LineageError(
+                "every source row requires source_outcome_digest_sha256"
+            )
+        outcome = outcome_by_digest.get(str(digest))
+        if outcome is None:
+            raise LineageError(
+                "source row does not resolve to an authoritative source outcome"
+            )
+        if (
+            source.get("query_id") != outcome.get("query_id")
+            or source.get("platform") != outcome.get("platform_id")
+            or source.get("url") != outcome.get("url")
+        ):
+            raise LineageError(
+                "source row query, platform, or URL does not match its source outcome"
+            )
+        if str(digest) in referenced:
+            raise LineageError(
+                "multiple source rows must not share one source outcome digest"
+            )
+        referenced.add(str(digest))
+
+
+def validate_source_outcome_bindings(
+    *,
+    run_id: str,
+    queries: Any,
+    sources: Any,
+    source_outcomes: Any,
+) -> None:
+    """Apply the canonical source/outcome ledger gate outside manifest loading."""
+
+    _validate_source_outcome_bindings(
+        run_id=run_id,
+        queries=queries,
+        sources=sources,
+        source_outcomes=source_outcomes,
+    )
 
 
 def build_rank_input_manifest(
@@ -252,10 +407,12 @@ def build_rank_input_manifest(
     root = Path(run_dir)
     descriptors: list[dict[str, Any]] = []
     record_counts: dict[str, int] = {}
+    parsed_inputs: dict[str, Any] = {}
     for input_id, (filename, media_type, record_kind) in RANK_INPUT_SPECS.items():
         path = root / filename
         raw, artifact_sha256 = read_regular_snapshot(path)
         parsed = _parse_rank_input(input_id, raw)
+        parsed_inputs[input_id] = parsed
         identifiers = record_ids(input_id, parsed)
         if input_id == "run_manifest" and identifiers != [run_id]:
             raise LineageError("run_manifest.json run_id does not match the frozen run")
@@ -272,6 +429,12 @@ def build_rank_input_manifest(
             }
         )
         record_counts[input_id] = len(identifiers)
+    _validate_source_outcome_bindings(
+        run_id=run_id,
+        queries=parsed_inputs["queries"],
+        sources=parsed_inputs["sources"],
+        source_outcomes=parsed_inputs["source_outcomes"],
+    )
     manifest: dict[str, Any] = {
         "contract_version": RANK_INPUT_CONTRACT,
         "run_id": run_id,
@@ -356,7 +519,7 @@ def validate_rank_input_manifest(
         raise LineageError("rank input manifest result digest is invalid")
     files = manifest.get("files")
     if not isinstance(files, list) or len(files) != len(RANK_INPUT_SPECS):
-        raise LineageError("rank input manifest must bind exactly six files")
+        raise LineageError("rank input manifest must bind exactly seven files")
     descriptors: dict[str, Mapping[str, Any]] = {}
     parsed_inputs: dict[str, Any] = {}
     paths: dict[str, Path] = {}
@@ -398,10 +561,16 @@ def validate_rank_input_manifest(
         paths[str(input_id)] = path
         record_counts[str(input_id)] = len(identifiers)
     if set(descriptors) != set(RANK_INPUT_SPECS):
-        raise LineageError("rank input manifest does not bind the canonical six files")
+        raise LineageError("rank input manifest does not bind the canonical seven files")
     expected_counts = {"files": len(RANK_INPUT_SPECS), **record_counts}
     if manifest.get("counts") != expected_counts:
         raise LineageError("rank input manifest counts do not match its files")
+    _validate_source_outcome_bindings(
+        run_id=expected_run_id,
+        queries=parsed_inputs["queries"],
+        sources=parsed_inputs["sources"],
+        source_outcomes=parsed_inputs["source_outcomes"],
+    )
     return {
         "manifest": dict(manifest),
         "manifest_path": manifest_path.resolve(strict=False),
@@ -787,13 +956,33 @@ def validate_curator_against_rank_bundle(
     accepted_ids = semantics["accepted_ids"]
     evidence_rows = inputs["evidence_cards"]
     source_rows = inputs["sources"]
+    outcome_rows = inputs["source_outcomes"]
     evidence_index = {str(row["evidence_id"]): row for row in evidence_rows}
-    source_ids = set(record_ids("sources", source_rows))
+    source_index = {str(row["source_id"]): row for row in source_rows}
+    source_ids = set(source_index)
+    outcome_index = {
+        str(row["outcome_digest_sha256"]): row for row in outcome_rows
+    }
     for decision in decisions:
         for evidence_id in decision["evidence_ids"]:
             card = evidence_index.get(str(evidence_id))
             if card is None or str(card.get("source_id")) not in source_ids:
                 raise LineageError("curator evidence does not resolve through the frozen ledgers")
+            if decision.get("decision") != "accepted":
+                continue
+            source = source_index[str(card["source_id"])]
+            outcome = outcome_index.get(
+                str(source.get("source_outcome_digest_sha256"))
+            )
+            if (
+                source.get("status") not in SOURCE_REVIEWABLE_SUMMARIES
+                or outcome is None
+                or outcome.get("source_status") != "fetched"
+                or outcome.get("may_enter_general_review") is not True
+            ):
+                raise LineageError(
+                    "accepted curator evidence requires an authoritative reviewable fetched source outcome"
+                )
     if accepted_ids != accepted_candidate_rows:
         raise LineageError("curator accepted set does not match the frozen candidates")
     for field, input_id in (

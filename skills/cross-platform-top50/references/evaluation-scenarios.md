@@ -95,3 +95,39 @@ fixture 中 Go probe 失败、Python/Rust 通过；分别运行 `engine_mode=aut
 通过标准：CLI 与 Browser 各自聚合为 discovery/fetch shard，不按平台复制；公共 URL 只生成 fetch，本地候选只生成 process/rank；工作量分别为 medium/large；默认 canonical 28 中未分类渠道显式 `pending_classification`，include-only 不扩展；public-only Browser 为 blocked 且不请求登录，user-assisted 为 pending checkpoint；每个 ready shard 的 router request 通过 router 运行时合同，计划路径与 merge/curate/rank handoff 确定可重放。
 
 反向 fixture 使用空主题、重复平台、布尔计数、未知字段、没有任何 shard，以及没有公共/本地阶段的 `engine_mode=hybrid`。通过标准：全部非零失败，不留下输出文件，不执行 probe、网络、登录或外部写入。
+
+## 场景 N：近期多路候选融合
+
+fixture 提供平台原生、公开 Web 与代码搜索三张有重叠的候选排名表；含高互动低名次条目、同一作者多条内容、日期 unknown/inferred/out-of-window，以及同一 candidate ID 的冲突作者。
+
+通过标准：QueryPlan 的 `search_query` 与 `ranking_query` 分离；CJK tokenizer 实际模式可见；weighted RRF 对输入列表顺序确定，保留完整 provenance；互动不能改变融合分数或证据状态；作者 cap 与第一方有界例外生效；严格窗口隔离 unknown/inferred/out-of-window；身份冲突失败关闭。融合输出全部保持 `discovery_only`，不产生 accepted evidence。
+
+## 场景 O：横纵模式的伪完整拓扑
+
+fixture 先生成有效 `hengzong` plan，再删除一个纵向 workstream、相应 query 引用和 counts，并重新计算所有调用方可见摘要；另一个 brief 把同一路线的同一句查询改写两次后自报 retained gap，curator ID 与 worker 相同。
+
+通过标准：plan 验证器从目标重建 canonical topology 并拒绝删减；retained gap 必须有 query/query_path/route 三个维度均不同的至少两次补搜；self-curation、claim/workstream 集合不完整、brief 文件 SHA 漂移均失败。只有完整 claim-source ledger、独立性/反证、过去→现在→含义链、三情景 triggers/invalidators 与精确独立验收绑定才可 verified。
+
+## 场景 P：Wigolo 默认关闭与危险能力
+
+fixture 使用复制自当前主机的原生小型可执行文件配合受控 runner，分别模拟缺失/损坏 probe、正常公开 search，以及请求 `challenge`、stealth、CAPTCHA solve、hosted egress、自定义 shell/UA；另提供 npm `dist/index.js`、普通 shebang、无后缀 Node wrapper、动态 `import`/`require` 脚本和中文主题。
+
+通过标准：默认 disabled 时不执行外部命令；external 在调用 runner 或真实 dispatch probe 前，先拒绝所有 JavaScript、Node/npm、shebang/解释型脚本、无后缀包装器，以及 SHA-256 未由代码冻结的原生程序，runner 调用次数保持 0。只有兼容当前主机、通过 ELF/Mach-O/FAT/PE magic 和发行摘要白名单的原生单文件镜像才可从同一 FD 校验、计算入口 SHA-256、复制到 owner-only 私有快照并继续 probe；调用方不能注入摘要。plan 绑定 request/probe/入口 SHA/固定 argv并由 owner-only key file 做 HMAC 认证，execute 不得重新 probe。无密钥的主动重封、错误/过度暴露密钥、入口或路径替换、符号链接、非原生文件、symlink→Node 和重命名原生解释器都必须在子进程前失败。真实 npm `wigolo@0.2.1` 明确 `backend_not_ready`/No-go；生产摘要白名单为空，测试 fixture 只可通过测试内临时摘要运行，不得写成 Wigolo 生产兼容。入口门禁也不得宣称静态链接或封装系统动态加载器/共享库。仅白名单公开 discovery/fetch/cache 与 watch list 可生成 argv，始终 `shell=False`、隔离 HOME/data dir且输出仍是 discovery/source outcome；watch mutation、危险子命令和 flags、深层禁用能力声明、超出 HMAC 计划绑定 `max_results` 的返回在进程启动前或归一化门禁失败；CJK 默认拒绝，只有显式 experimental 才计划。适配层不复制或内嵌 Wigolo AGPL 源码/二进制。
+
+## 场景 Q：来源 outcome 排名旁路
+
+fixture 的 `sources.tsv` 把一条来源直接标为 `accepted` 或 `complete`，但缺少 `source_outcomes.jsonl`；第二组提供 outcome，但它是 `discovered_only`、搜索摘要、URL/query/platform 不一致或摘要已重签的伪造记录。
+
+通过标准：rank-input manifest 在任何 curator/rank 输出目录创建前失败；`sources.tsv` 必须以 digest 解析到同一 run、query、canonical platform、URL 的权威 `fetched` outcome，并由来源合同重建验证。只有传输成功、搜索摘要或手写汇总状态不能支持 accepted evidence。
+
+## 场景 R：QueryPlan 平台身份篡改
+
+冻结 QueryPlan 把 query 绑定到 `github`；completion 把同一 query ID 的 `platform` 改为 `youtube`，或 discovery item 再改成 `weibo`，并重算所有调用方可见摘要。
+
+通过标准：router 从已验证 QueryPlan 重建 `query_id → platform_id` 并在 completion 与 discovery 两层逐项拒绝平台漂移；query ID 未变、摘要重签或候选内容看似合理均不能通过。
+
+## 场景 S：近期模式语义守恒
+
+分别用 `recent_social_mode=auto|strict|off|sometimes` 编译同一冻结日期区间，再把前三个计划交给 fusion。
+
+通过标准：QueryPlan 原样保存外部模式，并机械产生 `advisory|strict|unbounded`；from/to 与冻结 timeframe 完全一致；未知值失败关闭。不得把 `auto` 静默当 strict，也不得让调用方自行选择不同 fusion 语义。

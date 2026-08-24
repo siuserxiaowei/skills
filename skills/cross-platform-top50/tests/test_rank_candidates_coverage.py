@@ -23,6 +23,7 @@ def frozen_args(paths: dict[str, Path], **overrides: object) -> SimpleNamespace:
         "manifest": paths["run_manifest"],
         "queries": paths["queries"],
         "sources": paths["sources"],
+        "source_outcomes": paths["source_outcomes"],
         "evidence_cards": paths["evidence_cards"],
         "platform_coverage": paths["platform_coverage"],
         "lineage_manifest": paths["lineage"],

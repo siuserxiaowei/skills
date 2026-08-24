@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-research-checkpoint/v1",
+  "title": "Resumable cross-platform research checkpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "run_id", "topic", "platform_id", "stage",
+    "exact_probe_or_command", "tool_readiness", "bridge_state", "auth_state",
+    "quota_state", "authorization", "probe_result", "error_summary",
+    "completed_query_ids", "pending_query_ids", "candidate_ids", "artifact_paths",
+    "next_safe_command", "ttl_seconds", "checkpoint_id", "idempotency_key",
+    "created_at", "updated_at", "expires_at", "status", "resume_count",
+    "error_history", "checkpoint_digest_sha256"
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "platform": {
+      "enum": [
+        "csdn", "wechat_official_accounts", "zhihu", "xiaohongshu",
+        "weibo", "douyin", "x", "bilibili", "juejin", "youtube",
+        "linuxdo", "github", "baidu_search", "google_search", "bing_search",
+        "toutiao", "36kr", "infoq", "segmentfault", "oschina", "v2ex",
+        "reddit", "hacker_news", "medium", "linkedin", "kuaishou",
+        "wechat_channels", "tiktok"
+      ]
+    },
+    "idArray": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 128}},
+    "command": {"type": "array", "minItems": 1, "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 1000}}
+  },
+  "properties": {
+    "schema": {"const": "top50-research-checkpoint/v1"},
+    "run_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "topic": {"type": "string", "minLength": 1, "maxLength": 500},
+    "platform_id": {"$ref": "#/$defs/platform"},
+    "stage": {"enum": ["scope", "discovery", "fetch", "extraction", "worker_check"]},
+    "exact_probe_or_command": {"$ref": "#/$defs/command"},
+    "tool_readiness": {"enum": ["available", "configured", "unavailable", "unknown"]},
+    "bridge_state": {"enum": ["connected", "disconnected", "not_required", "unknown"]},
+    "auth_state": {"enum": ["authenticated", "anonymous", "expired", "required", "unknown"]},
+    "quota_state": {"enum": ["available", "rate_limited", "exhausted", "not_applicable", "unknown"]},
+    "authorization": {"enum": ["granted_for_current_task", "not_required", "not_granted"]},
+    "probe_result": {"enum": ["success", "empty", "blocked", "error"]},
+    "error_summary": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "completed_query_ids": {"$ref": "#/$defs/idArray"},
+    "pending_query_ids": {"$ref": "#/$defs/idArray"},
+    "candidate_ids": {"$ref": "#/$defs/idArray"},
+    "artifact_paths": {
+      "type": "object", "additionalProperties": false,
+      "required": ["manifest", "queries", "sources", "candidates"],
+      "properties": {
+        "manifest": {"type": "string", "minLength": 1},
+        "queries": {"type": "string", "minLength": 1},
+        "sources": {"type": "string", "minLength": 1},
+        "candidates": {"type": "string", "minLength": 1}
+      }
+    },
+    "next_safe_command": {"$ref": "#/$defs/command"},
+    "ttl_seconds": {"type": "integer", "minimum": 60, "maximum": 604800},
+    "checkpoint_id": {"$ref": "#/$defs/sha256"},
+    "idempotency_key": {"$ref": "#/$defs/sha256"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "status": {"enum": ["paused", "resuming", "complete"]},
+    "resume_count": {"type": "integer", "minimum": 0},
+    "error_history": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "maxLength": 2000}},
+    "checkpoint_digest_sha256": {"$ref": "#/$defs/sha256"}
+  }
+}

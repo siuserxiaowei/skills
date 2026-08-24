@@ -13,7 +13,8 @@
     "engine_mode",
     "dual_run",
     "login_mode",
-    "platform_routes"
+    "platform_routes",
+    "query_plan_path"
   ],
   "$defs": {
     "publicHttpBinding": {
@@ -53,6 +54,7 @@
     "dual_run": {"type": "boolean"},
     "login_mode": {"enum": ["public-only", "user-assisted"]},
     "platform_scope_mode": {"enum": ["required_plus_default", "include_only"]},
+    "query_plan_path": {"type": "string", "minLength": 1},
     "platform_routes": {
       "type": "array",
       "items": {

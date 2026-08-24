@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import stat
@@ -21,6 +22,19 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
+
+
+_QUERY_PLANNER_PATH = Path(__file__).with_name("research_planner.py")
+_QUERY_PLANNER_SPEC = importlib.util.spec_from_file_location(
+    "top50_router_research_planner", _QUERY_PLANNER_PATH
+)
+if _QUERY_PLANNER_SPEC is None or _QUERY_PLANNER_SPEC.loader is None:
+    raise ImportError(f"cannot load research planner from {_QUERY_PLANNER_PATH}")
+_QUERY_PLANNER = importlib.util.module_from_spec(_QUERY_PLANNER_SPEC)
+sys.modules[_QUERY_PLANNER_SPEC.name] = _QUERY_PLANNER
+_QUERY_PLANNER_SPEC.loader.exec_module(_QUERY_PLANNER)
+QueryPlanError = _QUERY_PLANNER.QueryPlanError
+validate_query_plan = _QUERY_PLANNER.validate_query_plan
 
 try:
     from lineage_contract import (
@@ -182,6 +196,14 @@ PUBLIC_HTTP_BINDING_FIELDS = {
     "job_set_sha256",
     "job_count",
 }
+QUERY_PLAN_CONTRACT = "top50-research-query-plan/v1"
+QUERY_PLAN_BINDING_FIELDS = {
+    "path",
+    "artifact_sha256",
+    "plan_digest_sha256",
+    "query_count",
+    "query_ids_sha256",
+}
 TRANSPARENT_USER_AGENT = "TopFiftyCollector/0.1 (+https://github.com/siuserxiaowei/skills)"
 ROBOTS_PRODUCT_TOKEN = "TopFiftyCollector"
 ALLOWED_REQUEST_HEADERS = {"accept", "accept-language", "accept-encoding"}
@@ -200,14 +222,14 @@ INPUT_BINDING_FIELDS = {
     "record_ids_sha256",
 }
 STAGE_INPUT_ALTERNATIVES = {
-    "discovery": ({"scope_query_plan"},),
+    "discovery": ({"research_query_plan"},),
     "fetch": ({"discovery_result"}, {"frozen_http_manifest"}),
     "extraction": ({"fetch_result"},),
     "process": ({"extraction_result"},),
     "curate": ({"process_result", "rank_input_manifest"},),
 }
 RELATION_RECORD_KINDS = {
-    "scope_query_plan": "query",
+    "research_query_plan": "query",
     "discovery_result": "discovery",
     "frozen_http_manifest": "job",
     "fetch_result": "job",
@@ -281,6 +303,66 @@ def _validate_public_http_binding(value: Any) -> dict[str, Any]:
     return dict(value)
 
 
+def _query_plan_snapshot(
+    value: Any, expected_run_id: str
+) -> tuple[dict[str, Any], Mapping[str, Any]]:
+    if not isinstance(value, dict) or set(value) != QUERY_PLAN_BINDING_FIELDS:
+        raise RouterError("query_plan_binding fields are invalid")
+    if not _is_nonempty_string(value.get("path")):
+        raise RouterError("query_plan_binding.path must be non-empty")
+    if not all(
+        _is_sha256(value.get(field))
+        for field in ("artifact_sha256", "plan_digest_sha256", "query_ids_sha256")
+    ):
+        raise RouterError("query_plan_binding digests must be lowercase SHA-256")
+    query_count = value.get("query_count")
+    if (
+        isinstance(query_count, bool)
+        or not isinstance(query_count, int)
+        or not 1 <= query_count <= 500
+    ):
+        raise RouterError("query_plan_binding.query_count must be from 1 to 500")
+    path = Path(str(value["path"]))
+    plan, artifact_sha256 = _read_json_artifact(path)
+    if not isinstance(plan, Mapping) or _contract_of(plan) != QUERY_PLAN_CONTRACT:
+        raise RouterError(f"bound query plan contract must be {QUERY_PLAN_CONTRACT}")
+    if plan.get("run_id") != expected_run_id:
+        raise RouterError("bound query plan run_id does not match the router request")
+    plan_digest = plan.get("plan_digest_sha256")
+    if (
+        not _is_sha256(plan_digest)
+        or plan_digest
+        != _canonical_json_sha256(plan, omit={"plan_digest_sha256"})
+    ):
+        raise RouterError("bound query plan digest does not match its contents")
+    try:
+        validate_query_plan(plan)
+    except QueryPlanError as exc:
+        raise RouterError(f"bound query plan semantic validation failed: {exc}") from exc
+    rows = plan.get("queries")
+    if not _is_array_of_objects(rows):
+        raise RouterError("bound query plan queries must be an object array")
+    query_ids = _unique_strings([row.get("query_id") for row in rows])
+    counts = plan.get("counts")
+    if (
+        query_ids is None
+        or not query_ids
+        or not isinstance(counts, Mapping)
+        or counts.get("queries") != len(query_ids)
+    ):
+        raise RouterError("bound query plan query set or count is invalid")
+    actual = {
+        "path": str(path),
+        "artifact_sha256": artifact_sha256,
+        "plan_digest_sha256": plan_digest,
+        "query_count": len(query_ids),
+        "query_ids_sha256": _canonical_value_sha256(sorted(query_ids)),
+    }
+    if actual != value:
+        raise RouterError("bound query plan path, SHA-256, digest, or query set drifted")
+    return actual, plan
+
+
 def validate_request(payload: Any) -> dict[str, Any]:
     """Validate and return a defensive copy of top50-router-request/v1."""
     if not isinstance(payload, dict):
@@ -302,6 +384,7 @@ def validate_request(payload: Any) -> dict[str, Any]:
         "top_n",
         "timeout_seconds",
         "public_http_binding",
+        "query_plan_binding",
     }
     missing = sorted(required - set(payload))
     unknown = sorted(set(payload) - required - optional)
@@ -355,6 +438,16 @@ def validate_request(payload: Any) -> dict[str, Any]:
         if "public_http_binding" in payload:
             raise RouterError("public_http_binding is only allowed for public_http fetch/full")
         public_http_binding = None
+    if payload.get("stage") in {"discovery", "full"}:
+        if "query_plan_binding" not in payload:
+            raise RouterError("query_plan_binding is required for discovery/full")
+        query_plan_binding, _ = _query_plan_snapshot(
+            payload["query_plan_binding"], str(run_id)
+        )
+    else:
+        if "query_plan_binding" in payload:
+            raise RouterError("query_plan_binding is only allowed for discovery/full")
+        query_plan_binding = None
 
     normalized = dict(payload)
     normalized["required_capabilities"] = capabilities
@@ -363,6 +456,8 @@ def validate_request(payload: Any) -> dict[str, Any]:
     normalized["timeout_seconds"] = float(timeout)
     if public_http_binding is not None:
         normalized["public_http_binding"] = public_http_binding
+    if query_plan_binding is not None:
+        normalized["query_plan_binding"] = query_plan_binding
     return normalized
 
 
@@ -719,6 +814,8 @@ def _stage_command(
             str(run_dir / "queries.tsv"),
             "--sources",
             str(run_dir / "sources.tsv"),
+            "--source-outcomes",
+            str(run_dir / "source_outcomes.jsonl"),
             "--evidence-cards",
             str(run_dir / "evidence_cards.tsv"),
             "--platform-coverage",
@@ -1681,7 +1778,7 @@ def _validate_fetch_request_identity(
 
 
 def _binding_record_ids(relation: str, payload: Mapping[str, Any]) -> list[str] | None:
-    if relation == "scope_query_plan":
+    if relation == "research_query_plan":
         rows, field = payload.get("queries"), "query_id"
     elif relation == "discovery_result":
         rows, field = payload.get("discoveries"), "discovery_id"
@@ -1707,6 +1804,7 @@ def _validate_input_bindings(
     stage: str,
     payload: Mapping[str, Any],
     run_id: str,
+    expected_query_plan_binding: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, Mapping[str, Any]] | None, str | None]:
     bindings = payload.get("input_bindings")
     relation_alternatives = STAGE_INPUT_ALTERNATIVES.get(stage)
@@ -1737,6 +1835,57 @@ def _validate_input_bindings(
         ):
             return None, "stage input binding metadata is invalid"
         path = Path(str(binding["path"]))
+        if relation == "research_query_plan":
+            expected_metadata = None
+            if expected_query_plan_binding is not None:
+                expected_metadata = {
+                    "relation": "research_query_plan",
+                    "path": expected_query_plan_binding.get("path"),
+                    "artifact_sha256": expected_query_plan_binding.get(
+                        "artifact_sha256"
+                    ),
+                    "contract": QUERY_PLAN_CONTRACT,
+                    "run_id": run_id,
+                    "stage": "scope",
+                    "required_status": "complete",
+                    "producer_engine_id": "research-planner",
+                    "result_digest_sha256": expected_query_plan_binding.get(
+                        "plan_digest_sha256"
+                    ),
+                    "record_kind": "query",
+                    "record_count": expected_query_plan_binding.get("query_count"),
+                    "record_ids_sha256": expected_query_plan_binding.get(
+                        "query_ids_sha256"
+                    ),
+                }
+                if dict(binding) != expected_metadata:
+                    return None, (
+                        "discovery input does not bind the exact router QueryPlan artifact"
+                    )
+            try:
+                expected_binding, upstream = _query_plan_snapshot(
+                    {
+                        "path": str(path),
+                        "artifact_sha256": binding["artifact_sha256"],
+                        "plan_digest_sha256": binding["result_digest_sha256"],
+                        "query_count": binding["record_count"],
+                        "query_ids_sha256": binding["record_ids_sha256"],
+                    },
+                    run_id,
+                )
+            except RouterError as exc:
+                return None, str(exc)
+            if (
+                binding["contract"] != QUERY_PLAN_CONTRACT
+                or binding["stage"] != "scope"
+                or binding["required_status"] != "complete"
+                or binding["producer_engine_id"] != "research-planner"
+                or binding["result_digest_sha256"]
+                != expected_binding["plan_digest_sha256"]
+            ):
+                return None, "research query plan binding metadata is invalid"
+            by_relation[str(relation)] = upstream
+            continue
         try:
             upstream, artifact_sha256 = _read_json_artifact(path)
         except RouterError as exc:
@@ -1814,23 +1963,41 @@ def _validate_stage_artifact(
     run_id: str,
     *,
     source_kind: str | None = None,
+    query_plan_binding: Mapping[str, Any] | None = None,
 ) -> str | None:
     if not isinstance(payload, Mapping):
         return "stage artifact must be a JSON object"
     envelope_error = _valid_stage_envelope(stage, payload, run_id)
     if envelope_error:
         return envelope_error
-    bound_inputs, binding_error = _validate_input_bindings(stage, payload, run_id)
+    bound_inputs, binding_error = _validate_input_bindings(
+        stage,
+        payload,
+        run_id,
+        expected_query_plan_binding=query_plan_binding,
+    )
     if binding_error or bound_inputs is None:
         return binding_error or "stage input bindings are unavailable"
+    if stage == "discovery" and query_plan_binding is None:
+        return "discovery validation requires the router query_plan_binding"
 
     counts = payload["counts"]
     if stage == "discovery":
+        artifact_binding = bound_inputs.get("research_query_plan")
+        if not isinstance(artifact_binding, Mapping):
+            return "discovery artifact does not bind the research QueryPlan"
+        if artifact_binding.get("queries") is None:
+            return "discovery QueryPlan binding is incomplete"
         queries = payload.get("queries")
         discoveries = payload.get("discoveries")
         if not _is_array_of_objects(queries) or not _is_array_of_objects(discoveries):
             return "discovery artifact queries and discoveries must be arrays of objects"
+        frozen_query_platforms = {
+            str(row["query_id"]): str(row["platform_id"])
+            for row in artifact_binding["queries"]
+        }
         query_ids: set[str] = set()
+        completion_query_platforms: dict[str, str] = {}
         declared_discoveries: list[str] = []
         for query in queries:
             query_id = query.get("query_id")
@@ -1846,9 +2013,12 @@ def _validate_stage_artifact(
                 or query.get("authorization") not in {"granted", "not_required", "not_granted"}
             ):
                 return "discovery query records are incomplete or invalid"
+            if query.get("platform") != frozen_query_platforms.get(str(query_id)):
+                return "discovery query platform does not match the frozen QueryPlan"
             if query.get("authorization") == "not_granted" and discovered_ids:
                 return "an unauthorized discovery query cannot produce discoveries"
             query_ids.add(str(query_id))
+            completion_query_platforms[str(query_id)] = str(query["platform"])
             declared_discoveries.extend(discovered_ids)
         discovery_ids: set[str] = set()
         for item in discoveries:
@@ -1863,11 +2033,17 @@ def _validate_stage_artifact(
                 )
             ):
                 return "discovery records are incomplete or have invalid references"
+            if item.get("platform") != completion_query_platforms[str(item["query_id"])]:
+                return "discovery record platform does not match its owning query"
             discovery_ids.add(str(discovery_id))
         if sorted(declared_discoveries) != sorted(discovery_ids):
             return "discovery IDs do not conserve the query ledger"
         if counts != {"queries": len(queries), "discoveries": len(discoveries)}:
             return "discovery counts do not match the payload"
+        if query_ids != {
+            str(row["query_id"]) for row in artifact_binding["queries"]
+        }:
+            return "discovery query IDs do not match the frozen QueryPlan"
         return None
 
     if stage == "fetch":
@@ -2617,6 +2793,7 @@ def execute_plan(payload: Any) -> dict[str, Any]:
                 completion_payload,
                 str(plan["run_id"]),
                 source_kind=str(plan["request"]["source_kind"]),
+                query_plan_binding=plan["request"].get("query_plan_binding"),
             )
             if validation_error:
                 executions.append(
@@ -2893,6 +3070,7 @@ def _validate_rank_runtime_binding(
         ("run_manifest", "--manifest"),
         ("queries", "--queries"),
         ("sources", "--sources"),
+        ("source_outcomes", "--source-outcomes"),
         ("evidence_cards", "--evidence-cards"),
         ("platform_coverage", "--platform-coverage"),
     ):

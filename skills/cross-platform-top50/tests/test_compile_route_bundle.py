@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib.util
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
+import atexit
 from unittest import mock
 from pathlib import Path
 
@@ -27,6 +29,18 @@ assert ROUTER_SPEC and ROUTER_SPEC.loader
 router = importlib.util.module_from_spec(ROUTER_SPEC)
 sys.modules[ROUTER_SPEC.name] = router
 ROUTER_SPEC.loader.exec_module(router)
+
+PLANNER_SCRIPT = SKILL_ROOT / "scripts" / "research_planner.py"
+PLANNER_SPEC = importlib.util.spec_from_file_location(
+    "research_planner_for_route_bundle", PLANNER_SCRIPT
+)
+assert PLANNER_SPEC and PLANNER_SPEC.loader
+planner = importlib.util.module_from_spec(PLANNER_SPEC)
+sys.modules[PLANNER_SPEC.name] = planner
+PLANNER_SPEC.loader.exec_module(planner)
+
+_QUERY_PLAN_FIXTURE = tempfile.TemporaryDirectory(prefix="top50-route-query-plan-")
+atexit.register(_QUERY_PLAN_FIXTURE.cleanup)
 
 
 CANONICAL_PLATFORMS = (
@@ -70,6 +84,29 @@ def public_http_binding(job_count: int) -> dict[str, object]:
     }
 
 
+def write_query_plan(root: Path, *, run_id: str = "run-001") -> tuple[Path, dict[str, object]]:
+    plan = planner.compile_query_plan(
+        {
+            "schema": "top50-research-query-request/v1",
+            "run_id": run_id,
+            "topic": "Agent 跨平台检索",
+            "purpose": "建立可审计 Top 50",
+            "platforms": [
+                {"platform_id": "github", "required": True},
+                {"platform_id": "csdn", "required": False},
+            ],
+            "aliases": [],
+            "languages": ["zh"],
+            "intents": ["exact", "failure"],
+            "timeframe": {"start": "2026-07-25", "end": "2026-08-24"},
+            "tokenizer_mode": "cjk_bigram",
+        }
+    )
+    path = root / "query_plan.json"
+    path.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
+    return path, plan
+
+
 def scope(**overrides: object) -> dict[str, object]:
     value: dict[str, object] = {
         "schema": "top50-route-scope/v1",
@@ -84,6 +121,17 @@ def scope(**overrides: object) -> dict[str, object]:
         ],
     }
     value.update(overrides)
+    if "query_plan_path" not in overrides:
+        fixture_root = Path(_QUERY_PLAN_FIXTURE.name)
+        plan_run_id = str(value["run_id"])
+        if not plan_run_id or any(
+            character
+            not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
+            for character in plan_run_id
+        ):
+            plan_run_id = "run-001"
+        query_plan_path, _ = write_query_plan(fixture_root, run_id=plan_run_id)
+        value["query_plan_path"] = str(query_plan_path)
     return value
 
 
@@ -101,6 +149,29 @@ def redigest(bundle: dict[str, object]) -> dict[str, object]:
 
 
 class CompilationTests(unittest.TestCase):
+    def test_freezes_exact_research_query_plan_into_discovery_router_requests(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            query_plan_path, query_plan = write_query_plan(Path(directory))
+            raw_sha256 = hashlib.sha256(query_plan_path.read_bytes()).hexdigest()
+            bundle = compiler.compile_route_bundle(
+                scope(query_plan_path=str(query_plan_path))
+            )
+            query_ids = sorted(str(row["query_id"]) for row in query_plan["queries"])
+            expected = {
+                "path": str(query_plan_path.resolve()),
+                "artifact_sha256": raw_sha256,
+                "plan_digest_sha256": query_plan["plan_digest_sha256"],
+                "query_count": len(query_ids),
+                "query_ids_sha256": compiler._canonical_value_sha256(query_ids),
+            }
+            self.assertEqual(bundle["query_plan_binding"], expected)
+            discovery = shard(bundle, "platform-cli-discovery")
+            self.assertEqual(discovery["router_request"]["query_plan_binding"], expected)
+            self.assertNotIn(
+                "query_plan_binding",
+                shard(bundle, "platform-cli-fetch")["router_request"],
+            )
+
     def test_compiles_grouped_replayable_shards_and_shared_handoffs(self) -> None:
         payload = scope(
             engine_mode="hybrid",
@@ -365,6 +436,81 @@ class WorkloadTests(unittest.TestCase):
 
 
 class FailClosedValidationTests(unittest.TestCase):
+    def test_rejects_old_drifted_resigned_and_replaced_query_plans(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path, plan = write_query_plan(root)
+
+            old = copy.deepcopy(plan)
+            old["schema"] = "top50-scope-query-plan/v1"
+            old["plan_digest_sha256"] = compiler._canonical_value_sha256(
+                {key: value for key, value in old.items() if key != "plan_digest_sha256"}
+            )
+            path.write_text(json.dumps(old), encoding="utf-8")
+            with self.assertRaisesRegex(compiler.RouteBundleError, "research-query-plan"):
+                compiler.compile_route_bundle(scope(query_plan_path=str(path)))
+
+            replaced_path, replaced = write_query_plan(root)
+            replaced["run_id"] = "other-run"
+            replaced["plan_digest_sha256"] = compiler._canonical_value_sha256(
+                {
+                    key: value
+                    for key, value in replaced.items()
+                    if key != "plan_digest_sha256"
+                }
+            )
+            replaced_path.write_text(json.dumps(replaced), encoding="utf-8")
+            with self.assertRaisesRegex(compiler.RouteBundleError, "run_id"):
+                compiler.compile_route_bundle(scope(query_plan_path=str(replaced_path)))
+
+            drift_path, drift = write_query_plan(root)
+            drift["queries"][0]["search_query"] += " drift"
+            drift_path.write_text(json.dumps(drift), encoding="utf-8")
+            with self.assertRaisesRegex(compiler.RouteBundleError, "digest"):
+                compiler.compile_route_bundle(scope(query_plan_path=str(drift_path)))
+
+            resigned_path, resigned = write_query_plan(root)
+            resigned["queries"].append(copy.deepcopy(resigned["queries"][0]))
+            resigned["counts"]["queries"] += 1
+            resigned["plan_digest_sha256"] = compiler._canonical_value_sha256(
+                {
+                    key: value
+                    for key, value in resigned.items()
+                    if key != "plan_digest_sha256"
+                }
+            )
+            resigned_path.write_text(json.dumps(resigned), encoding="utf-8")
+            with self.assertRaisesRegex(
+                compiler.RouteBundleError, "semantic validation|query IDs.*unique"
+            ):
+                compiler.compile_route_bundle(scope(query_plan_path=str(resigned_path)))
+
+    def test_route_bundle_validation_rejects_query_plan_descriptor_tampering(self) -> None:
+        bundle = compiler.compile_route_bundle(scope())
+        cases = []
+        for field, value in (
+            ("artifact_sha256", "0" * 64),
+            ("plan_digest_sha256", "1" * 64),
+            ("query_count", 99),
+            ("query_ids_sha256", "2" * 64),
+        ):
+            root_drift = copy.deepcopy(bundle)
+            root_drift["query_plan_binding"][field] = value
+            redigest(root_drift)
+            cases.append(root_drift)
+
+            shard_drift = copy.deepcopy(bundle)
+            shard(shard_drift, "platform-cli-discovery")["router_request"][
+                "query_plan_binding"
+            ][field] = value
+            redigest(shard_drift)
+            cases.append(shard_drift)
+        for tampered in cases:
+            with self.subTest(tampered=tampered), self.assertRaises(
+                compiler.RouteBundleError
+            ):
+                compiler.validate_route_bundle(tampered)
+
     def test_rejects_topic_placeholders_and_punctuation_only_topics(self) -> None:
         for topic in ("", "   ", "《》", "《主题》", "{{TOPIC}}", "<主题>", "请填写主题", "---"):
             with self.subTest(topic=topic), self.assertRaises(compiler.RouteBundleError):
@@ -902,6 +1048,7 @@ class ContractAndCliTests(unittest.TestCase):
         self.assertFalse(request_schema["properties"]["platform_routes"]["items"]["additionalProperties"])
         self.assertFalse(request_schema["$defs"]["publicHttpBinding"]["additionalProperties"])
         self.assertFalse(result_schema["additionalProperties"])
+        self.assertFalse(result_schema["$defs"]["queryPlanBinding"]["additionalProperties"])
         self.assertFalse(result_schema["properties"]["shards"]["items"]["additionalProperties"])
         self.assertFalse(result_schema["$defs"]["publicHttpBinding"]["additionalProperties"])
         self.assertFalse(manifest_schema["additionalProperties"])
@@ -934,6 +1081,20 @@ class ContractAndCliTests(unittest.TestCase):
             jsonschema.Draft202012Validator(request_schema).validate(ineligible_binding)
         result = compiler.compile_route_bundle(payload)
         jsonschema.Draft202012Validator(result_schema).validate(result)
+        missing_query_binding = copy.deepcopy(result)
+        del missing_query_binding["query_plan_binding"]
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.Draft202012Validator(result_schema).validate(
+                missing_query_binding
+            )
+        discovery_without_query_binding = copy.deepcopy(result)
+        del shard(discovery_without_query_binding, "platform-cli-discovery")[
+            "router_request"
+        ]["query_plan_binding"]
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.Draft202012Validator(result_schema).validate(
+                discovery_without_query_binding
+            )
         manifest = {
             "schema": "top50-route-shard-result-manifest/v1",
             "run_id": result["run_id"],
