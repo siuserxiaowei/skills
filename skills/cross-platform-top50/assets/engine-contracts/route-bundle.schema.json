@@ -1,0 +1,418 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-route-bundle/v1",
+  "title": "Cross-platform Top 50 replayable route bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "run_id",
+    "topic",
+    "top_n",
+    "engine_mode",
+    "dual_run",
+    "login_mode",
+    "risk",
+    "platform_scope_mode",
+    "assumptions",
+    "coverage_targets",
+    "shards",
+    "omissions",
+    "shared_handoffs",
+    "artifacts",
+    "plan_filenames",
+    "query_plan_binding",
+    "bundle_digest_sha256"
+  ],
+  "$defs": {
+    "publicHttpBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_path",
+        "manifest_artifact_sha256",
+        "job_set_sha256",
+        "job_count"
+      ],
+      "properties": {
+        "manifest_path": {"type": "string", "minLength": 1},
+        "manifest_artifact_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "job_set_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "job_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "queryPlanBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "artifact_sha256",
+        "plan_digest_sha256",
+        "query_count",
+        "query_ids_sha256"
+      ],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "plan_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "query_count": {"type": "integer", "minimum": 1, "maximum": 500},
+        "query_ids_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "routerRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "run_id",
+        "stage",
+        "workload",
+        "source_kind",
+        "risk",
+        "required_capabilities",
+        "engine_mode",
+        "dual_run",
+        "run_dir",
+        "top_n"
+      ],
+      "properties": {
+        "schema": {"const": "top50-router-request/v1"},
+        "run_id": {"type": "string", "minLength": 1},
+        "stage": {"enum": ["discovery", "fetch", "process", "rank"]},
+        "workload": {"enum": ["small", "medium", "large"]},
+        "source_kind": {
+          "enum": ["platform_cli", "browser_session", "public_http", "local_bundle"]
+        },
+        "risk": {"enum": ["low", "medium", "high"]},
+        "required_capabilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "engine_mode": {"enum": ["auto", "python", "go", "rust", "hybrid"]},
+        "dual_run": {"type": "boolean"},
+        "run_dir": {"type": "string", "minLength": 1},
+        "top_n": {"type": "integer", "minimum": 1, "maximum": 100},
+        "public_http_binding": {"$ref": "#/$defs/publicHttpBinding"},
+        "query_plan_binding": {"$ref": "#/$defs/queryPlanBinding"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["source_kind"],
+            "properties": {"source_kind": {"const": "public_http"}}
+          },
+          "then": {"required": ["public_http_binding"]},
+          "else": {"not": {"required": ["public_http_binding"]}}
+        },
+        {
+          "if": {
+            "required": ["stage"],
+            "properties": {"stage": {"const": "discovery"}}
+          },
+          "then": {"required": ["query_plan_binding"]},
+          "else": {"not": {"required": ["query_plan_binding"]}}
+        }
+      ]
+    },
+    "checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract",
+        "path",
+        "run_id",
+        "access_kind",
+        "platform_ids",
+        "required_before_plan",
+        "next_gate"
+      ],
+      "properties": {
+        "contract": {"const": "top50-login-checkpoint/v1"},
+        "path": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1},
+        "access_kind": {"const": "browser_session"},
+        "platform_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "required_before_plan": {"const": true},
+        "next_gate": {"const": "authenticated_read_only_probe"}
+      }
+    },
+    "shardsToMerge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handoff_id",
+        "from_stage",
+        "to_stage",
+        "input_shard_ids",
+        "input_artifact",
+        "output_artifact",
+        "input_contract",
+        "output_contract",
+        "required_status",
+        "fail_closed"
+      ],
+      "properties": {
+        "handoff_id": {"const": "shards-to-merge"},
+        "from_stage": {"const": "shard_results"},
+        "to_stage": {"const": "merge"},
+        "input_shard_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "platform-cli-discovery",
+              "platform-cli-fetch",
+              "browser-session-discovery",
+              "browser-session-fetch",
+              "public-http-fetch",
+              "local-bundle-process"
+            ]
+          }
+        },
+        "input_artifact": {"type": "string", "minLength": 1},
+        "output_artifact": {"type": "string", "minLength": 1},
+        "input_contract": {"const": "top50-route-shard-result-manifest/v1"},
+        "output_contract": {"const": "top50-route-merge-result/v1"},
+        "required_status": {"const": "complete"},
+        "fail_closed": {"const": true}
+      }
+    },
+    "mergeToCurate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handoff_id",
+        "from_stage",
+        "to_stage",
+        "input_artifact",
+        "output_artifact",
+        "input_contract",
+        "output_contract",
+        "required_status",
+        "fail_closed"
+      ],
+      "properties": {
+        "handoff_id": {"const": "merge-to-curate"},
+        "from_stage": {"const": "merge"},
+        "to_stage": {"const": "curate"},
+        "input_artifact": {"type": "string", "minLength": 1},
+        "output_artifact": {"type": "string", "minLength": 1},
+        "input_contract": {"const": "top50-route-merge-result/v1"},
+        "output_contract": {"const": "top50-curator-acceptance/v1"},
+        "required_status": {"const": "complete"},
+        "fail_closed": {"const": true}
+      }
+    },
+    "curateToRank": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handoff_id",
+        "from_stage",
+        "to_stage",
+        "input_artifact",
+        "output_artifact",
+        "input_contract",
+        "output_contract",
+        "required_status",
+        "fail_closed"
+      ],
+      "properties": {
+        "handoff_id": {"const": "curate-to-rank"},
+        "from_stage": {"const": "curate"},
+        "to_stage": {"const": "rank"},
+        "input_artifact": {"type": "string", "minLength": 1},
+        "output_artifact": {"type": "string", "minLength": 1},
+        "input_contract": {"const": "top50-curator-acceptance/v1"},
+        "output_contract": {"const": "top50-ranking-summary/v1"},
+        "required_status": {"const": "accepted"},
+        "fail_closed": {"const": true}
+      }
+    }
+  },
+  "properties": {
+    "schema": {"const": "top50-route-bundle/v1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "topic": {"type": "string", "minLength": 1},
+    "top_n": {"type": "integer", "minimum": 1, "maximum": 100},
+    "engine_mode": {"enum": ["auto", "python", "go", "rust", "hybrid"]},
+    "dual_run": {"type": "boolean"},
+    "login_mode": {"enum": ["public-only", "user-assisted"]},
+    "risk": {"enum": ["low", "medium", "high"]},
+    "platform_scope_mode": {"enum": ["required_plus_default", "include_only"]},
+    "query_plan_binding": {"$ref": "#/$defs/queryPlanBinding"},
+    "assumptions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "value", "reason"],
+        "properties": {
+          "field": {"enum": ["platform_scope_mode", "risk"]},
+          "value": {"type": "string", "minLength": 1},
+          "reason": {"const": "omitted_default"}
+        }
+      }
+    },
+    "coverage_targets": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["platform_id", "required", "access_kind", "route_status"],
+        "properties": {
+          "platform_id": {"type": "string", "minLength": 1},
+          "required": {"type": "boolean"},
+          "access_kind": {
+            "anyOf": [
+              {"enum": ["platform_cli", "browser_session"]},
+              {"type": "null"}
+            ]
+          },
+          "route_status": {
+            "enum": ["planned", "pending_checkpoint", "pending_classification", "blocked"]
+          }
+        }
+      }
+    },
+    "shards": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "shard_id",
+          "source_kind",
+          "stage",
+          "platform_ids",
+          "required_platform_ids",
+          "input_count",
+          "workload",
+          "status",
+          "depends_on",
+          "run_dir",
+          "plan_filename",
+          "merge_contract",
+          "login_requested"
+        ],
+        "properties": {
+          "shard_id": {"type": "string", "minLength": 1},
+          "source_kind": {
+            "enum": ["platform_cli", "browser_session", "public_http", "local_bundle"]
+          },
+          "stage": {"enum": ["discovery", "fetch", "process", "rank"]},
+          "platform_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "required_platform_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "input_count": {"type": "integer", "minimum": 0},
+          "workload": {"enum": ["small", "medium", "large"]},
+          "status": {"enum": ["ready_to_plan", "pending_checkpoint", "blocked"]},
+          "depends_on": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "run_dir": {"type": "string", "minLength": 1},
+          "plan_filename": {"type": "string", "minLength": 1},
+          "merge_contract": {"const": "top50-route-shard-result/v1"},
+          "login_requested": {"const": false},
+          "router_request": {"$ref": "#/$defs/routerRequest"},
+          "reason_code": {
+            "enum": [
+              "browser_session_disallowed_in_public_only",
+              "browser_session_requires_authenticated_probe"
+            ]
+          },
+          "checkpoint": {"$ref": "#/$defs/checkpoint"}
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"status": {"const": "ready_to_plan"}}},
+            "then": {"required": ["router_request"]},
+            "else": {"not": {"required": ["router_request"]}}
+          },
+          {
+            "if": {"properties": {"status": {"const": "pending_checkpoint"}}},
+            "then": {"required": ["reason_code", "checkpoint"]},
+            "else": {"not": {"required": ["checkpoint"]}}
+          },
+          {
+            "if": {"properties": {"status": {"const": "blocked"}}},
+            "then": {"required": ["reason_code"]}
+          }
+        ]
+      }
+    },
+    "omissions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_kind", "reason_code", "input_count"],
+        "properties": {
+          "source_kind": {"enum": ["public_http", "local_bundle"]},
+          "reason_code": {
+            "enum": ["public_urls_not_authorized", "extraction_not_complete"]
+          },
+          "input_count": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "shared_handoffs": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        {"$ref": "#/$defs/shardsToMerge"},
+        {"$ref": "#/$defs/mergeToCurate"},
+        {"$ref": "#/$defs/curateToRank"}
+      ],
+      "items": false
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shard_result_manifest",
+        "merge_result",
+        "extraction_result",
+        "curator_acceptance",
+        "ranking_result"
+      ],
+      "properties": {
+        "shard_result_manifest": {"type": "string", "minLength": 1},
+        "merge_result": {"type": "string", "minLength": 1},
+        "extraction_result": {"type": "string", "minLength": 1},
+        "curator_acceptance": {"type": "string", "minLength": 1},
+        "ranking_result": {"type": "string", "minLength": 1}
+      }
+    },
+    "plan_filenames": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "bundle_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

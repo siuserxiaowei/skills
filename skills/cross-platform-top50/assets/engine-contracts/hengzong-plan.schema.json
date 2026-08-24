@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-hengzong-plan/v1",
+  "title": "Cross-platform Top 50 horizontal/vertical research plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "run_id",
+    "stage",
+    "status",
+    "brief_date",
+    "as_of",
+    "goal",
+    "scope",
+    "query_bounds",
+    "producer",
+    "canonical_workstreams",
+    "query_groups",
+    "counts",
+    "plan_id",
+    "result_digest_sha256"
+  ],
+  "properties": {
+    "contract_version": {"const": "top50-hengzong-plan/v1"},
+    "run_id": {"$ref": "#/$defs/nonempty"},
+    "stage": {"const": "hengzong_plan"},
+    "status": {"const": "complete"},
+    "brief_date": {"type": "string", "format": "date"},
+    "as_of": {"type": "string", "format": "date-time"},
+    "goal": {"$ref": "#/$defs/goal"},
+    "scope": {"$ref": "#/$defs/scope"},
+    "query_bounds": {"$ref": "#/$defs/queryBounds"},
+    "producer": {"$ref": "#/$defs/producer"},
+    "canonical_workstreams": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {"$ref": "#/$defs/workstream"}
+    },
+    "query_groups": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "items": {"$ref": "#/$defs/queryGroup"}
+    },
+    "counts": {"$ref": "#/$defs/counts"},
+    "plan_id": {
+      "type": "string",
+      "pattern": "^hzplan-[0-9a-f]{24}$"
+    },
+    "result_digest_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "goal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "objective", "audience", "decision"],
+      "properties": {
+        "type": {
+          "enum": ["opportunity", "decision", "landscape", "diagnosis"]
+        },
+        "objective": {"$ref": "#/$defs/nonempty"},
+        "audience": {"$ref": "#/$defs/nonempty"},
+        "decision": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_date", "end_date", "geographies", "languages"],
+      "properties": {
+        "start_date": {"type": "string", "format": "date"},
+        "end_date": {"type": "string", "format": "date"},
+        "geographies": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/nonempty"}
+        },
+        "languages": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/nonempty"}
+        }
+      }
+    },
+    "queryBounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_geo_language_cells",
+        "max_queries_per_group",
+        "max_total_queries"
+      ],
+      "properties": {
+        "max_geo_language_cells": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "max_queries_per_group": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "max_total_queries": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 192
+        }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine_id", "engine_version", "worker_ids"],
+      "properties": {
+        "engine_id": {"$ref": "#/$defs/nonempty"},
+        "engine_version": {"$ref": "#/$defs/nonempty"},
+        "worker_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/nonempty"}
+        }
+      }
+    },
+    "workstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workstream_id", "axis", "question", "deliverable"],
+      "properties": {
+        "workstream_id": {"$ref": "#/$defs/nonempty"},
+        "axis": {"enum": ["horizontal", "vertical"]},
+        "question": {"$ref": "#/$defs/nonempty"},
+        "deliverable": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "queryGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["group_id", "geography", "language", "queries"],
+      "properties": {
+        "group_id": {"type": "string", "pattern": "^qg-[0-9a-f]{16}$"},
+        "geography": {"$ref": "#/$defs/nonempty"},
+        "language": {"$ref": "#/$defs/nonempty"},
+        "queries": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {"$ref": "#/$defs/query"}
+        }
+      }
+    },
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "query_id",
+        "query",
+        "query_path",
+        "route",
+        "workstream_ids"
+      ],
+      "properties": {
+        "query_id": {"type": "string", "pattern": "^query-[0-9a-f]{20}$"},
+        "query": {"$ref": "#/$defs/nonempty"},
+        "query_path": {
+          "enum": [
+            "landscape",
+            "primary_and_counterevidence",
+            "timeline_and_future"
+          ]
+        },
+        "route": {"const": "platform-native-plus-public-index"},
+        "workstream_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/nonempty"}
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workstreams",
+        "horizontal_workstreams",
+        "vertical_workstreams",
+        "geo_language_cells",
+        "query_groups",
+        "total_queries"
+      ],
+      "properties": {
+        "workstreams": {"const": 6},
+        "horizontal_workstreams": {"const": 3},
+        "vertical_workstreams": {"const": 3},
+        "geo_language_cells": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "query_groups": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "total_queries": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 192
+        }
+      }
+    }
+  }
+}

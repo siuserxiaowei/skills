@@ -1,0 +1,24 @@
+{
+  "schema": "top50-router-request/v1",
+  "run_id": "example-public-http-large",
+  "stage": "full",
+  "workload": "large",
+  "source_kind": "public_http",
+  "risk": "low",
+  "required_capabilities": [
+    "fetch",
+    "security_preflight",
+    "rank"
+  ],
+  "engine_mode": "auto",
+  "dual_run": false,
+  "run_dir": "research-runs/example-public-http-large",
+  "public_http_binding": {
+    "manifest_path": "research-runs/example-public-http-large/go-collector-input.json",
+    "manifest_artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "job_set_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "job_count": 1
+  },
+  "top_n": 50,
+  "timeout_seconds": 300
+}

@@ -1,0 +1,15 @@
+{
+  "contract_version": "top50-processor/v1",
+  "run_id": "run-001",
+  "candidates": [
+    {
+      "candidate_id": "candidate-001",
+      "platform": "github",
+      "url": "https://github.com/openai/codex?utm_source=example",
+      "title": "Codex",
+      "author": "OpenAI",
+      "published_at": "2026-08-24",
+      "excerpt": "A directly inspected source excerpt that remains linked to its original candidate."
+    }
+  ]
+}

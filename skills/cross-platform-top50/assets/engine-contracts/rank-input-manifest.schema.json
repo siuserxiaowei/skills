@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-rank-input-manifest/v1",
+  "title": "Frozen input set consumed by the deterministic ranker",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "run_id",
+    "stage",
+    "status",
+    "producer",
+    "files",
+    "counts",
+    "result_digest_sha256"
+  ],
+  "properties": {
+    "contract_version": {"const": "top50-rank-input-manifest/v1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "stage": {"const": "worker_check"},
+    "status": {"const": "complete"},
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine_id", "engine_version"],
+      "properties": {
+        "engine_id": {"type": "string", "minLength": 1},
+        "engine_version": {"type": "string", "minLength": 1}
+      }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "input_id",
+          "role",
+          "path",
+          "media_type",
+          "artifact_sha256",
+          "record_kind",
+          "record_count",
+          "record_ids_sha256"
+        ],
+        "properties": {
+          "input_id": {
+            "enum": [
+              "candidates",
+              "run_manifest",
+              "queries",
+              "sources",
+              "source_outcomes",
+              "evidence_cards",
+              "platform_coverage"
+            ]
+          },
+          "role": {"type": "string", "minLength": 1},
+          "path": {"type": "string", "minLength": 1},
+          "media_type": {
+            "enum": [
+              "application/json",
+              "application/x-ndjson",
+              "text/tab-separated-values"
+            ]
+          },
+          "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "record_kind": {
+            "enum": [
+              "candidate",
+              "run",
+              "query",
+              "source",
+              "source_outcome",
+              "evidence",
+              "platform"
+            ]
+          },
+          "record_count": {"type": "integer", "minimum": 0},
+          "record_ids_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "files",
+        "candidates",
+        "run_manifest",
+        "queries",
+        "sources",
+        "source_outcomes",
+        "evidence_cards",
+        "platform_coverage"
+      ],
+      "properties": {
+        "files": {"const": 7},
+        "candidates": {"type": "integer", "minimum": 0},
+        "run_manifest": {"const": 1},
+        "queries": {"type": "integer", "minimum": 0},
+        "sources": {"type": "integer", "minimum": 0},
+        "source_outcomes": {"type": "integer", "minimum": 0},
+        "evidence_cards": {"type": "integer", "minimum": 0},
+        "platform_coverage": {"type": "integer", "minimum": 0}
+      }
+    },
+    "result_digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

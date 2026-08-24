@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-source-outcome/v1",
+  "title": "Normalized source route outcome",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "run_id", "query_id", "route_id", "platform_id", "adapter_id",
+    "url", "observed_at", "normalized_at", "source_status", "eligibility",
+    "may_enter_time_bounded_ranking", "may_enter_general_review", "date_qualification", "timeframe", "window_timezone", "discoveries_allowed", "discovery_count", "published_at",
+    "published_at_confidence", "date_basis", "acquisition", "error", "recovery_basis", "retry",
+    "breaker", "outcome_digest_sha256"
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "platform": {
+      "enum": [
+        "csdn", "wechat_official_accounts", "zhihu", "xiaohongshu",
+        "weibo", "douyin", "x", "bilibili", "juejin", "youtube",
+        "linuxdo", "github", "baidu_search", "google_search", "bing_search",
+        "toutiao", "36kr", "infoq", "segmentfault", "oschina", "v2ex",
+        "reddit", "hacker_news", "medium", "linkedin", "kuaishou",
+        "wechat_channels", "tiktok"
+      ]
+    },
+    "nullableSha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+    "nullableString": {"oneOf": [{"type": "string", "minLength": 1}, {"type": "null"}]},
+    "timestampOrNull": {"oneOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]}
+  },
+  "properties": {
+    "schema": {"const": "top50-source-outcome/v1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "query_id": {"type": "string", "minLength": 1},
+    "route_id": {"type": "string", "minLength": 1},
+    "platform_id": {"$ref": "#/$defs/platform"},
+    "adapter_id": {"type": "string", "minLength": 1},
+    "url": {"type": "string", "format": "uri", "pattern": "^https?://"},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "normalized_at": {"type": "string", "format": "date-time"},
+    "source_status": {"enum": ["fetched", "discovered_only", "rejected_payload_shape", "empty", "rate_limited", "error", "blocked_auth", "blocked_challenge", "blocked_robots", "blocked_unauthorized", "not_found"]},
+    "eligibility": {"enum": ["eligible_for_review", "isolated_unknown_date", "inferred_date_review_only", "outside_timeframe", "discovery_only", "blocked", "not_eligible"]},
+    "may_enter_time_bounded_ranking": {"type": "boolean"},
+    "may_enter_general_review": {"type": "boolean"},
+    "date_qualification": {"enum": ["within_window", "within_window_inferred", "before_window", "after_window", "unknown_isolated"]},
+    "discoveries_allowed": {"type": "boolean"},
+    "discovery_count": {"type": "integer", "minimum": 0, "maximum": 100000},
+    "timeframe": {
+      "type": "object", "additionalProperties": false, "required": ["start", "end"],
+      "properties": {"start": {"type": "string", "format": "date"}, "end": {"type": "string", "format": "date"}}
+    },
+    "window_timezone": {
+      "type": "string", "minLength": 1, "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._+-]+(?:/[A-Za-z0-9._+-]+)*$"
+    },
+    "published_at": {"$ref": "#/$defs/timestampOrNull"},
+    "published_at_confidence": {"enum": ["observed", "inferred", "unknown"]},
+    "date_basis": {"enum": ["platform_timestamp", "document_metadata", "content_text", "search_index", "user_report", "unavailable"]},
+    "acquisition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "access_kind", "evidence_tier", "backend_id", "probe_id", "authorization", "http_status", "content_sha256", "response_endpoint", "payload_shape", "content_card_count"],
+      "properties": {
+        "method": {"enum": ["platform_native", "direct_http", "authorized_browser", "platform_cli", "search_index", "user_supplied", "reader_proxy"]},
+        "access_kind": {"enum": ["platform_cli", "browser_session", "public_http", "reader_proxy"]},
+        "evidence_tier": {"enum": ["full_content", "partial_content", "metadata_only", "search_snippet", "user_observation"]},
+        "backend_id": {"type": "string", "minLength": 1},
+        "probe_id": {"type": "string", "minLength": 1},
+        "authorization": {"enum": ["granted_for_current_task", "not_required", "not_granted"]},
+        "http_status": {"oneOf": [{"type": "integer", "minimum": 100, "maximum": 599}, {"type": "null"}]},
+        "content_sha256": {"$ref": "#/$defs/nullableSha256"}
+        ,"response_endpoint": {"type": "string", "format": "uri", "pattern": "^https?://"}
+        ,"payload_shape": {"enum": ["content_cards", "suggestions", "empty", "unknown"]}
+        ,"content_card_count": {"type": "integer", "minimum": 0, "maximum": 100000}
+      }
+    },
+    "error": {
+      "type": "object", "additionalProperties": false, "required": ["code", "summary"],
+      "properties": {"code": {"$ref": "#/$defs/nullableString"}, "summary": {"$ref": "#/$defs/nullableString"}}
+    },
+    "recovery_basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["result_state", "attempt", "max_attempts", "retry_after_seconds", "breaker_failure_count", "breaker_threshold", "breaker_cooldown_seconds"],
+      "properties": {
+        "result_state": {"enum": ["success", "empty", "rate_limited", "transient_error", "parse_error", "authentication_required", "challenge", "robots_blocked", "unauthorized", "not_found"]},
+        "attempt": {"type": "integer", "minimum": 1, "maximum": 5},
+        "max_attempts": {"type": "integer", "minimum": 1, "maximum": 5},
+        "retry_after_seconds": {"oneOf": [{"type": "integer", "minimum": 1, "maximum": 86400}, {"type": "null"}]},
+        "breaker_failure_count": {"type": "integer", "minimum": 0, "maximum": 99},
+        "breaker_threshold": {"type": "integer", "minimum": 1, "maximum": 20},
+        "breaker_cooldown_seconds": {"type": "integer", "minimum": 1, "maximum": 86400}
+      }
+    },
+    "retry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["decision", "attempt", "max_attempts", "remaining_attempts", "delay_seconds", "reason"],
+      "properties": {
+        "decision": {"enum": ["do_not_retry", "retry_after", "exhausted", "terminal"]},
+        "attempt": {"type": "integer", "minimum": 1, "maximum": 5},
+        "max_attempts": {"type": "integer", "minimum": 1, "maximum": 5},
+        "remaining_attempts": {"type": "integer", "minimum": 0, "maximum": 4},
+        "delay_seconds": {"oneOf": [{"type": "integer", "minimum": 1, "maximum": 86400}, {"type": "null"}]},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "breaker": {
+      "type": "object", "additionalProperties": false, "required": ["action", "scope", "reason", "failure_count", "threshold", "cooldown_seconds"],
+      "properties": {
+        "action": {"enum": ["record_success", "count_failure", "open", "do_not_count"]},
+        "scope": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "failure_count": {"type": "integer", "minimum": 0, "maximum": 99},
+        "threshold": {"type": "integer", "minimum": 1, "maximum": 20},
+        "cooldown_seconds": {"type": "integer", "minimum": 1, "maximum": 86400}
+      }
+    },
+    "outcome_digest_sha256": {"$ref": "#/$defs/sha256"}
+  }
+}

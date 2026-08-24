@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-router-result/v1",
+  "title": "Cross-platform Top 50 engine router execution result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "run_id",
+    "completed_at",
+    "status",
+    "selected_engines",
+    "executions",
+    "validation"
+  ],
+  "properties": {
+    "schema": {"const": "top50-router-result/v1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "status": {"enum": ["complete", "pending_orchestrator", "failed", "validation_mismatch"]},
+    "selected_engines": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["python", "go", "rust"]}
+    },
+    "executions": {"type": "array", "items": {"type": "object"}},
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "matched", "comparisons"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "matched": {"type": "boolean"},
+        "comparisons": {"type": "array", "items": {"type": "object"}}
+      }
+    }
+  }
+}

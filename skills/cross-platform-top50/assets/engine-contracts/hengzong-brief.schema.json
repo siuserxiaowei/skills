@@ -1,0 +1,352 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-hengzong-brief/v1",
+  "title": "Cross-platform Top 50 dated horizontal/vertical research brief",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "run_id",
+    "stage",
+    "status",
+    "brief_date",
+    "as_of",
+    "goal",
+    "scope",
+    "producer",
+    "plan_binding",
+    "workstream_results",
+    "sources",
+    "claims",
+    "causal_chains",
+    "scenarios",
+    "opportunity_map",
+    "retained_gaps",
+    "blocking_reasons",
+    "result_digest_sha256"
+  ],
+  "properties": {
+    "contract_version": {"const": "top50-hengzong-brief/v1"},
+    "run_id": {"$ref": "#/$defs/nonempty"},
+    "stage": {"const": "hengzong_synthesis"},
+    "status": {"enum": ["ready_for_curator", "blocking"]},
+    "brief_date": {"type": "string", "format": "date"},
+    "as_of": {"type": "string", "format": "date-time"},
+    "goal": {"$ref": "#/$defs/goal"},
+    "scope": {"$ref": "#/$defs/scope"},
+    "producer": {"$ref": "#/$defs/producer"},
+    "plan_binding": {"$ref": "#/$defs/planBinding"},
+    "workstream_results": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {"$ref": "#/$defs/workstreamResult"}
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/source"}
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 3,
+      "items": {"$ref": "#/$defs/claim"}
+    },
+    "causal_chains": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/causalChain"}
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"$ref": "#/$defs/scenario"}
+    },
+    "opportunity_map": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/opportunity"}
+    },
+    "retained_gaps": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/gap"}
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/blockingReason"}
+    },
+    "result_digest_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "blocking"}}},
+      "then": {"properties": {"blocking_reasons": {"minItems": 1}}},
+      "else": {"properties": {"blocking_reasons": {"maxItems": 0}}}
+    }
+  ],
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "idArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/nonempty"}
+    },
+    "goal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "objective", "audience", "decision"],
+      "properties": {
+        "type": {
+          "enum": ["opportunity", "decision", "landscape", "diagnosis"]
+        },
+        "objective": {"$ref": "#/$defs/nonempty"},
+        "audience": {"$ref": "#/$defs/nonempty"},
+        "decision": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_date", "end_date", "geographies", "languages"],
+      "properties": {
+        "start_date": {"type": "string", "format": "date"},
+        "end_date": {"type": "string", "format": "date"},
+        "geographies": {"$ref": "#/$defs/idArray"},
+        "languages": {"$ref": "#/$defs/idArray"}
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine_id", "engine_version", "worker_ids"],
+      "properties": {
+        "engine_id": {"$ref": "#/$defs/nonempty"},
+        "engine_version": {"$ref": "#/$defs/nonempty"},
+        "worker_ids": {"$ref": "#/$defs/idArray"}
+      }
+    },
+    "planBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "plan_id", "result_digest_sha256"],
+      "properties": {
+        "contract_version": {"const": "top50-hengzong-plan/v1"},
+        "plan_id": {"type": "string", "pattern": "^hzplan-[0-9a-f]{24}$"},
+        "result_digest_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "workstreamResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workstream_id", "status", "finding", "claim_ids"],
+      "properties": {
+        "workstream_id": {"$ref": "#/$defs/nonempty"},
+        "status": {"const": "complete"},
+        "finding": {"$ref": "#/$defs/nonempty"},
+        "claim_ids": {"$ref": "#/$defs/idArray"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "url",
+        "title",
+        "publisher",
+        "independence_group",
+        "published_at",
+        "as_of",
+        "pre_scope_context"
+      ],
+      "properties": {
+        "source_id": {"$ref": "#/$defs/nonempty"},
+        "url": {"type": "string", "format": "uri", "pattern": "^https?://"},
+        "title": {"$ref": "#/$defs/nonempty"},
+        "publisher": {"$ref": "#/$defs/nonempty"},
+        "independence_group": {"$ref": "#/$defs/nonempty"},
+        "published_at": {"type": "string", "format": "date-time"},
+        "as_of": {"type": "string", "format": "date-time"},
+        "pre_scope_context": {"type": "boolean"}
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim_id",
+        "text",
+        "temporal_role",
+        "event_date",
+        "as_of",
+        "pre_scope_context",
+        "scope",
+        "evidence_links"
+      ],
+      "properties": {
+        "claim_id": {"$ref": "#/$defs/nonempty"},
+        "text": {"$ref": "#/$defs/nonempty"},
+        "temporal_role": {
+          "enum": ["past_event", "present_effect", "implication"]
+        },
+        "event_date": {
+          "oneOf": [
+            {"type": "string", "format": "date"},
+            {"type": "null"}
+          ]
+        },
+        "as_of": {"type": "string", "format": "date-time"},
+        "pre_scope_context": {"type": "boolean"},
+        "scope": {"$ref": "#/$defs/nonempty"},
+        "evidence_links": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/evidenceLink"}
+        }
+      }
+    },
+    "evidenceLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "stance", "locator", "evidence_date", "scope"],
+      "properties": {
+        "source_id": {"$ref": "#/$defs/nonempty"},
+        "stance": {"enum": ["support", "refute"]},
+        "locator": {"$ref": "#/$defs/nonempty"},
+        "evidence_date": {"type": "string", "format": "date"},
+        "scope": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "causalChain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chain_id",
+        "past_event_claim_id",
+        "present_effect_claim_id",
+        "implication_claim_id",
+        "mechanism",
+        "caveat"
+      ],
+      "properties": {
+        "chain_id": {"$ref": "#/$defs/nonempty"},
+        "past_event_claim_id": {"$ref": "#/$defs/nonempty"},
+        "present_effect_claim_id": {"$ref": "#/$defs/nonempty"},
+        "implication_claim_id": {"$ref": "#/$defs/nonempty"},
+        "mechanism": {"$ref": "#/$defs/nonempty"},
+        "caveat": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scenario_id", "summary", "triggers", "invalidators"],
+      "properties": {
+        "scenario_id": {"enum": ["constrained", "continuity", "acceleration"]},
+        "summary": {"$ref": "#/$defs/nonempty"},
+        "triggers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/scenarioSignal"}
+        },
+        "invalidators": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/scenarioSignal"}
+        }
+      }
+    },
+    "scenarioSignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signal", "check_by", "claim_ids"],
+      "properties": {
+        "signal": {"$ref": "#/$defs/nonempty"},
+        "check_by": {"type": "string", "format": "date"},
+        "claim_ids": {"$ref": "#/$defs/idArray"}
+      }
+    },
+    "opportunity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opportunity_id",
+        "industry",
+        "horizon",
+        "unmet_need",
+        "enabling_change",
+        "offer",
+        "beneficiaries",
+        "constraints",
+        "leading_indicators",
+        "claim_ids"
+      ],
+      "properties": {
+        "opportunity_id": {"$ref": "#/$defs/nonempty"},
+        "industry": {"$ref": "#/$defs/nonempty"},
+        "horizon": {"$ref": "#/$defs/nonempty"},
+        "unmet_need": {"$ref": "#/$defs/nonempty"},
+        "enabling_change": {"$ref": "#/$defs/nonempty"},
+        "offer": {"$ref": "#/$defs/nonempty"},
+        "beneficiaries": {"$ref": "#/$defs/idArray"},
+        "constraints": {"$ref": "#/$defs/idArray"},
+        "leading_indicators": {"$ref": "#/$defs/idArray"},
+        "claim_ids": {"$ref": "#/$defs/idArray"}
+      }
+    },
+    "gap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gap_id", "statement", "status", "attempts"],
+      "properties": {
+        "gap_id": {"$ref": "#/$defs/nonempty"},
+        "statement": {"$ref": "#/$defs/nonempty"},
+        "status": {"const": "retained"},
+        "attempts": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"$ref": "#/$defs/gapAttempt"}
+        }
+      }
+    },
+    "gapAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attempt_id",
+        "query",
+        "query_path",
+        "route",
+        "executed_at",
+        "outcome"
+      ],
+      "properties": {
+        "attempt_id": {"$ref": "#/$defs/nonempty"},
+        "query": {"$ref": "#/$defs/nonempty"},
+        "query_path": {"$ref": "#/$defs/nonempty"},
+        "route": {"$ref": "#/$defs/nonempty"},
+        "executed_at": {"type": "string", "format": "date-time"},
+        "outcome": {
+          "enum": [
+            "no_results",
+            "no_eligible_evidence",
+            "insufficient_independence",
+            "blocked_authorization",
+            "conflicting_evidence"
+          ]
+        }
+      }
+    },
+    "blockingReason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {"$ref": "#/$defs/nonempty"},
+        "message": {"$ref": "#/$defs/nonempty"}
+      }
+    }
+  }
+}

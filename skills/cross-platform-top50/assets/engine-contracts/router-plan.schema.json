@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "top50-router-plan/v1",
+  "title": "Cross-platform Top 50 capability routing plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "run_id",
+    "created_at",
+    "request",
+    "candidates",
+    "selected_engines",
+    "stages",
+    "fallbacks",
+    "reason_codes",
+    "probe_evidence",
+    "dual_run",
+    "handoffs",
+    "pause_conditions"
+  ],
+  "properties": {
+    "schema": {"const": "top50-router-plan/v1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "request": {"type": "object"},
+    "candidates": {"type": "array", "items": {"type": "object"}},
+    "selected_engines": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["python", "go", "rust"]}
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "stage",
+          "engine",
+          "role",
+          "input_contract",
+          "output_contract",
+          "execution_mode",
+          "command",
+          "timeout_seconds",
+          "fallback_chain"
+        ],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "stage": {"enum": ["discovery", "fetch", "extraction", "process", "curate", "rank"]},
+          "engine": {"enum": ["python", "go", "rust"]},
+          "role": {"enum": ["primary", "validator"]},
+          "input_contract": {"type": "string", "minLength": 1},
+          "output_contract": {"type": "string", "minLength": 1},
+          "execution_mode": {"enum": ["subprocess", "orchestrated", "covered"]},
+          "command": {"type": "array", "items": {"type": "string"}},
+          "timeout_seconds": {"type": "number", "exclusiveMinimum": 0},
+          "fallback_chain": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"enum": ["python", "go", "rust"]}
+          },
+          "output_path": {"type": "string", "minLength": 1},
+          "input_binding": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "manifest_path",
+              "manifest_artifact_sha256",
+              "job_set_sha256",
+              "job_count"
+            ],
+            "properties": {
+              "manifest_path": {"type": "string", "minLength": 1},
+              "manifest_artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "job_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "job_count": {"type": "integer", "minimum": 1}
+            }
+          },
+          "validates_step": {"type": "string", "minLength": 1},
+          "gate": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "path",
+              "contract",
+              "required_status",
+              "run_id",
+              "stage",
+              "fail_closed"
+            ],
+            "properties": {
+              "type": {"enum": ["stage_artifact", "curator_acceptance"]},
+              "path": {"type": "string", "minLength": 1},
+              "contract": {
+                "enum": ["top50-extraction-result/v1", "top50-curator-acceptance/v1"]
+              },
+              "required_status": {"enum": ["complete", "accepted"]},
+              "run_id": {"type": "string", "minLength": 1},
+              "stage": {"enum": ["extraction", "curate"]},
+              "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "fail_closed": {"const": true}
+            }
+          },
+          "completion_artifact": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "contract", "required_status", "run_id", "stage"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "contract": {"type": "string", "minLength": 1},
+              "required_status": {"enum": ["complete", "accepted"]},
+              "run_id": {"type": "string", "minLength": 1},
+              "stage": {"enum": ["discovery", "fetch", "extraction", "process", "curate"]}
+            }
+          }
+        }
+      }
+    },
+    "fallbacks": {"type": "array", "items": {"type": "object"}},
+    "reason_codes": {"type": "array", "items": {"type": "string"}},
+    "probe_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["python", "go", "rust"],
+      "properties": {
+        "python": {"type": "object"},
+        "go": {"type": "object"},
+        "rust": {"type": "object"}
+      }
+    },
+    "dual_run": {"type": "boolean"},
+    "handoffs": {"type": "array", "items": {"type": "object"}},
+    "pause_conditions": {"type": "array", "items": {"type": "string"}}
+  }
+}
