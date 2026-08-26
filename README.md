@@ -6,7 +6,7 @@
 - Pi v0.80.2 中文教程基线 → v0.84.3 当前源码差分
 - Agent Loop、工具管道、retry、context、compaction、session tree、AgentHarness
 - Pi 与 DeepSeek Harness 的源码级架构对照
-- 36 平台研究账本与经过证据合同校验的 Top 50
+- 47 条平台路线，其中 33 个平台读到原页；另有经过证据合同校验的 Top 50
 - 安全边界、商业化方向与最小可运行实验
 
 ## 本地预览
@@ -22,9 +22,11 @@ python3 -m http.server 4173
 主要产物位于 [`research/run-pi-agent-runtime-20260826`](./research/run-pi-agent-runtime-20260826)：
 
 - `query_plan.json` / `route-bundle.json`：查询与路由冻结
-- `platform_coverage_36.tsv`：36 平台终态与候选池观察
+- `platform_coverage_36.tsv`：canonical 28 + 首轮 adjacent 的历史终态
+- `platform_expansion_sources.tsv` / `platform_expansion_audit.json`：12 个补充原页与“33 个原页平台”验收
 - `candidates.json` / `sources.tsv` / `evidence_cards.tsv`：策展与证据账本
 - `rank-input-manifest.json` / `curate-result.json`：不可变输入与独立主审
+- `engine_plan.json` / `engine_execution.json`：三引擎真实 probe、Python rank 重放与完成结果
 - `ranking-output/`：Top 50、rejected、coverage、validation 与报告
 
 Top 50 是截至 2026-08-26、在本次主题、时间窗、平台路线与 deterministic-v2 评分下的策展结果，不是“全网绝对排名”。

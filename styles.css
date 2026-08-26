@@ -179,6 +179,15 @@ h1 em { font-weight: 400; color: var(--muted); }
 .coverage-card { min-height: 145px; padding: 14px; border-right: 1px solid var(--ink); border-bottom: 1px solid var(--ink); background: var(--paper); }
 .coverage-card h3 { margin: 28px 0 7px; font: 400 19px var(--display); }
 .coverage-card p { margin: 0; color: var(--muted); font: 9px var(--mono); }
+.expansion-evidence { display: grid; grid-template-columns: 1fr 2fr; gap: 4vw; margin-top: clamp(42px,7vw,90px); padding-top: 28px; border-top: 3px solid var(--ink); }
+.expansion-evidence > div:first-child span { font: 700 9px var(--mono); letter-spacing: .12em; }
+.expansion-evidence h3 { margin: 22px 0 0; max-width: 410px; font: 400 clamp(26px,3vw,44px)/1 var(--display); }
+.expansion-source-grid { display: grid; grid-template-columns: repeat(2,1fr); border-top: 1px solid var(--ink); border-left: 1px solid var(--ink); }
+.expansion-source-grid a { position: relative; display: grid; gap: 10px; min-height: 126px; padding: 18px 44px 18px 18px; border-right: 1px solid var(--ink); border-bottom: 1px solid var(--ink); color: var(--ink); text-decoration: none; }
+.expansion-source-grid a:hover { background: var(--acid); }
+.expansion-source-grid span { color: var(--muted); font: 700 8px var(--mono); text-transform: uppercase; }
+.expansion-source-grid strong { font: 400 19px/1.1 var(--display); }
+.expansion-source-grid i { position: absolute; right: 16px; bottom: 16px; font-style: normal; }
 .method-grid { display: grid; grid-template-columns: repeat(4,1fr); margin-top: 70px; gap: 34px; }
 .method-grid article { padding-top: 16px; border-top: 4px solid var(--ink); }
 .method-grid span { font: 700 10px var(--mono); }
@@ -211,6 +220,7 @@ footer a { color: var(--paper); }
   .curriculum .section-heading { position: static; }
   .source-grid { grid-template-columns: repeat(2,1fr); }
   .coverage-grid { grid-template-columns: repeat(4,1fr); }
+  .expansion-evidence { grid-template-columns: 1fr; }
   .commercial-grid { grid-template-columns: repeat(2,1fr); }
   .commercial-grid article:nth-child(2) { border-right: 0; }
   .commercial-grid article:nth-child(-n+2) { border-bottom: 1px solid var(--ink); }
@@ -249,6 +259,7 @@ footer a { color: var(--paper); }
   .source-grid { grid-template-columns: 1fr; }
   .source-card { min-height: 310px; }
   .coverage-grid { grid-template-columns: repeat(2,1fr); }
+  .expansion-source-grid { grid-template-columns: 1fr; }
   .method-grid { grid-template-columns: 1fr 1fr; }
   footer { grid-template-columns: 1fr; }
 }

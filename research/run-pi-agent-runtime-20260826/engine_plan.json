@@ -1,0 +1,357 @@
+{
+  "candidates": [
+    {
+      "capabilities": [
+        "control",
+        "platform_orchestration",
+        "platform_cli",
+        "browser_session",
+        "rank",
+        "contract_validation",
+        "publish_orchestration"
+      ],
+      "contract": "top50-python-adapter/v1",
+      "eligible_stages": [
+        "rank"
+      ],
+      "engine": "python",
+      "ready": true,
+      "reason": "ready",
+      "version": "deterministic-v2"
+    },
+    {
+      "capabilities": [
+        "public_http_collect",
+        "get",
+        "head",
+        "bounded_concurrency",
+        "per_host_rate_limit",
+        "retry_429_5xx_transient_network",
+        "response_size_limit",
+        "sha256_artifacts",
+        "atomic_result",
+        "checkpoint_resume",
+        "dns_rebinding_defense",
+        "same_origin_redirect_revalidation",
+        "robots_rfc9309",
+        "fixed_transparent_user_agent",
+        "content_negotiation_provenance",
+        "input_sha256_binding"
+      ],
+      "contract": "top50-engine/v1",
+      "eligible_stages": [],
+      "engine": "go",
+      "ready": true,
+      "reason": "ready",
+      "version": "0.2.0"
+    },
+    {
+      "capabilities": [
+        "candidate_normalization",
+        "safe_url_validation",
+        "tracking_parameter_removal",
+        "http_https_identity_unification",
+        "strict_content_fingerprinting",
+        "transitive_exact_clustering",
+        "near_duplicate_review_flags",
+        "deterministic_result_digest",
+        "atomic_file_output"
+      ],
+      "contract": "top50-engine/v1",
+      "eligible_stages": [],
+      "engine": "rust",
+      "ready": true,
+      "reason": "ready",
+      "version": "0.1.0"
+    }
+  ],
+  "created_at": "2026-08-26T00:35:37.390547Z",
+  "dual_run": false,
+  "fallbacks": [
+    {
+      "chain": [
+        "python"
+      ],
+      "selected": "python",
+      "stage": "curate",
+      "unavailable": []
+    },
+    {
+      "chain": [
+        "python"
+      ],
+      "selected": "python",
+      "stage": "rank",
+      "unavailable": []
+    }
+  ],
+  "handoffs": [
+    {
+      "fail_closed": true,
+      "from_step": "curate-primary",
+      "preserve_raw_results": false,
+      "required_status": "accepted",
+      "to_step": "rank-primary"
+    }
+  ],
+  "pause_conditions": [
+    "unaccepted evidence",
+    "missing curator acceptance artifact",
+    "curator acceptance contract mismatch"
+  ],
+  "probe_evidence": {
+    "go": {
+      "base_command": [
+        "go",
+        "-C",
+        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/engines/go-collector",
+        "run",
+        "."
+      ],
+      "capabilities": [
+        "public_http_collect",
+        "get",
+        "head",
+        "bounded_concurrency",
+        "per_host_rate_limit",
+        "retry_429_5xx_transient_network",
+        "response_size_limit",
+        "sha256_artifacts",
+        "atomic_result",
+        "checkpoint_resume",
+        "dns_rebinding_defense",
+        "same_origin_redirect_revalidation",
+        "robots_rfc9309",
+        "fixed_transparent_user_agent",
+        "content_negotiation_provenance",
+        "input_sha256_binding"
+      ],
+      "command": [
+        "go",
+        "-C",
+        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/engines/go-collector",
+        "run",
+        ".",
+        "probe",
+        "--json"
+      ],
+      "contract": "top50-engine/v1",
+      "duration_ms": 293,
+      "engine": "go",
+      "engine_id": "go-collector",
+      "raw_probe": {
+        "capabilities": [
+          "public_http_collect",
+          "get",
+          "head",
+          "bounded_concurrency",
+          "per_host_rate_limit",
+          "retry_429_5xx_transient_network",
+          "response_size_limit",
+          "sha256_artifacts",
+          "atomic_result",
+          "checkpoint_resume",
+          "dns_rebinding_defense",
+          "same_origin_redirect_revalidation",
+          "robots_rfc9309",
+          "fixed_transparent_user_agent",
+          "content_negotiation_provenance",
+          "input_sha256_binding"
+        ],
+        "contract_version": "top50-engine/v1",
+        "engine_id": "go-collector",
+        "engine_version": "0.2.0",
+        "status": "ready"
+      },
+      "ready": true,
+      "reason": "ready",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"contract_version\":\"top50-engine/v1\",\"engine_id\":\"go-collector\",\"engine_version\":\"0.2.0\",\"status\":\"ready\",\"capabilities\":[\"public_http_collect\",\"get\",\"head\",\"bounded_concurrency\",\"per_host_rate_limit\",\"retry_429_5xx_transient_network\",\"response_size_limit\",\"sha256_artifacts\",\"atomic_result\",\"checkpoint_resume\",\"dns_rebinding_defense\",\"same_origin_redirect_revalidation\",\"robots_rfc9309\",\"fixed_transparent_user_agent\",\"content_negotiation_provenance\",\"input_sha256_binding\"]}\n",
+      "version": "0.2.0"
+    },
+    "python": {
+      "base_command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/scripts/rank_candidates.py"
+      ],
+      "capabilities": [
+        "control",
+        "platform_orchestration",
+        "platform_cli",
+        "browser_session",
+        "rank",
+        "contract_validation",
+        "publish_orchestration"
+      ],
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/scripts/rank_candidates.py",
+        "--help"
+      ],
+      "contract": "top50-python-adapter/v1",
+      "duration_ms": 50,
+      "engine": "python",
+      "engine_id": "python-ranker",
+      "ready": true,
+      "reason": "ready",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "usage: rank_candidates.py [-h] --input INPUT [--manifest MANIFEST]\n                          [--queries QUERIES] [--sources SOURCES]\n                          [--source-outcomes SOURCE_OUTCOMES]\n                          [--evidence-cards EVIDENCE_CARDS]\n                          [--platform-coverage PLATFORM_COVERAGE]\n                          --lineage-manifest LINEAGE_MANIFEST\n                          --curator-acceptance CURATOR_ACCEPTANCE\n                          [--output-dir OUTPUT_DIR] [--top TOP]\n\nFail-closed validator, deduplicator, and ranker for reviewed research bundles.\n\noptional arguments:\n  -h, --help            show this help message and exit\n  --input INPUT         candidate JSON or complete JSON bundle\n  --manifest MANIFEST   run_manifest.json; overrides bundled manifest\n  --queries QUERIES     queries.tsv; overrides bundled queries\n  --sources SOURCES     sources.tsv; overrides bundled sources\n  --source-outcomes SOURCE_OUTCOMES\n                        source_outcomes.jsonl; authoritative route outcomes\n  --evidence-cards EVIDENCE_CARDS\n                        evidence_cards.tsv; overrides bundled cards\n  --platform-coverage PLATFORM_COVERAGE\n                        platform_coverage.tsv; optional when manifest embeds\n                        coverage\n  --lineage-manifest LINEAGE_MANIFEST\n                        frozen top50-rank-input-manifest/v1\n  --curator-acceptance CURATOR_ACCEPTANCE\n                        accepted top50-curator-acceptance/v1\n  --output-dir OUTPUT_DIR\n  --top TOP\n",
+      "version": "deterministic-v2"
+    },
+    "rust": {
+      "base_command": [
+        "cargo",
+        "run",
+        "--quiet",
+        "--manifest-path",
+        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/engines/rust-processor/Cargo.toml",
+        "--"
+      ],
+      "capabilities": [
+        "candidate_normalization",
+        "safe_url_validation",
+        "tracking_parameter_removal",
+        "http_https_identity_unification",
+        "strict_content_fingerprinting",
+        "transitive_exact_clustering",
+        "near_duplicate_review_flags",
+        "deterministic_result_digest",
+        "atomic_file_output"
+      ],
+      "command": [
+        "cargo",
+        "run",
+        "--quiet",
+        "--manifest-path",
+        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/engines/rust-processor/Cargo.toml",
+        "--",
+        "probe",
+        "--json"
+      ],
+      "contract": "top50-engine/v1",
+      "duration_ms": 139,
+      "engine": "rust",
+      "engine_id": "rust-processor",
+      "raw_probe": {
+        "capabilities": [
+          "candidate_normalization",
+          "safe_url_validation",
+          "tracking_parameter_removal",
+          "http_https_identity_unification",
+          "strict_content_fingerprinting",
+          "transitive_exact_clustering",
+          "near_duplicate_review_flags",
+          "deterministic_result_digest",
+          "atomic_file_output"
+        ],
+        "contract_version": "top50-engine/v1",
+        "engine_id": "rust-processor",
+        "engine_version": "0.1.0",
+        "status": "ready"
+      },
+      "ready": true,
+      "reason": "ready",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"contract_version\":\"top50-engine/v1\",\"engine_id\":\"rust-processor\",\"engine_version\":\"0.1.0\",\"status\":\"ready\",\"capabilities\":[\"candidate_normalization\",\"safe_url_validation\",\"tracking_parameter_removal\",\"http_https_identity_unification\",\"strict_content_fingerprinting\",\"transitive_exact_clustering\",\"near_duplicate_review_flags\",\"deterministic_result_digest\",\"atomic_file_output\"]}\n",
+      "version": "0.1.0"
+    }
+  },
+  "reason_codes": [],
+  "request": {
+    "dual_run": false,
+    "engine_mode": "auto",
+    "engine_paths": {},
+    "required_capabilities": [
+      "rank"
+    ],
+    "risk": "medium",
+    "run_dir": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826",
+    "run_id": "pi-agent-runtime-20260826",
+    "schema": "top50-router-request/v1",
+    "source_kind": "local_bundle",
+    "stage": "rank",
+    "timeout_seconds": 300.0,
+    "top_n": 50,
+    "workload": "large"
+  },
+  "run_id": "pi-agent-runtime-20260826",
+  "schema": "top50-router-plan/v1",
+  "selected_engines": [
+    "python"
+  ],
+  "stages": [
+    {
+      "command": [],
+      "completion_artifact": {
+        "contract": "top50-curator-acceptance/v1",
+        "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/curate-result.json",
+        "required_status": "accepted",
+        "run_id": "pi-agent-runtime-20260826",
+        "stage": "curate"
+      },
+      "engine": "python",
+      "execution_mode": "orchestrated",
+      "fallback_chain": [
+        "python"
+      ],
+      "id": "curate-primary",
+      "input_contract": "top50-raw-processed-bundle/v1",
+      "output_contract": "top50-curator-accepted-bundle/v1",
+      "role": "primary",
+      "stage": "curate",
+      "timeout_seconds": 300.0
+    },
+    {
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/scripts/rank_candidates.py",
+        "--input",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/candidates.json",
+        "--manifest",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/run_manifest.json",
+        "--queries",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/queries.tsv",
+        "--sources",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/sources.tsv",
+        "--source-outcomes",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/source_outcomes.jsonl",
+        "--evidence-cards",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/evidence_cards.tsv",
+        "--platform-coverage",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/platform_coverage.tsv",
+        "--lineage-manifest",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/rank-input-manifest.json",
+        "--curator-acceptance",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/curate-result.json",
+        "--output-dir",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/ranking-output",
+        "--top",
+        "50"
+      ],
+      "engine": "python",
+      "execution_mode": "subprocess",
+      "fallback_chain": [
+        "python"
+      ],
+      "gate": {
+        "contract": "top50-curator-acceptance/v1",
+        "fail_closed": true,
+        "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/curate-result.json",
+        "required_status": "accepted",
+        "run_id": "pi-agent-runtime-20260826",
+        "stage": "curate",
+        "type": "curator_acceptance"
+      },
+      "id": "rank-primary",
+      "input_contract": "top50-research-bundle/v1",
+      "output_contract": "top50-ranking-summary/v1",
+      "output_path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/ranking-output/run_summary.json",
+      "role": "primary",
+      "stage": "rank",
+      "timeout_seconds": 300.0
+    }
+  ]
+}

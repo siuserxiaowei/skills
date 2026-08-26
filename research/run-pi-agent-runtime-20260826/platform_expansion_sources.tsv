@@ -1,0 +1,13 @@
+platform_id	display_name	url	readback_status	content_role	top50_status	verified_at	note
+zenn	Zenn	https://zenn.dev/53able/articles/c619b3f3cabf4e	fetched	源码实测与架构评估	supplemental_not_reranked	2026-08-26	原页回读；文章绑定旧 badlogic commit，当前事实仍以 earendil-works 固定 commit 为准。
+hackernoon	HackerNoon	https://hackernoon.com/how-i-manage-my-vps-with-pis-ssh-extension	fetched	SSH extension 实践	supplemental_not_reranked	2026-08-26	原页回读；实践经验不替代官方安全边界。
+qiita	Qiita	https://qiita.com/otakumesi/items/414c2e1836df4d8e278d	fetched	TypeScript 入门与自定义工具	supplemental_not_reranked	2026-08-26	原页回读；明确基于 v0.79.x，属于版本化教程。
+hashnode	Hashnode	https://plzai.hashnode.dev/2026-04-30-openai-symphony-codex-orchestration-linear	fetched	相邻编排案例	rejected_from_top50_scope	2026-08-26	原页回读；正文只把 Pi 作为 Kata CLI 的上游 harness，不足以支撑 Pi 内部实现。
+note	日本 note	https://note.com/_kihonushi/n/n4e4bd035c453	fetched	减法设计与会话树导读	supplemental_not_reranked	2026-08-26	原页回读；适合作为导读，版本与包名需回当前官方源核对。
+hugging_face	Hugging Face	https://huggingface.co/datasets/badlogicgames/pi-mono/blob/main/2026-01-16T02-58-05-814Z_14c806f6-4fde-4121-9a73-a8a167199723.jsonl	fetched	公开 session dataset / 生态采用	rejected_from_top50_scope	2026-08-26	原页回读；派生会话数据，只作生态信号，不作源码事实或隐私安全背书。
+product_hunt	Product Hunt	https://www.producthunt.com/products/pi-coding-agent-3	fetched	产品定位、评论与商业化	supplemental_not_reranked	2026-08-26	原页回读；评论和互动仅作采用信号。
+bluesky	Bluesky	https://bsky.app/profile/k33gorg.bsky.social/post/3me6k6usdns2d	fetched	Tiny LLM + Devcontainer 公开帖子	supplemental_not_reranked	2026-08-26	原帖回读；帖子指向外部长文，单帖不支撑性能结论。
+gitlab	GitLab	https://gitlab.com/psyb0t/docker-pibox	fetched	容器 / API / MCP / Telegram / cron 部署案例	supplemental_not_reranked	2026-08-26	项目页原文回读；新项目、零 star，价值在实现路径而非热度。
+composio	Composio	https://docs.composio.dev/examples/general-agent-with-pi	fetched	Slack 与授权工具集成教程	supplemental_not_reranked	2026-08-26	官方教程原页回读；商业服务声明不等同于独立安全审计。
+pypi	PyPI	https://pypi.org/project/pi-py-sdk/	fetched	Python RPC SDK 与嵌入路线	supplemental_not_reranked	2026-08-26	项目页原文回读；第三方包，安装前仍需供应链审计。
+docker_hub	Docker Hub	https://hub.docker.com/layers/stephengpope/thepopebot/coding-agent-pi-coding-agent-1.2.78/images/sha256-8203151c3ee00422b2a8a9dbed716557c80f49ef2d37bae4ef72e23782cb34db	fetched	容器分发工件	rejected_from_top50_scope	2026-08-26	镜像层原页回读；证明分发工件存在，不证明镜像安全或内容正确。

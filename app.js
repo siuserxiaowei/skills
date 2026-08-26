@@ -125,7 +125,25 @@ const coverage = [
   ["V2EX","complete",6],["Reddit","blocked",0],["Hacker News","complete",8],["Medium","partial",3],
   ["LinkedIn","partial",2],["快手","blocked",0],["微信视频号","blocked",0],["TikTok","blocked",0],
   ["Official Web","complete",4],["npm","complete",7],["DEV.to","complete",4],["Stack Overflow","partial",0],
-  ["Product Hunt","blocked",0],["Substack","complete",4],["arXiv / OpenReview","partial",1],["Gitee","partial",2]
+  ["Product Hunt","complete",1],["Substack","complete",4],["arXiv / OpenReview","partial",1],["Gitee","partial",2],
+  ["Zenn","complete",1],["HackerNoon","complete",1],["Qiita","complete",1],["Hashnode","partial",1],
+  ["note","complete",1],["Hugging Face","partial",1],["Bluesky","complete",1],["GitLab","complete",1],
+  ["Composio","complete",1],["PyPI","complete",1],["Docker Hub","partial",1]
+];
+
+const expansionSources = [
+  ["Zenn", "源码实测", "把 Pi 当自建 Agent 基座，而非又一个成品 CLI", "https://zenn.dev/53able/articles/c619b3f3cabf4e"],
+  ["HackerNoon", "实践", "用 SSH extension 管理 VPS", "https://hackernoon.com/how-i-manage-my-vps-with-pis-ssh-extension"],
+  ["Qiita", "教程", "从最小聊天循环到自定义工具与 Skill", "https://qiita.com/otakumesi/items/414c2e1836df4d8e278d"],
+  ["Hashnode", "相邻案例", "Kata / Pi harness 如何进入编排系统", "https://plzai.hashnode.dev/2026-04-30-openai-symphony-codex-orchestration-linear"],
+  ["note", "架构导读", "用“减法设计”理解模型切换、会话树与扩展", "https://note.com/_kihonushi/n/n4e4bd035c453"],
+  ["Hugging Face", "生态记录", "公开 session dataset；仅作采用信号，不作源码事实", "https://huggingface.co/datasets/badlogicgames/pi-mono/blob/main/2026-01-16T02-58-05-814Z_14c806f6-4fde-4121-9a73-a8a167199723.jsonl"],
+  ["Product Hunt", "商业化", "产品定位、用户评论与生态采用", "https://www.producthunt.com/products/pi-coding-agent-3"],
+  ["Bluesky", "公开帖子", "Pi + Tiny LLM + Devcontainer 的本地路线", "https://bsky.app/profile/k33gorg.bsky.social/post/3me6k6usdns2d"],
+  ["GitLab", "部署案例", "把 Pi 封装成容器、API、MCP、Telegram 与 cron", "https://gitlab.com/psyb0t/docker-pibox"],
+  ["Composio", "集成教程", "Pi 作为推理内核，外接 Slack 与用户级工具授权", "https://docs.composio.dev/examples/general-agent-with-pi"],
+  ["PyPI", "跨语言", "用 RPC 从 Python 驱动真实 Pi runtime", "https://pypi.org/project/pi-py-sdk/"],
+  ["Docker Hub", "分发工件", "可复现的 pi-coding-agent 多架构镜像层", "https://hub.docker.com/layers/stephengpope/thepopebot/coding-agent-pi-coding-agent-1.2.78/images/sha256-8203151c3ee00422b2a8a9dbed716557c80f49ef2d37bae4ef72e23782cb34db"]
 ];
 
 function renderChapters() {
@@ -178,6 +196,11 @@ function renderComparisons() {
 function renderCoverage() {
   document.querySelector("#coverage-grid").innerHTML = coverage.map(([name,status,count]) => `
     <article class="coverage-card ${status}"><span class="coverage-pill">${status}</span><h3>${name}</h3><p>${count ? `${count} 条候选召回` : "严格主题零召回 / 受阻"}</p></article>`).join("");
+}
+
+function renderExpansionSources() {
+  document.querySelector("#expansion-source-grid").innerHTML = expansionSources.map(([platform, type, title, url]) => `
+    <a href="${url}" target="_blank" rel="noreferrer"><span>${platform} · ${type}</span><strong>${title}</strong><i>↗</i></a>`).join("");
 }
 
 let allSources = [];
@@ -238,6 +261,7 @@ function observeReveals() {
 renderChapters();
 renderComparisons();
 renderCoverage();
+renderExpansionSources();
 bindLibrary();
 observeReveals();
 loadSources();
