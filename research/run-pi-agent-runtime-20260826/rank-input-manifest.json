@@ -1,0 +1,93 @@
+{
+  "contract_version": "top50-rank-input-manifest/v1",
+  "counts": {
+    "candidates": 50,
+    "evidence_cards": 50,
+    "files": 7,
+    "platform_coverage": 28,
+    "queries": 56,
+    "run_manifest": 1,
+    "source_outcomes": 50,
+    "sources": 50
+  },
+  "files": [
+    {
+      "artifact_sha256": "4722d4d68ffde20b796899f0f0ca8403edb56551809841a843bd33cbd8a1d13e",
+      "input_id": "candidates",
+      "media_type": "application/json",
+      "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/candidates.json",
+      "record_count": 50,
+      "record_ids_sha256": "0cb2f284e98765a8745fc6746f80dce008a7c8dbfd0fd0b9d9a96458f6e76114",
+      "record_kind": "candidate",
+      "role": "candidate_ledger"
+    },
+    {
+      "artifact_sha256": "f909e9fde85cc80660f4e0356a9a9c3f3ef4574d97d52aee80568e49dc4487cb",
+      "input_id": "run_manifest",
+      "media_type": "application/json",
+      "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/run_manifest.json",
+      "record_count": 1,
+      "record_ids_sha256": "c1d27730a12eb4781eded752023f4c3f79437781808c533894d4623b8591025f",
+      "record_kind": "run",
+      "role": "run_ledger"
+    },
+    {
+      "artifact_sha256": "8d3b051a3c18c36ef32350bebe40a3c212b4e1d0cd9980083f39ae32cc4c02f2",
+      "input_id": "queries",
+      "media_type": "text/tab-separated-values",
+      "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/queries.tsv",
+      "record_count": 56,
+      "record_ids_sha256": "4eeae231f4604fe9b8189b144e2011814aac4a0816b92b661c9234794ca86cb8",
+      "record_kind": "query",
+      "role": "query_ledger"
+    },
+    {
+      "artifact_sha256": "7af57e7ec18292113e0fed74d7d557a8750a099e320ba155f588821a2f6b33fc",
+      "input_id": "sources",
+      "media_type": "text/tab-separated-values",
+      "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/sources.tsv",
+      "record_count": 50,
+      "record_ids_sha256": "7f59e7d9756385597548e2616678e7aad324f3d980c2e9c4b4373f5dc05b9727",
+      "record_kind": "source",
+      "role": "source_ledger"
+    },
+    {
+      "artifact_sha256": "8c8c04ad46008518e672a5bdf17148ae89113476b2c51d586fc484659e67e0eb",
+      "input_id": "source_outcomes",
+      "media_type": "application/x-ndjson",
+      "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/source_outcomes.jsonl",
+      "record_count": 50,
+      "record_ids_sha256": "a8d9308a6a52aa2a66c40afaf59fe81bdda61013955704622d58301bf4a88f90",
+      "record_kind": "source_outcome",
+      "role": "source_outcome_ledger"
+    },
+    {
+      "artifact_sha256": "e15be12ad43d8d6f8158e6c59c4a571df47c87ace78f6168a8b9d0372c993362",
+      "input_id": "evidence_cards",
+      "media_type": "text/tab-separated-values",
+      "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/evidence_cards.tsv",
+      "record_count": 50,
+      "record_ids_sha256": "adf1d9aa62e58feb65c1ab1b5693ed1ff8f59ae9bc0c59306ab45ac220cc791b",
+      "record_kind": "evidence",
+      "role": "evidence_ledger"
+    },
+    {
+      "artifact_sha256": "dd82bae4ec62ff5a7e649e559131dbb65d6228ffdb8222774d15c8bd318aff2f",
+      "input_id": "platform_coverage",
+      "media_type": "text/tab-separated-values",
+      "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/platform_coverage.tsv",
+      "record_count": 28,
+      "record_ids_sha256": "777f5e56447b9eb8bd03a2d8c3aa04437ed63fd9e90953f4fbe9a1f890bb8509",
+      "record_kind": "platform",
+      "role": "platform_ledger"
+    }
+  ],
+  "producer": {
+    "engine_id": "python-control-plane",
+    "engine_version": "0.1.0"
+  },
+  "result_digest_sha256": "78d70a4dfa0408c1a1880be9dc901d4d1030069d31911e4514a7f8cad0aa8e28",
+  "run_id": "pi-agent-runtime-20260826",
+  "stage": "worker_check",
+  "status": "complete"
+}

@@ -1,0 +1,32 @@
+{
+  "actual_count": 50,
+  "completion_label": "本次检索范围内 Top 50",
+  "count_conservation_passed": true,
+  "eligible_unique_count": 50,
+  "exact_duplicate_count": 0,
+  "input_count": 50,
+  "near_duplicate_review_count": 0,
+  "platform_counts": {
+    "bilibili": 1,
+    "github": 28,
+    "google_search": 5,
+    "hacker_news": 1,
+    "infoq": 1,
+    "juejin": 1,
+    "linkedin": 2,
+    "linuxdo": 1,
+    "medium": 1,
+    "segmentfault": 1,
+    "v2ex": 2,
+    "youtube": 5,
+    "zhihu": 1
+  },
+  "ranking_version": "deterministic-v2",
+  "rejected_count": 0,
+  "requested_top_n": 50,
+  "selected_count": 50,
+  "shortfall": 0,
+  "top_n_filled": true,
+  "topic": "earendil-works/pi Agent 运行时与 DeepSeek Harness",
+  "unique_count": 50
+}

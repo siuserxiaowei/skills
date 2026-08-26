@@ -1,0 +1,31 @@
+{
+  "run_id": "pi-agent-runtime-20260826",
+  "topic": "earendil-works/pi Agent 运行时与 DeepSeek Harness",
+  "platform_id": "xiaohongshu",
+  "stage": "discovery",
+  "exact_probe_or_command": ["opencli", "xiaohongshu", "search", "Pi Agent", "--limit", "5", "-f", "yaml"],
+  "tool_readiness": "configured",
+  "bridge_state": "disconnected",
+  "auth_state": "required",
+  "quota_state": "unknown",
+  "authorization": "granted_for_current_task",
+  "probe_result": "blocked",
+  "error_summary": "OpenCLI daemon is available but the browser bridge is disconnected; user-assisted login is required and no access control was bypassed.",
+  "completed_query_ids": [],
+  "pending_query_ids": [
+    "query-0311816267c335b75f50127a",
+    "query-3dad35e2572bba4362ddf299",
+    "query-649f9ef56adfd88db11c65d1",
+    "query-81c3ab107c6460db0ba805b8",
+    "query-99fd93158e93a1f0fe01c086"
+  ],
+  "candidate_ids": [],
+  "artifact_paths": {
+    "manifest": "research/run-pi-agent-runtime-20260826/pi-agent-runtime-20260826/run_manifest.json",
+    "queries": "research/run-pi-agent-runtime-20260826/pi-agent-runtime-20260826/queries.tsv",
+    "sources": "research/run-pi-agent-runtime-20260826/pi-agent-runtime-20260826/sources.tsv",
+    "candidates": "research/run-pi-agent-runtime-20260826/pi-agent-runtime-20260826/candidates.json"
+  },
+  "next_safe_command": ["opencli", "xiaohongshu", "search", "Pi Agent", "--limit", "5", "-f", "yaml"],
+  "ttl_seconds": 604800
+}

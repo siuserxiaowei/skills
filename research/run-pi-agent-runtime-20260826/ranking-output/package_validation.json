@@ -1,0 +1,25 @@
+{
+  "contiguous_ranks_passed": true,
+  "count_conservation_passed": true,
+  "note": "Structure and references passed; source-support semantics still require curator judgment.",
+  "required_files": [
+    "candidates.json",
+    "evidence_cards.tsv",
+    "package_validation.json",
+    "platform_coverage.tsv",
+    "queries.tsv",
+    "ranking.json",
+    "rejected.json",
+    "report.md",
+    "run_manifest.json",
+    "run_summary.json",
+    "source_gap_backlog.md",
+    "source_outcomes.jsonl",
+    "sources.tsv",
+    "top.json"
+  ],
+  "score_recalculation_passed": true,
+  "semantic_truth_proven": false,
+  "status": "pass",
+  "structural_validation_passed": true
+}

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f4f0e6"/><rect x="32" y="32" width="1136" height="566" fill="none" stroke="#121212" stroke-width="3"/>
+  <rect x="772" y="32" width="396" height="566" fill="#121212"/><circle cx="968" cy="315" r="142" fill="none" stroke="#d6ff43" stroke-width="2"/><circle cx="968" cy="315" r="84" fill="none" stroke="#d6ff43" stroke-width="2"/><text x="968" y="346" fill="#d6ff43" font-family="Arial" font-size="116" text-anchor="middle">π</text>
+  <text x="72" y="112" fill="#121212" font-family="Arial" font-size="22" letter-spacing="6">RUNTIME FIELD GUIDE</text><text x="72" y="292" fill="#121212" font-family="Georgia" font-size="118">PI 不是一条链</text><text x="72" y="410" fill="#121212" font-family="Georgia" font-size="72">它是一套运行时。</text><rect x="72" y="472" width="488" height="62" fill="#d6ff43"/><text x="92" y="513" fill="#121212" font-family="Arial" font-size="24">LOOP · TOOLS · CONTEXT · SESSION</text>
+</svg>

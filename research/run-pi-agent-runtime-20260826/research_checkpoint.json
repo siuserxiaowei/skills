@@ -1,0 +1,61 @@
+{
+  "artifact_paths": {
+    "candidates": "research/run-pi-agent-runtime-20260826/pi-agent-runtime-20260826/candidates.json",
+    "manifest": "research/run-pi-agent-runtime-20260826/pi-agent-runtime-20260826/run_manifest.json",
+    "queries": "research/run-pi-agent-runtime-20260826/pi-agent-runtime-20260826/queries.tsv",
+    "sources": "research/run-pi-agent-runtime-20260826/pi-agent-runtime-20260826/sources.tsv"
+  },
+  "auth_state": "required",
+  "authorization": "granted_for_current_task",
+  "bridge_state": "disconnected",
+  "candidate_ids": [],
+  "checkpoint_digest_sha256": "1f7fe8e9b3bd931519138ae12d1ab14a39756bf8e7df9917f0e02e697bdfdfa9",
+  "checkpoint_id": "3ebbebc9a8dce0c00a0a0de8fbd31b23cbf08539bc8abee074bffa7d408cf1a4",
+  "completed_query_ids": [],
+  "created_at": "2026-08-26T00:28:29Z",
+  "error_history": [
+    "OpenCLI daemon is available but the browser bridge is disconnected; user-assisted login is required and no access control was bypassed."
+  ],
+  "error_summary": "OpenCLI daemon is available but the browser bridge is disconnected; user-assisted login is required and no access control was bypassed.",
+  "exact_probe_or_command": [
+    "opencli",
+    "xiaohongshu",
+    "search",
+    "Pi Agent",
+    "--limit",
+    "5",
+    "-f",
+    "yaml"
+  ],
+  "expires_at": "2026-09-02T00:28:29Z",
+  "idempotency_key": "f53182a434b009c1b3ecc845ee17bc9f8af65da9404130d1b663cdc4fc4117ff",
+  "next_safe_command": [
+    "opencli",
+    "xiaohongshu",
+    "search",
+    "Pi Agent",
+    "--limit",
+    "5",
+    "-f",
+    "yaml"
+  ],
+  "pending_query_ids": [
+    "query-0311816267c335b75f50127a",
+    "query-3dad35e2572bba4362ddf299",
+    "query-649f9ef56adfd88db11c65d1",
+    "query-81c3ab107c6460db0ba805b8",
+    "query-99fd93158e93a1f0fe01c086"
+  ],
+  "platform_id": "xiaohongshu",
+  "probe_result": "blocked",
+  "quota_state": "unknown",
+  "resume_count": 0,
+  "run_id": "pi-agent-runtime-20260826",
+  "schema": "top50-research-checkpoint/v1",
+  "stage": "discovery",
+  "status": "paused",
+  "tool_readiness": "configured",
+  "topic": "earendil-works/pi Agent 运行时与 DeepSeek Harness",
+  "ttl_seconds": 604800,
+  "updated_at": "2026-08-26T00:28:29Z"
+}

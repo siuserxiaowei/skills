@@ -1,0 +1,37 @@
+platform	display_name	coverage_status	observed_candidate_pool	reviewed_eligible	access_mode	note
+csdn	CSDN	complete	12	6	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+wechat_official_accounts	微信公众号	blocked	0	0	user-assisted pending	登录/验证或 Browser Bridge 缺失，未绕过访问控制。
+zhihu	知乎	complete	5	3	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+xiaohongshu	小红书	blocked	0	0	user-assisted pending	登录/验证或 Browser Bridge 缺失，未绕过访问控制。
+weibo	微博	blocked	0	0	user-assisted pending	登录/验证或 Browser Bridge 缺失，未绕过访问控制。
+douyin	抖音	blocked	0	0	user-assisted pending	登录/验证或 Browser Bridge 缺失，未绕过访问控制。
+x	X / Twitter	partial	4	0	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+bilibili	Bilibili	complete	35	1	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+juejin	掘金	complete	3	1	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+youtube	YouTube	complete	15	5	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+linuxdo	Linux.do	complete	8	2	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+github	GitHub	complete	48	25	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+baidu_search	百度搜索	partial	0	0	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+google_search	Google 搜索	blocked	0	0	user-assisted pending	登录/验证或 Browser Bridge 缺失，未绕过访问控制。
+bing_search	Bing 搜索	partial	0	0	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+toutiao	今日头条	partial	0	0	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+36kr	36氪	complete	5	1	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+infoq	InfoQ	complete	3	1	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+segmentfault	SegmentFault	complete	7	1	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+oschina	开源中国	partial	0	0	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+v2ex	V2EX	complete	6	3	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+reddit	Reddit	blocked	0	0	user-assisted pending	登录/验证或 Browser Bridge 缺失，未绕过访问控制。
+hacker_news	Hacker News	complete	8	2	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+medium	Medium	partial	3	1	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+linkedin	LinkedIn	partial	2	1	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+kuaishou	快手	blocked	0	0	user-assisted pending	登录/验证或 Browser Bridge 缺失，未绕过访问控制。
+wechat_channels	微信视频号	blocked	0	0	user-assisted pending	登录/验证或 Browser Bridge 缺失，未绕过访问控制。
+tiktok	TikTok	blocked	0	0	user-assisted pending	登录/验证或 Browser Bridge 缺失，未绕过访问控制。
+official_web	官方 Web	complete	4	4	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+npm	npm	complete	7	3	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+devto	DEV.to	complete	4	2	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+stackoverflow	Stack Overflow	partial	0	0	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+product_hunt	Product Hunt	blocked	0	0	user-assisted pending	登录/验证或 Browser Bridge 缺失，未绕过访问控制。
+substack	Substack	complete	4	2	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+arxiv_openreview	arXiv / OpenReview	partial	1	1	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
+gitee	Gitee	partial	2	0	public	公开路线已执行；partial 表示严格主题零召回或专用路由受限。
