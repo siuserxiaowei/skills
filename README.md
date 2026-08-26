@@ -31,6 +31,10 @@ python3 -m http.server 4173
 
 Top 50 是截至 2026-08-26、在本次主题、时间窗、平台路线与 deterministic-v2 评分下的策展结果，不是“全网绝对排名”。
 
+## 47 × 10 进行中交接
+
+逐平台规则与“每个平台至少 10 条原页”的第二阶段任务已暂停，并保存在 `codex/pi-platform10-handoff` 分支。恢复入口是 [`research/run-pi-platform10-20260826/HANDOFF.md`](./research/run-pi-platform10-20260826/HANDOFF.md)。当前进行中快照为 42 条已接受种子、1 / 47 个平台达标、37 / 47 个平台规则已完成 worker check；严格门禁尚未通过，因此没有发布为完成版。
+
 ## 版本冻结
 
 - Pi source：`8fa7eebd235355522c8104166b4f1f959b4e2f10`

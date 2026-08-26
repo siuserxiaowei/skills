@@ -117,18 +117,18 @@ const comparisons = [
 ];
 
 const coverage = [
-  ["CSDN","complete",12],["微信公众号","blocked",0],["知乎","complete",5],["小红书","blocked",0],
-  ["微博","blocked",0],["抖音","blocked",0],["X / Twitter","partial",4],["Bilibili","complete",35],
-  ["掘金","complete",3],["YouTube","complete",15],["Linux.do","complete",8],["GitHub","complete",48],
-  ["百度搜索","partial",0],["Google 搜索","blocked",0],["Bing 搜索","partial",0],["今日头条","partial",0],
-  ["36氪","complete",5],["InfoQ","complete",3],["SegmentFault","complete",7],["开源中国","partial",0],
-  ["V2EX","complete",6],["Reddit","blocked",0],["Hacker News","complete",8],["Medium","partial",3],
-  ["LinkedIn","partial",2],["快手","blocked",0],["微信视频号","blocked",0],["TikTok","blocked",0],
-  ["Official Web","complete",4],["npm","complete",7],["DEV.to","complete",4],["Stack Overflow","partial",0],
-  ["Product Hunt","complete",1],["Substack","complete",4],["arXiv / OpenReview","partial",1],["Gitee","partial",2],
-  ["Zenn","complete",1],["HackerNoon","complete",1],["Qiita","complete",1],["Hashnode","partial",1],
-  ["note","complete",1],["Hugging Face","partial",1],["Bluesky","complete",1],["GitLab","complete",1],
-  ["Composio","complete",1],["PyPI","complete",1],["Docker Hub","partial",1]
+  ["csdn","CSDN","pending",0],["wechat_official_accounts","微信公众号","blocked",0],["zhihu","知乎","partial",1],["xiaohongshu","小红书","blocked",0],
+  ["weibo","微博","blocked",0],["douyin","抖音","blocked",0],["x","X / Twitter","blocked",0],["bilibili","Bilibili","partial",1],
+  ["juejin","掘金","partial",1],["youtube","YouTube","partial",5],["linuxdo","Linux.do","partial",1],["github","GitHub","complete",28],
+  ["baidu_search","百度搜索","pending",0],["google_search","Google 搜索","pending",0],["bing_search","Bing 搜索","pending",0],["toutiao","今日头条","pending",0],
+  ["36kr","36氪","pending",0],["infoq","InfoQ","partial",1],["segmentfault","SegmentFault","partial",1],["oschina","开源中国","pending",0],
+  ["v2ex","V2EX","partial",2],["reddit","Reddit","blocked",0],["hacker_news","Hacker News","partial",1],["medium","Medium","pending",0],
+  ["linkedin","LinkedIn","blocked",0],["kuaishou","快手","blocked",0],["wechat_channels","微信视频号","blocked",0],["tiktok","TikTok","blocked",0],
+  ["official_web","Official Web","partial",4],["npm","npm","pending",0],["devto","DEV.to","partial",1],["stackoverflow","Stack Overflow","pending",0],
+  ["product_hunt","Product Hunt","pending",0],["substack","Substack","partial",2],["arxiv_openreview","arXiv / OpenReview","partial",1],["gitee","Gitee","pending",0],
+  ["zenn","Zenn","pending",0],["hackernoon","HackerNoon","pending",0],["qiita","Qiita","pending",0],["hashnode","Hashnode","pending",0],
+  ["note","note","pending",0],["huggingface","Hugging Face","pending",0],["bluesky","Bluesky","pending",0],["gitlab","GitLab","pending",0],
+  ["composio","Composio","pending",0],["pypi","PyPI","pending",0],["docker_hub","Docker Hub","pending",0]
 ];
 
 const expansionSources = [
@@ -193,13 +193,149 @@ function renderComparisons() {
   document.querySelector("#comparison-body").innerHTML = comparisons.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("");
 }
 
+let platformLibrary = {
+  accepted_total: 42,
+  complete_platforms: 1,
+  platforms: coverage.map(([platform_id, platform_name, status, accepted_count]) => ({
+    platform_id, platform_name, status, accepted_count, target_count: 10, rule: {}, coverage: {}, items: []
+  }))
+};
+let activeCoverageFilter = "all";
+let activePlatformId = "github";
+
+function escapeHtml(value = "") {
+  return String(value).replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[char]);
+}
+
+function safeExternalUrl(value = "") {
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "#";
+  } catch { return "#"; }
+}
+
+function platformStatus(platform) {
+  if (Number(platform.accepted_count) >= Number(platform.target_count || 10)) return "complete";
+  return ["complete", "partial", "blocked", "rejected", "pending"].includes(platform.status) ? platform.status : "pending";
+}
+
 function renderCoverage() {
-  document.querySelector("#coverage-grid").innerHTML = coverage.map(([name,status,count]) => `
-    <article class="coverage-card ${status}"><span class="coverage-pill">${status}</span><h3>${name}</h3><p>${count ? `${count} 条候选召回` : "严格主题零召回 / 受阻"}</p></article>`).join("");
+  const query = document.querySelector("#coverage-search")?.value.trim().toLowerCase() || "";
+  const rows = platformLibrary.platforms.filter(platform => {
+    const status = platformStatus(platform);
+    return (activeCoverageFilter === "all" || status === activeCoverageFilter)
+      && `${platform.platform_name} ${platform.platform_id}`.toLowerCase().includes(query);
+  });
+  document.querySelector("#coverage-grid").innerHTML = rows.length ? rows.map(platform => {
+    const status = platformStatus(platform);
+    const count = Number(platform.accepted_count || 0);
+    const target = Number(platform.target_count || 10);
+    const ratio = Math.min(100, count / target * 100);
+    return `<button class="coverage-card ${status}${platform.platform_id === activePlatformId ? " selected" : ""}" data-platform-id="${escapeHtml(platform.platform_id)}" aria-pressed="${platform.platform_id === activePlatformId}">
+      <span class="coverage-pill">${status}</span>
+      <span class="coverage-count"><b>${count}</b> / ${target}</span>
+      <h3>${escapeHtml(platform.platform_name || platform.platform_id)}</h3>
+      <span class="coverage-progress" aria-hidden="true"><i style="width:${ratio}%"></i></span>
+      <p>${status === "complete" ? "已通过原页主审" : status === "blocked" ? "等待登录 / 访问接力" : `还差 ${Math.max(0, target - count)} 条`}</p>
+    </button>`;
+  }).join("") : `<div class="coverage-empty">没有匹配平台。</div>`;
+}
+
+function renderRuleSources(raw = "") {
+  const links = String(raw).match(/https?:\/\/[^\s|;,]+/g) || [];
+  return links.length ? links.map((url, index) => `<a href="${safeExternalUrl(url)}" target="_blank" rel="noreferrer">规则来源 ${index + 1} ↗</a>`).join("") : `<span>规则来源待补验</span>`;
+}
+
+function renderPlatformDetail() {
+  const platform = platformLibrary.platforms.find(item => item.platform_id === activePlatformId) || platformLibrary.platforms[0];
+  if (!platform) return;
+  activePlatformId = platform.platform_id;
+  const rule = platform.rule || {};
+  const ledger = platform.coverage || {};
+  const status = platformStatus(platform);
+  const items = platform.items || [];
+  const ruleRows = [
+    ["DISCOVERY", rule.discovery_route || "待完成两类真实查询"],
+    ["READBACK", rule.readback_route || "必须回到原页 / detail / transcript"],
+    ["LOGIN", rule.login_requirement || "待真实 probe"],
+    ["AUTOMATION", rule.rate_or_automation_caveats || "只读、低频，不绕过验证码与风控"],
+    ["FALLBACK", rule.fallback || ledger.next_verification_step || "保留阻塞并请求用户接力"]
+  ];
+  document.querySelector("#platform-detail").innerHTML = `
+    <header class="platform-detail-head">
+      <div><span>${escapeHtml(platform.platform_id)} / ${status}</span><h3>${escapeHtml(platform.platform_name || platform.platform_id)}</h3></div>
+      <div class="platform-detail-score"><strong>${Number(platform.accepted_count || 0)}</strong><span>/ ${Number(platform.target_count || 10)} 原页主审</span></div>
+    </header>
+    <div class="platform-rule-grid">
+      ${ruleRows.map(([label, value]) => `<div><span>${label}</span><p>${escapeHtml(value)}</p></div>`).join("")}
+      <div class="platform-rule-sources"><span>OFFICIAL RULES</span><p>${renderRuleSources(rule.official_rule_sources)}</p></div>
+    </div>
+    <div class="platform-item-head"><span>CURATED ITEMS</span><p>${items.length ? `已展示 ${items.length} 条。每条均保留原链接与回读后端。` : "还没有通过主审的条目；搜索摘要不会在这里出现。"}</p></div>
+    <div class="platform-item-list">
+      ${items.length ? items.map((item, index) => `<article>
+        <div class="platform-item-index">${String(index + 1).padStart(2, "0")}</div>
+        <div><span>${escapeHtml(item.content_track)} · ${escapeHtml(item.content_type)}</span><h4><a href="${safeExternalUrl(item.canonical_url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)} ↗</a></h4><p>${escapeHtml(item.summary)}</p></div>
+        <aside><b>${escapeHtml(item.creator_name)}</b><span>${escapeHtml(item.published_at || "unknown")}</span><span>${escapeHtml(item.readback_backend)}</span></aside>
+      </article>`).join("") : `<div class="platform-item-empty">当前缺口：${Math.max(0, Number(platform.target_count || 10) - Number(platform.accepted_count || 0))} 条。${escapeHtml(ledger.errors || "等待检索、回读或登录接力。")}</div>`}
+    </div>`;
+}
+
+function updatePlatformSummary() {
+  const complete = platformLibrary.platforms.filter(platform => platformStatus(platform) === "complete").length;
+  const blocked = platformLibrary.platforms.filter(platform => platformStatus(platform) === "blocked").length;
+  const accepted = Number(platformLibrary.accepted_total || platformLibrary.platforms.reduce((sum, platform) => sum + Number(platform.accepted_count || 0), 0));
+  document.querySelector("#platform-accepted-total").textContent = accepted;
+  document.querySelector("#platform-complete-total").textContent = complete;
+  document.querySelector("#platform-blocked-total").textContent = blocked;
+  document.querySelector("#platform-complete-stat").textContent = complete;
+}
+
+async function loadPlatformLibrary() {
+  try {
+    const response = await fetch("./platform-library.json");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    if (!Array.isArray(payload.platforms) || payload.platforms.length !== 47) throw new Error("平台数据不是 47 行");
+    platformLibrary = payload;
+  } catch (error) {
+    console.warn("Platform library fallback:", error);
+  }
+  updatePlatformSummary();
+  renderCoverage();
+  renderPlatformDetail();
+  restoreHashPosition();
+}
+
+function restoreHashPosition() {
+  if (!location.hash) return;
+  const target = document.getElementById(location.hash.slice(1));
+  if (!target) return;
+  requestAnimationFrame(() => target.scrollIntoView({block: "start"}));
+}
+
+function bindCoverage() {
+  document.querySelector("#coverage-search").addEventListener("input", renderCoverage);
+  document.querySelector("#coverage-filters").addEventListener("click", event => {
+    const button = event.target.closest("[data-coverage-filter]");
+    if (!button) return;
+    activeCoverageFilter = button.dataset.coverageFilter;
+    document.querySelectorAll("[data-coverage-filter]").forEach(item => item.classList.toggle("active", item === button));
+    renderCoverage();
+  });
+  document.querySelector("#coverage-grid").addEventListener("click", event => {
+    const card = event.target.closest("[data-platform-id]");
+    if (!card) return;
+    activePlatformId = card.dataset.platformId;
+    renderCoverage();
+    renderPlatformDetail();
+    document.querySelector("#platform-detail").focus({preventScroll: true});
+  });
 }
 
 function renderExpansionSources() {
-  document.querySelector("#expansion-source-grid").innerHTML = expansionSources.map(([platform, type, title, url]) => `
+  const root = document.querySelector("#expansion-source-grid");
+  if (!root) return;
+  root.innerHTML = expansionSources.map(([platform, type, title, url]) => `
     <a href="${url}" target="_blank" rel="noreferrer"><span>${platform} · ${type}</span><strong>${title}</strong><i>↗</i></a>`).join("");
 }
 
@@ -232,6 +368,7 @@ async function loadSources() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     allSources = (await response.json()).items;
     renderSourceFilters(); renderSources();
+    restoreHashPosition();
   } catch (error) {
     document.querySelector("#source-grid").innerHTML = `<div class="empty-state">Top 50 数据加载失败：${error.message}</div>`;
     document.querySelector("#result-count").textContent = "ERROR";
@@ -258,10 +395,16 @@ function observeReveals() {
   document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
 }
 
+async function initializeAsyncData() {
+  await Promise.all([loadSources(), loadPlatformLibrary()]);
+  if (document.fonts?.ready) await document.fonts.ready;
+  restoreHashPosition();
+}
+
 renderChapters();
 renderComparisons();
-renderCoverage();
 renderExpansionSources();
 bindLibrary();
+bindCoverage();
 observeReveals();
-loadSources();
+initializeAsyncData();

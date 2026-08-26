@@ -1,0 +1,87 @@
+{
+  "schema_version": "pi-platform-library/v1",
+  "run_id": "pi-platform10-20260826",
+  "original_request": "研究站点当前列出的全部平台规则，并为 Pi 找到每个平台至少 10 条可回读内容",
+  "topic": "earendil-works/pi Agent runtime, pi-coding-agent and Pi Agent Harness",
+  "research_question": "在每个指定平台上，哪些关于 Pi 的入门、技巧、进阶、商业化和生态内容值得学习，并且可以从原页复核？",
+  "purpose": "learning_knowledge_base",
+  "audience": "想从 API demo 进阶到生产级 Agent 系统设计的中文开发者",
+  "geography": "CN+global",
+  "languages": ["zh", "en", "ja"],
+  "timeframe": {"start": "2024-01-01", "end": "2026-08-26", "policy": "evergreen official material may be retained when current applicability is verified"},
+  "login_mode": "user-assisted",
+  "publish_mode": "github-pages",
+  "storage_mode": "metadata_summary_short_excerpt_and_link",
+  "selection_profile": "platform-quota-v1",
+  "library_target": 470,
+  "per_platform_minimum_accepted": 10,
+  "per_platform_discovery_target": 15,
+  "candidate_pool_target": 705,
+  "ranking_claim": "none; this is a 47 x 10 curated library, not a global Top 470 ranking",
+  "required_platforms": [
+    "csdn", "wechat_official_accounts", "zhihu", "xiaohongshu", "weibo", "douyin",
+    "x", "bilibili", "juejin", "youtube", "linuxdo", "github", "baidu_search",
+    "google_search", "bing_search", "toutiao", "36kr", "infoq", "segmentfault",
+    "oschina", "v2ex", "reddit", "hacker_news", "medium", "linkedin", "kuaishou",
+    "wechat_channels", "tiktok", "official_web", "npm", "devto", "stackoverflow",
+    "product_hunt", "substack", "arxiv_openreview", "gitee", "zenn", "hackernoon",
+    "qiita", "hashnode", "note", "huggingface", "bluesky", "gitlab", "composio",
+    "pypi", "docker_hub"
+  ],
+  "topic_aliases": [
+    "earendil-works/pi", "badlogic/pi-mono", "pi-coding-agent", "@mariozechner/pi-coding-agent",
+    "@earendil-works/pi-agent-core", "Pi AgentHarness", "Pi coding agent"
+  ],
+  "excluded_ambiguities": [
+    "Raspberry Pi", "Pi Network cryptocurrency", "mathematical constant pi", "policy iteration",
+    "unrelated products named Pi", "pages that only contain a coincidental pi token"
+  ],
+  "content_tracks": ["入门", "技巧", "进阶", "商业化", "生态与案例", "批评与风险"],
+  "allowed_sources": ["public original pages", "official APIs", "platform-native read/detail/transcript", "user-assisted read-only browser session"],
+  "blocked_sources": ["private content", "paywalled full text", "unauthorized account data", "captcha bypass", "robots bypass", "search snippets used as final evidence"],
+  "search_engine_policy": "Baidu, Google and Bing rows count ten distinct original pages actually discovered through that named engine and then read back; fallback engines are logged but do not satisfy the named-engine quota.",
+  "acceptance_fields": [
+    "candidate_id", "platform_id", "title", "canonical_url", "creator_name", "published_at",
+    "date_basis", "accessed_at", "language", "content_type", "content_track", "summary",
+    "why_useful", "discovery_backend", "readback_backend", "evidence_status", "limitations"
+  ],
+  "acceptance_gate": [
+    "directly relevant to the specified Pi project or its runtime ecosystem",
+    "stable original URL or authorized stable platform object ID",
+    "original page, detail view, transcript, repository or discussion body was actually read",
+    "title and creator/account are verified; unknown dates are explicit",
+    "not a duplicate, mirror, trivial cross-post or search snippet",
+    "no access-control, privacy, copyright or platform-rule bypass"
+  ],
+  "platform_rule_fields": [
+    "platform_id", "official_rule_sources", "discovery_route", "readback_route", "login_requirement",
+    "allowed_metadata", "interaction_caveats", "rate_or_automation_caveats", "fallback", "last_checked_at"
+  ],
+  "capability_snapshot": {
+    "checked_at": "2026-08-26T19:00:00+08:00",
+    "agent_reach": "doctor completed; GitHub, X, YouTube, Bilibili, V2EX, Exa and Jina reported available; Reddit and Xiaohongshu require Browser Bridge; LinkedIn backend not configured",
+    "opencli": "v1.8.6 daemon running; Browser Bridge extension disconnected",
+    "authorization": "public read-only and user-assisted login for this research; no posting, liking, following or account mutation"
+  },
+  "phases": {
+    "scope": "complete",
+    "platform_rule_research": "partial_37_of_47_worker_checked",
+    "discovery": "partial_unstructured_worker_notes_only",
+    "fetch": "pending",
+    "worker_check": "pending",
+    "curator_acceptance": "pending",
+    "site_update": "prototype_complete_not_published",
+    "publish_readback": "pending"
+  },
+  "stop_conditions": [
+    "all 47 platforms have a terminal coverage state and a current rule record",
+    "each complete platform has at least 10 independently reviewable accepted items",
+    "blocked or content-scarce platforms retain exact cause, attempts and minimum resume step",
+    "all published items pass original-page curation, duplicate checks and link validation",
+    "GitHub Pages desktop, mobile, data count and live readback checks pass"
+  ],
+  "started_at": "2026-08-26T19:00:00+08:00",
+  "paused_at": "2026-08-26T09:10:00+08:00",
+  "pause_reason": "paused_by_user_for_cross_computer_handoff",
+  "status": "paused"
+}

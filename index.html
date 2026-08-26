@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#d6ff43">
-  <meta name="description" content="Pi Agent Runtime Field Guide：从 Agent Loop、工具管道、上下文压缩、会话树到 AgentHarness，并与 DeepSeek Harness 做源码级对照。">
+  <meta name="description" content="Pi Agent Runtime Field Guide：14 章源码课、Pi vs DeepSeek Harness，以及 47 个平台逐平台规则与原页资料库。">
   <meta property="og:title" content="Pi Runtime Field Guide">
-  <meta property="og:description" content="14 章源码学习路线、Pi vs DeepSeek Harness、47 条平台路线、33 个原页平台与 Top 50。">
+  <meta property="og:description" content="14 章源码学习路线、Pi vs DeepSeek Harness、Top 50 与可审计的 47 × 10 平台资料库。">
   <meta property="og:image" content="./assets/og.svg">
   <title>Pi Runtime Field Guide — 从 Loop 到 Harness</title>
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
@@ -24,6 +24,7 @@
       <a href="#curriculum">课程</a>
       <a href="#compare">对照</a>
       <a href="#top50">Top 50</a>
+      <a href="#platform-library">47 × 10</a>
       <a href="#method">方法</a>
     </nav>
     <a class="header-cta" href="https://github.com/earendil-works/pi" target="_blank" rel="noreferrer">READ SOURCE ↗</a>
@@ -46,7 +47,7 @@
       <div class="hero-stats" aria-label="研究统计">
         <div><strong>14</strong><span>源码章节</span></div>
         <div><strong>50</strong><span>主审资料</span></div>
-        <div><strong>33</strong><span>原页平台</span></div>
+        <div><strong id="platform-complete-stat">1</strong><span>平台达标 / 47</span></div>
         <div><strong>2×</strong><span>Harness 对照</span></div>
       </div>
       <div class="scroll-cue" aria-hidden="true"><span></span>SCROLL TO ENTER THE LOOP</div>
@@ -157,17 +158,33 @@
       <div class="source-grid" id="source-grid" aria-live="polite"></div>
     </section>
 
-    <section class="coverage band-paper reveal" id="method">
+    <section class="coverage band-paper reveal" id="platform-library">
       <div class="section-heading">
-        <div class="section-label">07 / RESEARCH LEDGER</div>
-        <h2>47 条平台路线，<br>33 个读到原页</h2>
-        <p>“覆盖”不是每个平台硬凑一条。Top 50 也不按平台分配名额：33 个平台完成原页回读，其他路线保留 partial / blocked 终态；验证码、登录、桥接失败会原样写进账本。</p>
+        <div class="section-label">07 / PLATFORM LIBRARY</div>
+        <h2>47 个平台，<br>每个平台 10 条</h2>
+        <p>先研究平台规则，再站内发现并回读原页。搜索摘要不计数，同一内容的转载不重复；卡片展开后可核对检索路线、登录边界和每一条资料。</p>
       </div>
-      <div class="coverage-key"><span class="complete">complete</span><span class="partial">partial</span><span class="blocked">blocked</span></div>
-      <div class="coverage-grid" id="coverage-grid"></div>
-      <div class="expansion-evidence">
-        <div><span>12 / ORIGINAL-PAGE READBACK</span><h3>补充平台不是用来凑 Top 50，而是补足生态、实践、分发与商业化观察。</h3></div>
-        <div class="expansion-source-grid" id="expansion-source-grid"></div>
+      <div class="platform-summary" aria-live="polite">
+        <div><strong id="platform-accepted-total">42</strong><span>主审原页 / 470</span></div>
+        <div><strong id="platform-complete-total">1</strong><span>已达标平台 / 47</span></div>
+        <div><strong id="platform-blocked-total">0</strong><span>受阻平台</span></div>
+      </div>
+      <div class="coverage-toolbar">
+        <label class="coverage-search"><span>FIND A PLATFORM</span><input id="coverage-search" type="search" placeholder="GitHub / 小红书 / npm…"></label>
+        <div class="coverage-key" id="coverage-filters" aria-label="平台状态筛选">
+          <button class="active" data-coverage-filter="all">all</button>
+          <button data-coverage-filter="complete">complete</button>
+          <button data-coverage-filter="partial">partial</button>
+          <button data-coverage-filter="blocked">blocked</button>
+          <button data-coverage-filter="pending">pending</button>
+        </div>
+      </div>
+      <div class="coverage-grid" id="coverage-grid" aria-live="polite"></div>
+      <section class="platform-detail" id="platform-detail" aria-live="polite" tabindex="-1"></section>
+
+      <div class="method-heading" id="method">
+        <div class="section-label">08 / RESEARCH LEDGER</div>
+        <h2>规则、路线、失败，<br>全部留在账本里</h2>
       </div>
       <div class="method-grid">
         <article><span>01</span><h3>范围冻结</h3><p>主题仅指 earendil-works/pi；排除 Raspberry Pi、Pi 币、圆周率与 policy iteration。</p></article>
@@ -178,7 +195,7 @@
     </section>
 
     <section class="closing band-acid reveal">
-      <div class="section-label">08 / START HERE</div>
+      <div class="section-label">09 / START HERE</div>
       <h2>今天不要“学完 Pi”。<br>只做第一个可证伪的实验。</h2>
       <ol><li>画出 steering 与 follow-up 的两个队列。</li><li>让一个工具抛错，观察错误怎样回到模型。</li><li>把一段会话分叉，手写 active path。</li></ol>
       <a class="big-link" href="#curriculum">进入第 1 章 <span>↗</span></a>
@@ -187,7 +204,7 @@
 
   <footer>
     <div class="footer-brand">π / RUNTIME FIELD GUIDE</div>
-    <div><p>原创研究与界面：2026-08-26 冻结。</p><p>Pi / DeepSeek Harness 源码均为 MIT；第三方教程依各自许可。</p></div>
+    <div><p>原创研究与界面：2026-08-26 更新。</p><p>Pi / DeepSeek Harness 源码均为 MIT；第三方教程依各自许可。</p></div>
     <div><a href="./research/run-pi-agent-runtime-20260826/ranking-output/report.md">研究报告</a><a href="./research/run-pi-agent-runtime-20260826/ranking-output/package_validation.json">验证结果</a><a href="https://github.com/earendil-works/pi">Pi Source</a></div>
   </footer>
 </body>

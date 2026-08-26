@@ -1,0 +1,32 @@
+{
+  "schema_version": "pi-platform-handoff/v1",
+  "run_id": "pi-platform10-20260826",
+  "status": "paused_by_user",
+  "paused_at": "2026-08-26T09:10:00+08:00",
+  "scope": {"platforms": 47, "minimum_per_platform": 10, "target_items": 470},
+  "progress": {
+    "accepted_seed_items": 42,
+    "complete_platforms": 1,
+    "worker_checked_rule_rows": 37,
+    "structured_new_worker_candidates": 0,
+    "curator_accepted_new_candidates": 0,
+    "published": false
+  },
+  "present_worker_files": ["workers/china-rules.tsv", "workers/global-rules.tsv"],
+  "missing_worker_files": [
+    "workers/china-candidates.jsonl",
+    "workers/global-candidates.jsonl",
+    "workers/ecosystem-rules.tsv",
+    "workers/ecosystem-candidates.jsonl"
+  ],
+  "gates": {
+    "javascript_syntax": "passed",
+    "python_compile": "passed",
+    "desktop_ui": "passed",
+    "mobile_390px_ui": "passed",
+    "platform_search": "passed",
+    "strict_47x10": "failed_expected",
+    "github_pages_publish": "not_started"
+  },
+  "resume_entrypoint": "research/run-pi-platform10-20260826/HANDOFF.md"
+}

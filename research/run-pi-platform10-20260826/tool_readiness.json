@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-08-26T19:00:00+08:00",
+  "agent_reach_doctor": {
+    "github": {"tool_readiness": "configured", "active_backend": "gh CLI", "bridge_state": "not_required", "auth_state": "authenticated", "quota_state": "available", "authorization": "granted_for_current_task", "probe_result": "success", "probe": "gh search repos 'pi coding agent' --limit 1"},
+    "twitter": {"tool_readiness": "configured", "active_backend": "twitter-cli", "bridge_state": "not_required", "auth_state": "unknown", "quota_state": "unknown", "authorization": "granted_for_current_task", "probe_result": "blocked", "error": "search returned Twitter API HTTP 404"},
+    "youtube": {"tool_readiness": "configured", "active_backend": "yt-dlp", "bridge_state": "not_required", "auth_state": "anonymous", "quota_state": "available", "authorization": "not_required", "probe_result": "success", "probe": "ytsearch1:pi coding agent earendil"},
+    "reddit": {"tool_readiness": "configured", "active_backend": "OpenCLI", "bridge_state": "disconnected"},
+    "bilibili": {"tool_readiness": "configured", "active_backend": "bili-cli", "bridge_state": "not_required", "auth_state": "anonymous", "quota_state": "available", "authorization": "not_required", "probe_result": "success", "probe": "bili search 'pi coding agent' --type video -n 1"},
+    "xiaohongshu": {"tool_readiness": "configured", "active_backend": "OpenCLI", "bridge_state": "disconnected"},
+    "linkedin": {"tool_readiness": "unavailable", "active_backend": null},
+    "v2ex": {"tool_readiness": "configured", "active_backend": "V2EX API (public)", "bridge_state": "not_required", "auth_state": "anonymous", "quota_state": "available", "authorization": "not_required", "probe_result": "success", "probe": "GET /api/topics/show.json?id=1235481"},
+    "exa_search": {"tool_readiness": "configured", "active_backend": "Exa via mcporter", "bridge_state": "not_required", "auth_state": "authenticated", "quota_state": "available", "authorization": "granted_for_current_task", "probe_result": "success", "probe": "earendil-works/pi AgentHarness"},
+    "web": {"tool_readiness": "configured", "active_backend": "Jina Reader", "bridge_state": "not_required", "auth_state": "anonymous", "quota_state": "available", "authorization": "not_required", "probe_result": "success", "probe": "https://pi.dev/"}
+  },
+  "opencli_doctor": {
+    "version": "1.8.6",
+    "daemon": "running",
+    "bridge_state": "disconnected",
+    "auth_state": "unknown",
+    "probe_result": "blocked",
+    "error": "Browser Bridge extension not connected"
+  },
+  "authorization": "granted_for_current_task_read_only",
+  "mutation_scope": "none"
+}

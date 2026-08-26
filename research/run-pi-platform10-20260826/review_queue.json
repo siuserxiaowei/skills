@@ -1,0 +1,22 @@
+{
+  "schema_version": "pi-platform-review-queue/v1",
+  "run_id": "pi-platform10-20260826",
+  "status": "worker_checked",
+  "worker_shards_present": [],
+  "missing_worker_shards": [
+    "china:candidates",
+    "global:candidates",
+    "ecosystem:candidates",
+    "ecosystem:rules"
+  ],
+  "counts": {
+    "submitted": 0,
+    "unique": 0,
+    "exact_url_duplicates": 0,
+    "rules": 37,
+    "by_platform": {}
+  },
+  "items": [],
+  "duplicates": [],
+  "queue_digest_sha256": "529245b97fce89a38db46ebf9b9275f06e24a47aea03c0c874497ea02a1f30d2"
+}
