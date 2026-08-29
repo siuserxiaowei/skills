@@ -1,24 +1,31 @@
 {
   "schema_version": "pi-platform-handoff/v1",
   "run_id": "pi-platform10-20260826",
-  "status": "paused_by_user",
-  "paused_at": "2026-08-26T09:10:00+08:00",
+  "status": "synced_for_remote_resume",
+  "paused_at": "2026-08-29T18:28:04+08:00",
   "scope": {"platforms": 47, "minimum_per_platform": 10, "target_items": 470},
   "progress": {
     "accepted_seed_items": 42,
     "complete_platforms": 1,
-    "worker_checked_rule_rows": 37,
-    "structured_new_worker_candidates": 0,
+    "worker_checked_rule_rows": 47,
+    "structured_new_worker_candidates": 239,
     "curator_accepted_new_candidates": 0,
     "published": false
   },
-  "present_worker_files": ["workers/china-rules.tsv", "workers/global-rules.tsv"],
-  "missing_worker_files": [
+  "present_worker_files": [
+    "workers/china-rules.tsv",
+    "workers/global-rules.tsv",
+    "workers/ecosystem-rules.tsv",
     "workers/china-candidates.jsonl",
     "workers/global-candidates.jsonl",
-    "workers/ecosystem-rules.tsv",
     "workers/ecosystem-candidates.jsonl"
   ],
+  "missing_worker_files": [],
+  "worker_shard_assembly": {
+    "path": "worker_shard_assembly.json",
+    "source_record_count": 239,
+    "review_queue_digest_sha256": "3612d97272cd0cd008ecd0380a99e08838d5e94be921658e940e0590f1a15707"
+  },
   "gates": {
     "javascript_syntax": "passed",
     "python_compile": "passed",

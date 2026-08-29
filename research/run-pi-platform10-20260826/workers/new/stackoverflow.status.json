@@ -1,0 +1,22 @@
+{
+  "platform_id": "stackoverflow",
+  "coverage_state": "not_applicable",
+  "discovered_count": 0,
+  "fetched_count": 0,
+  "blocked_count": 0,
+  "blocked_reason": "",
+  "attempts": [
+    "stackexchange_api search/advanced q=pi-coding-agent pagesize=30 withbody: 30 items 全部无关（树莓派/kivy 等 pi 噪音），关键词过滤 0 命中，has_more 但同查询续页无价值",
+    "stackexchange_api search/advanced q=pi-mono: 30 items 全部为 Raspberry Pi + Mono(C#) 等排除歧义项，0 相关",
+    "stackexchange_api search/advanced q=earendil: 1 item，为 jsfiddle 用户名 Earendil 巧合，无关",
+    "stackexchange_api search/advanced q=mariozechner: 0 items",
+    "stackexchange_api search/advanced q=\"pi-coding-agent\"（短语）: 0 items",
+    "stackexchange_api search/advanced q=\"pi coding agent\"（短语）: 0 items",
+    "stackexchange_api search/advanced title=\"pi agent\": 0 items",
+    "stackexchange_api /tags inname=pi-coding-agent: 无此标签",
+    "stackexchange_api search/advanced q=\"pi-mono\"（短语）: 仅 Raspberry Pi Mono 运行时问题，属排除歧义",
+    "stackexchange_api search/advanced q=\"mariozechner\"（短语）: 0 items"
+  ],
+  "next_safe_step": "无需跟进；Stack Overflow 上不存在 earendil-works/pi / pi-coding-agent 相关问答，后续批次可跳过本平台或仅复查新标签",
+  "notes": "通过 StackExchange API 2.3（无需 key，配额余量充足）穷举了 7 种查询变体与标签接口，共审阅 60+ 条候选摘要，逐条核对标题与正文关键词后确认全部无关（绝大多数为 Raspberry Pi 噪音）。Stack Overflow 上该主题真实存量为 0，故 coverage_state 记 not_applicable，jsonl 为空文件。任务说明允许如实报 0 条。"
+}

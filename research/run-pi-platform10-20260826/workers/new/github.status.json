@@ -1,0 +1,19 @@
+{
+  "platform_id": "github",
+  "coverage_state": "complete",
+  "discovered_count": 60,
+  "fetched_count": 15,
+  "blocked_count": 0,
+  "blocked_reason": "",
+  "attempts": [
+    "gh search repos \"pi coding agent\" / \"pi-coding-agent\" → 发现 30+ 生态仓库（UI 壳、扩展、移植），筛出高相关候选",
+    "gh search repos earendil → 发现 pi-docs-playbook、pi.nix、Rust/Go/Python 移植等",
+    "gh search repos \"pi agent harness\" → 发现 pi-superagents、pi-runbook、oh-my-pi 衍生生态",
+    "gh search issues \"pi-coding-agent\" → 多为第三方仓库的集成请求 issue，信息密度低，未收",
+    "gh api repos/<o>/<r>/readme (raw) 逐个回读 12 个候选仓库 README + 元数据（created_at 等）",
+    "gh api graphql discussions → 回读 earendil-works/pi 讨论 #8090 (pi2dsh) 与 #8508 (dsh-pi-agent) 正文",
+    "gh api contents + commits → 回读 deepseek-harness packages/llm/llm-pi-ai/README.zh.md 并取文件提交日期"
+  ],
+  "next_safe_step": "如需继续扩充，可回读 badlogic/pi-skills 各技能实现、earendil-works/pi 高反应 issues（#3357 本地 LLM provider、#4609 Rust rewrite 讨论）及 pi2dsh / dsh-pi-agent 桥接仓库本体。",
+  "notes": "全部 15 条均由 gh API 实际回读正文或 API 对象；12 仓库 + 2 主仓库 discussions + 1 DSH 中文文档。日期一律取 GitHub API created_at/createdAt/commit 字段。已按 canonical URL 与 20 条种子比对无重复。huggingface/tau、disler/pi-vs-claude-code 等与 pi 生态直接相关（官方 README 明示为 pi 的移植/对标）。未遇 403/登录墙。"
+}

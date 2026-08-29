@@ -1,0 +1,21 @@
+{
+  "platform_id": "bilibili",
+  "coverage_state": "complete",
+  "discovered_count": 113,
+  "fetched_count": 30,
+  "blocked_count": 1,
+  "blocked_reason": "BV1Ey8s65EkZ（我将pi-agent源码蒸馏成skill，费曼学徒冬瓜）API 返回 62002 稿件不可见，无法回读，未提交",
+  "attempts": [
+    "bili search \"pi coding agent\" --type video -n 30 --json：成功，约 20 条相关",
+    "bili search \"earendil pi\" --type video -n 30 --json：成功，含 Pi 插件教程系列，夹杂 Pi Network/树莓派/少年Pi 等噪音",
+    "bili search \"pi 智能体\" --type video -n 30 --json：成功，新增 Pi Subagents/Obsidian 等，夹杂通用 Agent 课程与 Pi Network",
+    "bili search \"pi agent 编程\" --type video -n 30 --json：成功，新增本地模型+Pi、DSH agent-teams 等",
+    "bili search \"badlogic pi\" --type video -n 30 --json：成功，新增 pi 安装接 deepseek 等，噪音较多（音乐/MIDI/直播录像）",
+    "bili info <bvid>：该子命令在 bili 0.6.2 不存在，改用 bili video <bvid> --json 回读",
+    "bili video <bvid> --json：30 条候选全部回读成功（标题/UP主/简介/字幕可用性）",
+    "bilibili view 公共 API（api.bilibili.com/x/web-interface/view）：补取 pubdate 与完整简介，59 条候选全部成功，用于相关性甄别与日期",
+    "字幕回读：30 条候选 API 均返回 subtitle.available=false，无法获取字幕"
+  ],
+  "next_safe_step": "可用 bili user-videos 深挖高产 UP 的 Pi 系列（poaipaipi 的每日 Pi 插件教程约 41 期、程序员暮闲扩展实战系列、63号炼金工坊中配系列），或翻各 query 第 2 页；种子视频 BV139bD6gEa8 的 related 推荐也可扩展",
+  "notes": "5 条 query 共发现 113 个去重视频结果，甄别后约 55 条与 Pi/DeepSeek Harness 主题相关（含 1 条已有种子与 1 条不可见稿件），最终提交 30 条。种子 BV139bD6gEa8 未重复提交。已排除歧义：Pi Network 加密货币、树莓派、数学π、化学 pi-pi 相互作用、外贸 PI 合同、SAFe PI Planning、少年Pi 主播、Black MIDI、policy iteration/强化学习课程。BV1hT8X6VEPe 与 BV1BY8r6dEQw 经详情核实和 BV1jX8462EFb 是同一门课（时长一致、标题相同），只保留其一。BV1mHbz6aEwT 与 BV14g8D6YEbg 同为《动手学Pi》34 秒宣传片，只保留较新一条。poaipaipi 的 1 分钟插件教程系列共 11 条均真实相关，为避免单一 UP 刷屏仅收 1 条代表作（pi-subagents）。BV1Kr8d6mECS（Codex Harness 智能体系统）、BV1ETug6DExy（写作 harness）、BV1Ycup6VEvG（手写 Claude Code）、BV1Bxbk64Ep6（academind 课程，简介仅一个链接无法确认主题）经回读后判定与 Pi 主题不符或证据不足，未提交。"
+}

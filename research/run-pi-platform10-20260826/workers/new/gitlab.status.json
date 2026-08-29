@@ -1,0 +1,22 @@
+{
+  "platform_id": "gitlab",
+  "coverage_state": "complete",
+  "discovered_count": 22,
+  "fetched_count": 17,
+  "blocked_count": 0,
+  "blocked_reason": "",
+  "attempts": [
+    "search=pi coding agent (30 条): 命中 DraconDev/pi-goal-list-loop-audit、mikeysax/smithy-agent 等，大量同名噪音（copilot/demo 项目）",
+    "search=earendil / earendil-works: 命中 vitalii.zozulia/pi-multi-pass、black-lotus-dev/pi、ai-agents-dev/pi-sdk-providers",
+    "search=pi-agent: 命中 groepchef/pi-agent-control-demo；其余为 glpi-agent 等同名噪音",
+    "search=pi-mono / badlogic: 命中 igorw/pi-monorepo（badlogic/pi-mono fork）；其余为 monolith/api 同音噪音",
+    "search=pi-harness / mariozechner: 空结果",
+    "search=agent harness: 命中 ai-agents-dev/simple-harness-agent、mjfuertesf/harness；其余多为无关 harness 项目",
+    "search=deepseek harness: 命中 DSH 镜像（seanlab007）、deepseek-harness-desktop、dsh-codex-kanban、mydsh、Rabbisir、dsh-container 等",
+    "search=dsh-plugin: 空结果；search=pi.dev / pi install: 均为同名噪音",
+    "README 交叉引用补查: dsh-container 指向 Nick_Kozyrin/pi-container（已收录）、mjfuertesf/harness 指向 mjfuertesf/skills（已收录）",
+    "对 22 个候选逐一用 GitLab API 回读项目对象 + README 原文（/repository/files/README.md/raw），全部 200，无 404/私有"
+  ],
+  "next_safe_step": "如需扩量可对已收录 fork（black-lotus-dev/pi、igorw/pi-monorepo）逐 commit 对比上游差异，或跟进 README 中出现的 GitHub 扩展（OnlineChef/pi-agent-control-extension、hjanuschka/pi-multi-pass）走 GitHub 路线回读",
+  "notes": "提交 17 条均实际回读了项目 API 对象与 README 原文。主动剔除：sonozaki/deepseek-harness 与 kurniawanmasriza/deepsea-harness（与 seanlab007 镜像 package.json 逐字节一致，纯镜像重复）、Muflonebarbuto/gui-pi-agent（仅 GitLab 默认模板 README，无实质内容）、porky11/revolve-agent（自研 agent，与 pi 无关）、abmach/maestro（仅提到支持 Oh My Pi，与 pi coding agent 关系无法从原文确认）。发布日期均取 GitLab API created_at 字段。语言含 en/zh/ru/nl，已在每条 language 字段标注。"
+}

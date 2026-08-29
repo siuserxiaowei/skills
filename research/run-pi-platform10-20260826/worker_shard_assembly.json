@@ -1,0 +1,126 @@
+{
+  "schema_version": "pi-worker-shard-assembly/v1",
+  "run_id": "pi-platform10-20260826",
+  "status": "assembled",
+  "source_record_count": 239,
+  "source_files": [
+    {
+      "path": "workers/new/bilibili.jsonl",
+      "platform_id": "bilibili",
+      "shard": "china",
+      "record_count": 30,
+      "sha256": "57f2be69f4ccf29dc0610ecec4960a619f00c470e1d44e460e20ca38937f26ff"
+    },
+    {
+      "path": "workers/new/bluesky.jsonl",
+      "platform_id": "bluesky",
+      "shard": "global",
+      "record_count": 30,
+      "sha256": "ddf17e63b2777ac5b7c668cfe1ee6894c147539d0d9c5b1f250a98eb92251222"
+    },
+    {
+      "path": "workers/new/composio.jsonl",
+      "platform_id": "composio",
+      "shard": "ecosystem",
+      "record_count": 10,
+      "sha256": "90fc181a1a3de3cc950759cb713d2f8ecf8b74788995574ca1a26bb963afb054"
+    },
+    {
+      "path": "workers/new/docker_hub.jsonl",
+      "platform_id": "docker_hub",
+      "shard": "global",
+      "record_count": 16,
+      "sha256": "c28fad615bddd7cc1cdb8b9c84ea58f1a4314617d7cca87e8c28f39922ee76de"
+    },
+    {
+      "path": "workers/new/github.jsonl",
+      "platform_id": "github",
+      "shard": "global",
+      "record_count": 15,
+      "sha256": "47f43c1beef74c76fe6c561c2cc98a096d00c0c7be2513b39a01e7dbe60cc4f2"
+    },
+    {
+      "path": "workers/new/gitlab.jsonl",
+      "platform_id": "gitlab",
+      "shard": "global",
+      "record_count": 17,
+      "sha256": "2b210222a23c19029072d7d0234cc6cbc7b2fcdfcbf5498c53e2edf01f3e95af"
+    },
+    {
+      "path": "workers/new/hacker_news.jsonl",
+      "platform_id": "hacker_news",
+      "shard": "global",
+      "record_count": 30,
+      "sha256": "9ba5fc9f355bdc1cb6e76f4184d60e539b25ca229bb6ce55f20dcbb11c6aeaa5"
+    },
+    {
+      "path": "workers/new/huggingface.jsonl",
+      "platform_id": "huggingface",
+      "shard": "global",
+      "record_count": 22,
+      "sha256": "18e541542f6cde3ca49821db20534090057c190d5917e285c0748bdcaec3130d"
+    },
+    {
+      "path": "workers/new/official_web.jsonl",
+      "platform_id": "official_web",
+      "shard": "ecosystem",
+      "record_count": 30,
+      "sha256": "790f5cfe0ba2e1aa25a5fe0487193bb9c1c19f9235ab67ed65f53fabcf8293e1"
+    },
+    {
+      "path": "workers/new/pypi.jsonl",
+      "platform_id": "pypi",
+      "shard": "ecosystem",
+      "record_count": 9,
+      "sha256": "577ca80a8c1f4d0551d41c4323b6fccbb73fd674ee0220c0b1e82cfe5930dcdb"
+    },
+    {
+      "path": "workers/new/stackoverflow.jsonl",
+      "platform_id": "stackoverflow",
+      "shard": "global",
+      "record_count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "workers/new/v2ex.jsonl",
+      "platform_id": "v2ex",
+      "shard": "ecosystem",
+      "record_count": 30,
+      "sha256": "e5402ec8eefcff47a2876e2f1a1e5c28aaef5c4cffb8a6a6ec05764971d80bff"
+    }
+  ],
+  "outputs": {
+    "china": {
+      "path": "workers/china-candidates.jsonl",
+      "record_count": 30,
+      "sha256": "d92a1b84c9b93d3e6e3548bc74cd217e6ba7e673f90bdc4f43a960239e13854c",
+      "platform_counts": {
+        "bilibili": 30
+      }
+    },
+    "global": {
+      "path": "workers/global-candidates.jsonl",
+      "record_count": 130,
+      "sha256": "23d89e98fb450396e2aa3ff48da0e0357aab2a0af535f6ce58f1d680b8f6e90b",
+      "platform_counts": {
+        "bluesky": 30,
+        "docker_hub": 16,
+        "github": 15,
+        "gitlab": 17,
+        "hacker_news": 30,
+        "huggingface": 22
+      }
+    },
+    "ecosystem": {
+      "path": "workers/ecosystem-candidates.jsonl",
+      "record_count": 79,
+      "sha256": "2aaebc00d81c0c27c78f26b55ed5ac8628c3d574b1aac440c42167a2ca8e20eb",
+      "platform_counts": {
+        "composio": 10,
+        "official_web": 30,
+        "pypi": 9,
+        "v2ex": 30
+      }
+    }
+  }
+}

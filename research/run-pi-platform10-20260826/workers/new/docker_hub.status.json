@@ -1,0 +1,18 @@
+{
+  "platform_id": "docker_hub",
+  "coverage_state": "complete",
+  "discovered_count": 18,
+  "fetched_count": 16,
+  "blocked_count": 0,
+  "blocked_reason": "",
+  "attempts": [
+    "v2 search query=pi-coding-agent page_size=30 → 命中 stefan2904/hoax859/jarvisquilter 三个同名镜像；第 2 页无新增相关结果",
+    "v2 search query=pi-agent → 14 个 pi-agent 候选；mohitrajlokwani/pi-agent（python uvicorn 自建应用）与 rantisijaber/pi-agent（java jar）经镜像 config 核实为同名无关项目，已排除",
+    "v2 search query=earendil → stck/pi 命中（描述即 earendil-works/pi image on top of bookworm），其余为无关用户名巧合",
+    "v2 search query=mariozechner → 仅 fasttext-lid-server，与 pi 无关，排除",
+    "v2 search query=pi-mono、query=badlogic → 无相关结果",
+    "对 18 个候选逐一回读 v2 repositories 对象取 full_description；描述为空的镜像进一步用匿名 token 拉取 registry manifest 与 config blob，核实构建历史中是否真实 npm install @earendil-works/pi-coding-agent 或旧名 @mariozechner/pi-coding-agent"
+  ],
+  "next_safe_step": "如需更多信号可翻页 query=pi-agent 第 2 页以后、或拉取各镜像 tags 列表追踪 pi 版本演进；Docker Hub v2 API 与匿名 registry 拉取均无阻碍，可随时补采。",
+  "notes": "Docker Hub 上无 pi 官方镜像，全部为社区个人/小团队打包。16 条候选全部实际回读了 v2 仓库对象，且每条都拉取了镜像 config 核实构建历史中的 pi-coding-agent 安装层，非纯标题猜测。多数仓库无 README，published_at 统一采用 api last_updated 字段并已在 date_basis 注明。"
+}

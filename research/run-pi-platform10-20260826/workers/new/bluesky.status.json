@@ -1,0 +1,20 @@
+{
+  "platform_id": "bluesky",
+  "coverage_state": "complete",
+  "discovered_count": 157,
+  "fetched_count": 30,
+  "blocked_count": 0,
+  "blocked_reason": "",
+  "attempts": [
+    "public.api.bsky.app searchPosts via system proxy: HTTP 403 from BunnyCDN on every query (edge block on searchPosts; getProfile/searchActors on same host worked) — endpoint abandoned, no workaround attempted beyond UA change",
+    "Direct connection without proxy: TCP timeout (network requires proxy)",
+    "bsky.social searchPosts: reachable but returns AuthMissing (requires login, not allowed)",
+    "Alternate public host api.bsky.app searchPosts: HTTP 200, used for all discovery+readback",
+    "Queries via api.bsky.app (limit=30 each): \"pi coding agent\" -> 30, pi-coding-agent -> 30, earendil -> 30, badlogic -> 30, \"pi agent harness\" -> 28, @mariozechner/pi-coding-agent -> 2, earendil-works -> 30, \"pi agent\" mariozechner -> 0; merged to 157 unique posts by at:// URI",
+    "Readback: full post records (record.text, author, createdAt, embeds) returned by the search API itself; additionally spot-verified 3 URIs with app.bsky.feed.getPosts on api.bsky.app",
+    "Author-feed fallback prepared (getAuthorFeed) but unnecessary; earendil.bsky.social has 0 posts, badlogic has no active Bluesky account (only badlogictest)",
+    "Filtered out: Raspberry Pi / Pi Network / math / policy-iteration false hits, EARENDIL-1 satellite company (name collision), HN/github-trending/CVE bot repost duplicates, empty bridged posts"
+  ],
+  "next_safe_step": "If more coverage needed: paginate searchPosts with cursor on api.bsky.app for older posts, and pull getPostThread for high-value threads (e.g. drlarck 11/14, charm.land) to capture full conversation context.",
+  "notes": "Official public.api.bsky.app searchPosts is edge-blocked from this network exit; api.bsky.app serves the same unauthenticated XRPC and was used instead (recorded as bsky_public_api). 30 curated candidates selected from 102 keyword-matched posts, favoring human-authored substantive posts across all 6 content tracks incl. 2 security/CVE items and 1 criticism post. Many remaining matched posts are bot reposts (HN/github-trending/CVE feeds) of the same few links and were deduplicated by editorial judgment. Mario Zechner (badlogic) appears to have no main Bluesky account; earendil org account has 0 posts."
+}

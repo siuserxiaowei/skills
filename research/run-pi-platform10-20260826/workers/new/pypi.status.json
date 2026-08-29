@@ -1,0 +1,17 @@
+{
+  "platform_id": "pypi",
+  "coverage_state": "partial",
+  "discovered_count": 9,
+  "fetched_count": 9,
+  "blocked_count": 0,
+  "blocked_reason": "",
+  "attempts": [
+    "mcporter exa web_search_exa domain:pypi.org 查询 'pi coding agent' / 'pi agent harness' — 3 次均 429（Exa 免费 MCP 全局限流，无自有 API key），发现路线受阻",
+    "改用 PyPI JSON registry API 名称探测发现：遍历 ~30 个主题相关候选包名（pi-coding-agent、pi-agent、pi-mono-*、pi-ai、deepseek-harness 等），命中 12 个",
+    "逐个 curl https://pypi.org/pypi/<pkg>/json 回读 info.description/author/version/releases；剔除无关命中：earendil（IRC 协议库）、dsh（shell 组织工具）、mom（2012 工具库）",
+    "pi-llm 移植关系经其 GitHub 仓库 README（raw）确认：badlogic/pi-mono 的 Python port",
+    "deepseek-ai/deepseek-harness 经 GitHub API 核实：官方 harness 由 Cordis 驱动而非 pi，主题备注'pi 作为底座'与证据不符，已在相关条目 limitations 注明"
+  ],
+  "next_safe_step": "配置自有 EXA_API_KEY 后重跑 Exa domain:pypi.org 语义发现，查漏名称探测未覆盖的包；或从 pi-mono GitHub README/社区讨论反向收集更多 PyPI 移植项目名再回读",
+  "notes": "PyPI 搜索 API 已下线、simple 索引不可搜索，发现只能靠名称探测；真正的 pi 官方包均在 npm（@mariozechner/*），PyPI 上均为第三方移植/致敬/周边项目，共 9 条真实相关，均已回读 registry JSON 原文。不足 10 条，按规则如实报 partial。"
+}

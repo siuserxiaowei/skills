@@ -1,0 +1,18 @@
+{
+ "platform_id": "composio",
+ "coverage_state": "complete",
+ "discovered_count": 10,
+ "fetched_count": 10,
+ "blocked_count": 0,
+ "blocked_reason": "",
+ "attempts": [
+  "Exa via mcporter web_search_exa domain:composio.dev 风格查询两次均返回 HTTP 429（免费 MCP 配额耗尽），未获结果",
+  "curl jina_reader 抓 https://composio.dev/sitemap.xml 成功，提取 624 个 URL，按 pi/harness 严格过滤得 8 个候选（4 篇 pi 专文 + 2 篇 harness 基准 + 2 篇 DeepSeek Harness 生态）",
+  "curl jina_reader 抓 https://docs.composio.dev/sitemap.xml 成功，发现 docs/providers/pi 与 examples/general-agent-with-pi 两个官方集成文档",
+  "10 个候选全部经 jina_reader 回读原页正文确认相关；作者与日期经原始 HTML JSON-LD/ meta author 补充核实",
+  "排查 composio.dev/claw 与 2 篇 OpenClaw 内容页，正文 0 次提及 pi/earendil，按低相关排除",
+  "sitemap 中 learning/use-case/blog 路径无 pi 相关条目；无登录墙或验证码拦截"
+ ],
+ "next_safe_step": "Exa 配额恢复后可用 domain:composio.dev 查询复核是否有 sitemap 未收录的 pi 页面；可持续监控 composio.dev/content 新增 pi 文章",
+ "notes": "Composio 是少数有 pi 一手集成内容的技术厂商站：4 篇 pi 专文（对比/扩展/skills）、2 篇含 Pi Agent 与 Oh My Pi 的 harness 基准、2 篇 DeepSeek Harness 生态文章（文中未述及 dsh 与 pi 的底座关系，limitations 已注明）、2 篇官方文档（PiProvider 适配 @earendil-works/pi-coding-agent + Slack bot 端到端示例）。基准类文章均为 Composio 自营评测，存在推广偏向，已在 limitations 标注。"
+}

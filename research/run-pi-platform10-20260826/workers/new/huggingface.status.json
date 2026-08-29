@@ -1,0 +1,22 @@
+{
+  "platform_id": "huggingface",
+  "coverage_state": "complete",
+  "discovered_count": 40,
+  "fetched_count": 22,
+  "blocked_count": 0,
+  "blocked_reason": "",
+  "attempts": [
+    "GET /api/models?search=pi-coding-agent -> 1 hit (theabbie/needle-pi-coding-agent)",
+    "GET /api/spaces?search=pi coding agent + pi-coding-agent -> sisinio13/pi-coding-agent (readback: 通用 Python coding agent 模板 README, 无法证实与 mariozechner pi 相关, 排除)",
+    "GET /api/datasets?search=pi-coding-agent / coding agent pi -> MaxDevv/real-pi-coding-agent-traces-sessions",
+    "GET /api/datasets?search=pi-agent -> vojtavlas2, whitecircle, Chengshuo0723 x2, shadowpa0327 等",
+    "GET /api/datasets?search=pi-mono -> 19 个 pi-mono trace/派生数据集",
+    "GET /api/datasets?author=badlogicgames -> pi-mono, pi-diff-review (作者本人数据集)",
+    "GET /api/models?search=earendil / pi-agent-harness / deepseek harness / mariozechner -> 0 相关",
+    "GET /api/models?search=pi harness -> 均为机器人 pi05/其他 harness, 排除",
+    "GET /api/spaces?search=pi agent -> AlexWortega/SealesEmpire 等 space, README 回读证实为另一同名 'Pi Agent'(Soyuz/yourlocalagent.ai) 项目, 与 earendil-works/pi 无关, 排除",
+    "对 24 个候选对象逐个 GET /api/{models|datasets|spaces}/<id> 回读完整 API 对象(含 cardData/description), 并对关键对象 GET /resolve/main/README.md 及 datasets-server first-rows 抽查正文"
+  ],
+  "next_safe_step": "如需更高配额可用 huggingface_hub + read token; 可定期复查 search=pi-mono/pi-coding-agent 增量; MaxDevv 聚合集提到的 21 个上游数据集可与本次结果交叉去重",
+  "notes": "HF 上 pi 相关内容高度集中在 'pi 会话 trace 数据' 生态: 作者 badlogicgames 的 pi-mono/pi-diff-review 为源头, 其余为社区镜像/过滤/SFT 转换派生。排除了 3 个纯测试/tmp 重复(JohnBeanerson/pi-mono-test, lhoestq/tmp-pi-mono-parquet x2)与所有同名无关 space。未发现与 DeepSeek harness 直接相关的 HF 对象。所有 22 条均已回读 API 对象全文, 其中多数另回读了 README 或 datasets-server 首行数据。无 403/登录墙/429。"
+}

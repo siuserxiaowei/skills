@@ -1,0 +1,21 @@
+{
+  "platform_id": "hacker_news",
+  "coverage_state": "complete",
+  "discovered_count": 120,
+  "fetched_count": 30,
+  "blocked_count": 0,
+  "blocked_reason": "",
+  "attempts": [
+    "algolia search 'pi coding agent' tags=(story,comment) → 520 hits，初查相关 story/comment 约 40 条",
+    "algolia search 'earendil' → 1545 hits（大量托尔金/卫星等同名噪音，已过滤），相关条目若干",
+    "algolia search 'pi-mono' → 143 hits，含多条深度评论",
+    "algolia search 'mariozechner' → 79 hits，含 'I've sold out' 等关键帖",
+    "algolia search 'badlogic' → 1326 hits，绝大多数为 'bad logic' 短语噪音，仅少数相关",
+    "algolia search 'agent harness pi' → 1080 hits，发现 AgentHarness durable runtime 文档帖等",
+    "algolia search 'deepseek harness' → 366 hits，发现 DeepSeek Harness 系列发布帖与对比讨论",
+    "回读：hn.algolia.com/api/v1/items/<id> 共回读 56 个条目对象（含种子 49289654 'How Compaction Works in Pi'，按要求未重复提交），最终精选 30 条（24 story + 6 有实质内容的 comment）",
+    "注意：首次尝试 tags=story,comment（AND 语义）返回 0 条，改用 tags=(story,comment)（OR 语义）后正常"
+  ],
+  "next_safe_step": "如需扩量，可回读本批已发现但未入选的条目（如 48994611 oh-my-pi IDE、46579787 Emacs 前端、47104148 Visual Plan Mode、49296046/49340079/49345619 等 DeepSeek Harness 帖），以及对 49285244（53 评论）等大帖逐条回读高赞评论",
+  "notes": "全部候选均通过 Algolia HN API 实际回读条目对象（标题/正文/作者/created_at），readback_backend=hn_algolia；link 型 story 未读取外链目标页，已在 limitations 注明；published_at 均取 API created_at 日期；种子 https://news.ycombinator.com/item?id=49289654 已排除；已排除托尔金 Eärendil、Eärendil-1 卫星、树莓派等同名无关结果。"
+}

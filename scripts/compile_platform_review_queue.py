@@ -138,7 +138,13 @@ def main() -> int:
     extra_fields = sorted({key for row in rule_rows for key in row} - set(fieldnames))
     fieldnames.extend(extra_fields)
     with (args.run_dir / "platform_rules.tsv").open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames, delimiter="\t", extrasaction="ignore")
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=fieldnames,
+            delimiter="\t",
+            extrasaction="ignore",
+            lineterminator="\n",
+        )
         writer.writeheader()
         for platform_id in manifest["required_platforms"]:
             if platform_id in rule_by_platform:
