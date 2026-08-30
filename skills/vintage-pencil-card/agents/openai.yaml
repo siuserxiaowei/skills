@@ -1,0 +1,5 @@
+interface:
+  display_name: "Vintage Pencil Card"
+  short_description: "把人物、风景与物品照片转换为构图保真的复古彩铅卡片"
+  brand_color: "#B88B73"
+  default_prompt: "Use $vintage-pencil-card to convert my attached photo into a composition-faithful vintage colored-pencil card."

@@ -14,9 +14,10 @@
 | `skill-publisher` | github.com/joeseesun/qiaomu-skill-publisher | MIT |
 | `goal-meta-skill` | github.com/joeseesun/qiaomu-goal-meta-skill | MIT |
 | `skill-vetter` | clawhub.ai 公开页面 | 未标注许可证 |
+| `vintage-pencil-card` 示例照片 | Pexels：Wisnu Phaewchimplee、Yunus Tuğ、Zak Mogel（详见 Skill 内 `assets/examples/SOURCES.md`） | Pexels License |
 
 补充说明：
 
 - `kami` 运行时需从 jsDelivr CDN 下载中日韩字体，属功能性依赖。
 - `x-article-draft-uploader` 目录内另含上游 `wshuyi/x-article-publisher-skill` 的许可证文本与声明（MIT）。
-- `web-research`、`agent-memory`、`wechat-local-vault`、`wecom-local-vault`、`wecom-operations`、`wechat-mp-batch-exporter`、`chatgpt-web-research`、`x-article-draft-uploader`、`mac-wechat-dual-open` 为本仓库按功能需求重新撰写的原创实现，不适用上表，以顶层 `LICENSE`（MIT）为准。
+- `web-research`、`agent-memory`、`wechat-local-vault`、`wecom-local-vault`、`wecom-operations`、`wechat-mp-batch-exporter`、`chatgpt-web-research`、`x-article-draft-uploader`、`mac-wechat-dual-open`、`vintage-pencil-card` 为本仓库按功能需求重新撰写的原创实现，不适用上表中的 Skill 许可；`vintage-pencil-card` 的示例源照片仍遵循 Pexels License。原创 Skill 代码与文档以顶层 `LICENSE`（MIT）为准。
