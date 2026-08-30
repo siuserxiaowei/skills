@@ -36,9 +36,32 @@ class CollectionAuditTests(unittest.TestCase):
             encoding="utf-8",
         )
         (root / "SKILL_PROVENANCE.json").write_text(
-            json.dumps({"bundled_third_party_artifacts": [], "origin_groups": {"new_original": ["sample"]}}),
+            json.dumps(
+                {
+                    "schema_version": 2,
+                    "bundled_third_party_artifacts": [],
+                    "origin_groups": {"new_original": ["sample"]},
+                    "known_source_groups": [],
+                    "new_original_evidence": {
+                        "sample": {
+                            "first_commit": "b" * 40,
+                            "anchor": "skills/sample/SKILL.md",
+                        }
+                    },
+                    "reviewed_similarity_findings": [],
+                    "originality_assurance": {
+                        "policy": "ORIGINALITY_POLICY.md",
+                        "historical_baseline_commit": "a" * 40,
+                        "gate": "audit_originality.py",
+                        "default_failure_level": "material",
+                        "thresholds": {},
+                    },
+                }
+            ),
             encoding="utf-8",
         )
+        (root / "ORIGINALITY_POLICY.md").write_text("policy", encoding="utf-8")
+        (root / "audit_originality.py").write_text("# gate", encoding="utf-8")
         if mutate:
             mutate(root, skill)
         return root
@@ -57,10 +80,60 @@ class CollectionAuditTests(unittest.TestCase):
     def test_provenance_gap_is_reported(self):
         def mutate(root, _skill):
             (root / "SKILL_PROVENANCE.json").write_text(
-                json.dumps({"bundled_third_party_artifacts": [], "origin_groups": {"new_original": []}}),
+                json.dumps(
+                    {
+                        "schema_version": 2,
+                        "bundled_third_party_artifacts": [],
+                        "origin_groups": {"new_original": []},
+                        "known_source_groups": [],
+                        "new_original_evidence": {},
+                        "reviewed_similarity_findings": [],
+                        "originality_assurance": {
+                            "policy": "ORIGINALITY_POLICY.md",
+                            "historical_baseline_commit": "a" * 40,
+                            "gate": "audit_originality.py",
+                            "default_failure_level": "material",
+                            "thresholds": {},
+                        },
+                    }
+                ),
                 encoding="utf-8",
             )
         self.assertIn("provenance-coverage", self.codes(self.fixture(mutate)))
+
+    def test_missing_originality_evidence_is_reported(self):
+        def mutate(root, _skill):
+            (root / "ORIGINALITY_POLICY.md").unlink()
+
+        self.assertIn("originality-evidence-missing", self.codes(self.fixture(mutate)))
+
+    def test_abbreviated_baseline_is_reported(self):
+        def mutate(root, _skill):
+            manifest_path = root / "SKILL_PROVENANCE.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["originality_assurance"]["historical_baseline_commit"] = "abc123"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        self.assertIn("originality-baseline", self.codes(self.fixture(mutate)))
+
+    def test_known_source_gap_is_reported(self):
+        def mutate(root, _skill):
+            manifest_path = root / "SKILL_PROVENANCE.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["origin_groups"] = {"independently_rebuilt": ["sample"]}
+            manifest["new_original_evidence"] = {}
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        self.assertIn("known-source-coverage", self.codes(self.fixture(mutate)))
+
+    def test_new_original_evidence_gap_is_reported(self):
+        def mutate(root, _skill):
+            manifest_path = root / "SKILL_PROVENANCE.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["new_original_evidence"] = {}
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        self.assertIn("new-original-coverage", self.codes(self.fixture(mutate)))
 
     def test_embedded_notice_and_binary_are_reported(self):
         def mutate(_root, skill):

@@ -12,6 +12,12 @@
 4. **验证**：通过 `quick_validate.py`；新增或修改的脚本有真实测试；高风险外部动作有权限边界、停止条件和失败路径。
 5. **归属**：更新 README 与第三方声明。只有确认不再包含上游表达或代码后，才能从第三方列表移除。
 
+统一判定词、证据等级、自动门禁阈值和不可声称事项见 [`ORIGINALITY_POLICY.md`](ORIGINALITY_POLICY.md)。历史相似度门禁可复跑：
+
+```bash
+python3 skills/skill-vetter/scripts/audit_originality.py . --fail-on unreviewed
+```
+
 状态含义：`queued` 尚未开始；`researching` 正在建立对标和验收条件；`original-v1` 已独立重写并通过首轮自动验证；`original-verified` 已完成真实任务前向测试和最终归属审计。
 
 ## 统一质量门槛
@@ -24,7 +30,7 @@
 - 能自动化验证的行为必须有测试；不能验证的部分明确写出残余风险和最小补验方法。
 - 任何功能缩减必须有证据说明旧能力不安全、不可维护或不再成立，不能为了容易重写而悄悄删除。
 
-初始基线检查（2026-08-30）：仓库 57 个 Skill 中有 29 个未通过当前 `quick_validate.py`，主要原因是第三方 frontmatter 使用了当前不支持的 `version`、`argument-hint`、`user-invocable` 等字段。首轮重建后 57/57 通过结构检查；50-Agent 归属复核和第二轮修复完成后，全仓库 16 组、161 个离线单元测试通过。各项仍需真实外部凭证或真实视觉任务的前向验证，才从 `original-v1` 升级为 `original-verified`。
+初始基线检查（2026-08-30）：仓库 57 个 Skill 中有 29 个未通过当前 `quick_validate.py`，主要原因是第三方 frontmatter 使用了当前不支持的 `version`、`argument-hint`、`user-invocable` 等字段。首轮重建后 57/57 通过结构检查；50-Agent 归属复核、第二轮修复与原创门禁补强完成后，全仓库 20 组、173 个离线单元测试通过。各项仍需真实外部凭证或真实视觉任务的前向验证，才从 `original-v1` 升级为完整功能意义上的 `original-verified`。
 
 ## 当前全量归属与案例补验（2026-08-30）
 
@@ -34,6 +40,7 @@
 - `x-article-draft-uploader` 现以独立的 Markdown 解析、精确 Chrome profile/cookie 域边界、`0600` 原子 storage state、显式 `--apply` 和只创建草稿的写后核验实现，并有 7 个离线回归测试。
 - `vintage-pencil-card` 曾捆绑三张 Pexels 照片及三张衍生示例。六张图片与来源文件均已移除，改为使用用户自有/已授权素材即可复现的文字案例。
 - 57/57 个 Skill 现在都直接链接 `references/examples.md`；每份均含正向案例、边界案例、失败恢复和验收证据。`skills/skill-vetter/scripts/audit_collection.py` 会对数量、归属、案例、详细度、链接和随包第三方残留做全量检查；机器可读分组见 `SKILL_PROVENANCE.json`。
+- `skills/skill-vetter/scripts/audit_originality.py` 会从固定 Git 基线只读比较 56 个独立重建 Skill；当前 262 个文件对 980 个历史文件为 0 个 `material`、4 个已绑定文件哈希复核的必要接口/数据枚举/语言样板相似、0 个未复核项和 0 个失效记录。`vintage-pencil-card` 另以首次加入 commit 和锚点文件验证 `new_original` 沿革。
 
 ## 重建台账
 

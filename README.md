@@ -4,7 +4,8 @@
 
 说明：
 
-- 仓库中的 **57 个 Skill 均为按功能需求独立撰写的实现**。其中最初收录的 47 个第三方 Skill 已全部完成原创首轮重建：重新研究当前官方资料，保留必要能力，删除上游文字、代码、模板和资产，不把“换措辞”当成重建。
+- 仓库中的 **57 个 Skill 当前制品均按功能需求独立设计或独立重建**。这里的“原创”指具体文案、代码组织、示例、模板和随包资产可由仓库证据支持，不表示功能思想、公开 API 或通用术语由本仓库首创。完整定义、证据等级和停止条件见 [`ORIGINALITY_POLICY.md`](ORIGINALITY_POLICY.md)。
+- 其中最初收录的第三方 Skill 已完成原创首轮重建：重新研究当前官方资料，保留必要能力，删除上游文字、代码、模板和资产，不把“换措辞”当成重建。
 - `lark-` 系列不复制官方 CLI 内置 Skill 的静态参数手册，而以运行中 `lark-cli --help` / `schema` 为命令事实，并加入 profile/identity、最小权限、时区、分页、外部内容隔离、高风险确认、未知结果恢复和写后回读合同。
 - 合集本体与全部 57 个 Skill 采用顶层 `LICENSE`（MIT）。当前不捆绑第三方文案、代码、模板、字体或媒体素材；外部依赖、研究引用与用户输入不属于原创声明范围。机器可读归属见 [`SKILL_PROVENANCE.json`](SKILL_PROVENANCE.json)，重建证据见 [`ORIGINAL_REBUILD.md`](ORIGINAL_REBUILD.md)，边界说明见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
 
@@ -16,9 +17,10 @@
 
 ```bash
 python3 skills/skill-vetter/scripts/audit_collection.py . --expected-count 57
+python3 skills/skill-vetter/scripts/audit_originality.py . --fail-on unreviewed
 ```
 
-该检查会核对 Skill 数量、归属台账覆盖、案例文件与章节、详细度下限、相对链接、逐 Skill 许可证/声明残留、符号链接和未登记二进制素材。它能证明当前仓库满足声明的结构与内容合同，但不能从逻辑上证明“从未受任何外部思想影响”；研究依据和外部依赖仍按事实列明。
+第一项检查会核对 Skill 数量、归属台账覆盖、案例文件与章节、详细度下限、相对链接、逐 Skill 许可证/声明残留、符号链接和未登记二进制素材。第二项把 `independently_rebuilt` Skill 与固定历史 Git 基线做只读哈希、连续 token 和长行比较，出现实质性重合时阻止发布。两项都不能从逻辑上证明未知的全互联网不存在相似作品；研究依据、外部依赖和残余不确定性仍按事实列明。
 
 ## 安装
 

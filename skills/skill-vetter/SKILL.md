@@ -28,6 +28,14 @@ python3 scripts/vet_skill.py /absolute/path/to/candidate
 
 Use `--format json` for machine-readable evidence and `--fail-on high` in automation. A clean scan is only a starting point; the script deliberately reports evidence and cannot establish safety.
 
+When reviewing whether this repository's rebuilt Skills still contain known historical material, run the separate read-only provenance gate from the repository root:
+
+```bash
+python3 skills/skill-vetter/scripts/audit_originality.py . --fail-on unreviewed
+```
+
+It compares only `independently_rebuilt` entries against the frozen commit declared in `SKILL_PROVENANCE.json`. Treat `review` matches as contextual leads that require a hash-bound written adjudication, and `material` matches as release blockers. Read `ORIGINALITY_POLICY.md` before making an originality claim; the scanner does not search unknown works or decide copyright law.
+
 ## Review the capability, not just suspicious strings
 
 Build a capability map that answers:
