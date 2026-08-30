@@ -1,0 +1,41 @@
+{
+  "platform_id": "bluesky",
+  "checked_at": "2026-08-29",
+  "status": "blocked",
+  "attempts": [
+    {
+      "endpoint": "https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?q=pi%20coding%20agent&limit=10",
+      "http_status": 403,
+      "content_type": "text/html",
+      "response_bytes": 2334,
+      "response_sha256": "8609fbf6d25103698c09480062dd212a9f8e8acbc3d320f599bd871cef1a7048",
+      "observation": "Regional/network administrative 403 page; no post records returned."
+    },
+    {
+      "endpoint": "https://api.bsky.app/xrpc/app.bsky.feed.searchPosts?q=pi%20coding%20agent&limit=10",
+      "http_status": 403,
+      "content_type": "text/html",
+      "response_bytes": 94,
+      "response_sha256": "9221cfedfc5e03790f46c7890bca21fcc47c5788d89dab0aa0799c492b6ae78a",
+      "observation": "Administrative 403 page; no post records returned."
+    },
+    {
+      "endpoint": "https://bsky.social/xrpc/app.bsky.feed.searchPosts?q=pi%20coding%20agent&limit=10",
+      "http_status": 401,
+      "content_type": "application/json",
+      "response_bytes": 59,
+      "response_sha256": "0c8e6665b85f52e594659034ddf35dd29fe48bc6890fbc7425c5256716f21204",
+      "observation": "AuthMissing; no authenticated user session was used."
+    },
+    {
+      "endpoint": "https://bsky.app/search?q=pi%20coding%20agent",
+      "http_status": 200,
+      "content_type": "text/html",
+      "response_bytes": 5926,
+      "response_sha256": "097156f04925019c45ce34f4c9c0c840498cb5742d2ebadb0490dcd56e688bdf",
+      "observation": "Shell HTML bootstrap only; no rendered post records or searchable result data in the anonymous response."
+    }
+  ],
+  "safe_resume": "Retry the two public AppView endpoints from the normal user browser session when the regional 403 clears; read only visible canonical post detail and record author, URI/CID, createdAt and text. Do not proxy around the block, use another person's session, or perform interactions.",
+  "evidence_note": "Recorded from bounded anonymous requests; raw response bodies retained only in the temporary audit workspace."
+}

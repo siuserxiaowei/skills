@@ -1,0 +1,75 @@
+{
+  "schema_version": "pi-unaccepted-audit-final/v1",
+  "run_id": "pi-platform10-20260826",
+  "audited_at": "2026-08-30T10:15:00+08:00",
+  "queue_snapshot": {
+    "submitted": 552,
+    "unique": 522,
+    "exact_url_duplicates": 30,
+    "physical_accepted": 440,
+    "content_cluster_exclusions": 2,
+    "effective_accepted": 438,
+    "unaccepted_unique": 133,
+    "promotable_without_new_evidence": 0
+  },
+  "decision_coverage": {
+    "status": "complete_for_current_queue",
+    "authoritative_artifacts": [
+      "workers/unaccepted-audit-20260830.json",
+      "workers/curator-audit-summary-20260830.json",
+      "workers/shortage-readback-curator-decisions-20260829.jsonl",
+      "workers/priority-platform-curator-audit-20260829.json",
+      "workers/china-curator-audit-decisions-20260829.jsonl",
+      "workers/curator-followup-decisions-20260830.jsonl",
+      "workers/xhs-curator-decisions-20260830.jsonl",
+      "workers/bilibili-curator-readbacks-20260830.jsonl"
+    ],
+    "note": "All 133 current worker_checked rows absent from candidates.json are covered by an explicit reject, duplicate, metadata-only, blocker, or hold decision in the listed artifacts. No row is promoted by score or quota."
+  },
+  "new_acceptance_decisions": [
+    {
+      "candidate_id": "worker-cn-021",
+      "platform_id": "bilibili",
+      "decision": "accepted_after_user_assisted_watch",
+      "evidence": "workers/bilibili-curator-readbacks-20260830.jsonl"
+    },
+    {
+      "candidate_id": "china-followup-xhs-6a43e1b4-pi-harness-20260830",
+      "platform_id": "xiaohongshu",
+      "decision": "accepted_after_canonical_body_readback",
+      "evidence": "workers/xhs-followup-readbacks-20260830.jsonl"
+    },
+    {
+      "candidate_id": "china-followup-xhs-6a7dac77-pi-source-notes-20260830",
+      "platform_id": "xiaohongshu",
+      "decision": "accepted_after_canonical_body_readback",
+      "evidence": "workers/xhs-followup-readbacks-20260830.jsonl"
+    },
+    {
+      "candidate_id": "china-followup-xhs-6a87dff9-pi-harness-20260830",
+      "platform_id": "xiaohongshu",
+      "decision": "accepted_after_canonical_body_readback",
+      "evidence": "workers/xhs-followup-readbacks-20260830.jsonl"
+    },
+    {
+      "candidate_id": "china-followup-xhs-6a92f430-pi-18cards-20260830",
+      "platform_id": "xiaohongshu",
+      "decision": "accepted_after_canonical_body_readback",
+      "evidence": "workers/xhs-followup-readbacks-20260830.jsonl"
+    },
+    {
+      "candidate_id": "china-followup-xhs-6a930501-pi-0844-20260830",
+      "platform_id": "xiaohongshu",
+      "decision": "accepted_after_canonical_body_readback",
+      "evidence": "workers/xhs-followup-readbacks-20260830.jsonl"
+    }
+  ],
+  "new_rejection_decisions": [
+    {
+      "candidate_id": "china-followup-xhs-6a817203-pi-guide-20260830",
+      "platform_id": "xiaohongshu",
+      "decision": "reject_author_body_not_visible",
+      "evidence": "workers/xhs-curator-decisions-20260830.jsonl"
+    }
+  ]
+}

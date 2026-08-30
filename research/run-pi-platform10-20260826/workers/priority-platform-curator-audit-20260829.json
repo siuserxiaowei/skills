@@ -1,0 +1,104 @@
+{
+  "run_id": "pi-platform10-20260826",
+  "checked_at": "2026-08-29",
+  "scope": ["official_web", "v2ex", "gitlab", "docker_hub", "bluesky"],
+  "method": "Read current review_queue.json and candidates.json; compare candidate IDs and normalized canonical URLs. No candidate or shared ledger was changed.",
+  "accepted_counts": {
+    "official_web": 19,
+    "v2ex": 11,
+    "gitlab": 10,
+    "docker_hub": 10,
+    "bluesky": 10
+  },
+  "audit": [
+    {
+      "candidate_id": "worker-global-016",
+      "platform_id": "official_web",
+      "canonical_url": "https://pi.dev/",
+      "decision": "reject_duplicate",
+      "duplicate_of": "seed-official_web-17-pi-coding-agent",
+      "evidence": "worker readback says Jina Reader original page; normalized URL is already an accepted official_web item."
+    },
+    {
+      "candidate_id": "worker-global-017",
+      "platform_id": "official_web",
+      "canonical_url": "https://pi.dev/news/2026/5/7/pi-has-a-new-home",
+      "decision": "reject_duplicate",
+      "duplicate_of": "seed-official_web-18-pi-earendil",
+      "evidence": "worker readback says DDG discovery + Jina Reader original; same canonical URL is already accepted."
+    },
+    {
+      "candidate_id": "worker-global-018",
+      "platform_id": "official_web",
+      "canonical_url": "https://mariozechner.at/posts/2025-11-30-pi-coding-agent",
+      "decision": "reject_duplicate",
+      "duplicate_of": "seed-official_web-19-mario-coding-agent",
+      "evidence": "worker readback says HN discovery + Jina Reader original; same canonical article is already accepted."
+    },
+    {
+      "candidate_id": "worker-global-020",
+      "platform_id": "official_web",
+      "canonical_url": "https://deepseek.com/harness/en",
+      "decision": "reject_duplicate",
+      "duplicate_of": "seed-official_web-22-deepseek-harness",
+      "evidence": "Anonymous GET on 2026-08-29 redirected from this URL to https://www.deepseek.com/harness/en/ (HTTP 200, 98,095 bytes), which is the exact canonical URL already accepted as seed-official_web-22-deepseek-harness. Redirect target proves this is the same original object, not an independent page."
+    },
+    {
+      "candidate_id": "community-api-v2ex-1202087",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1202087",
+      "decision": "reject_duplicate",
+      "duplicate_of": "worker-cn-078",
+      "evidence": "V2EX public topic/replies API readback; same topic URL is accepted under worker-cn-078."
+    },
+    {
+      "candidate_id": "community-api-v2ex-1226191",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1226191",
+      "decision": "reject_duplicate",
+      "duplicate_of": "worker-cn-077",
+      "evidence": "V2EX public topic/replies API readback; same topic URL is accepted under worker-cn-077."
+    },
+    {
+      "candidate_id": "community-api-v2ex-1229821",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1229821",
+      "decision": "reject_duplicate",
+      "duplicate_of": "worker-cn-074",
+      "evidence": "V2EX public topic/replies API readback; same topic URL is accepted under worker-cn-074."
+    },
+    {
+      "candidate_id": "community-api-v2ex-1234716",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1234716",
+      "decision": "reject_duplicate",
+      "duplicate_of": "worker-cn-076",
+      "evidence": "V2EX public topic/replies API readback; same topic URL is accepted under worker-cn-076."
+    },
+    {
+      "candidate_id": "community-api-v2ex-1235481",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1235481",
+      "decision": "reject_duplicate",
+      "duplicate_of": "seed-v2ex-44-pi",
+      "evidence": "V2EX public topic/replies API readback; same topic URL is accepted under seed-v2ex-44-pi."
+    },
+    {
+      "candidate_id": "worker-cn-079",
+      "platform_id": "v2ex",
+      "canonical_url": "https://fast.v2ex.com/t/1218511",
+      "decision": "reject_duplicate",
+      "duplicate_of": "seed-v2ex-45-wolf-rbac-pi-agent-core",
+      "evidence": "fast.v2ex.com is the same topic ID 1218511 as accepted seed; normalized/cross-host topic identity duplicate."
+    }
+  ],
+  "platform_notes": {
+    "gitlab": "Queue has 10 worker_checked candidates and candidates.json has all 10 accepted; no unaccepted candidate remains.",
+    "docker_hub": "Queue has 10 worker_checked candidates and candidates.json has all 10 accepted; no unaccepted candidate remains. sbx/pi-kit is retained as an OCI kit artifact, not interpreted as an ordinary image manifest.",
+    "bluesky": "Queue has 10 worker_checked candidates and candidates.json has all 10 accepted via public AppView getPosts/getPostThread readbacks; no unaccepted candidate remains."
+  },
+  "new_promotable_candidates": [],
+  "blocked_or_deferred": [
+    "worker-global-020 is the non-www redirect alias of accepted seed-official_web-22-deepseek-harness; no promotion was performed."
+  ]
+}

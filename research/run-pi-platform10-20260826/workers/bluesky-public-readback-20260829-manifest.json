@@ -1,0 +1,28 @@
+{
+  "run_id": "pi-platform10-20260826",
+  "generated_at": "2026-08-29T18:50:00+08:00",
+  "artifact": "research/run-pi-platform10-20260826/workers/bluesky-public-readback-20260829.jsonl",
+  "platform": "bluesky",
+  "candidate_count": 10,
+  "query_intents": [
+    "bluesky-appview-search-pi-coding-agent",
+    "bluesky-appview-search-pi-coding-agent-extensions"
+  ],
+  "search_endpoints": [
+    {
+      "url": "https://api.bsky.app/xrpc/app.bsky.feed.searchPosts/?q=%22pi+coding+agent%22&limit=100",
+      "http_status": 200,
+      "response_bytes": 302869,
+      "response_sha256": "845f974e1cc7a3ba3001c91479e12f56e415035e3a9cfb550309ee1552e55080"
+    },
+    {
+      "url": "https://api.bsky.app/xrpc/app.bsky.feed.searchPosts/?q=%22pi+agent%22+extensions&limit=100",
+      "http_status": 200,
+      "response_bytes": 14262,
+      "response_sha256": "a0cc260b54b6b35c4e0cd0cc743412b93983888601c99646cad9367f658dd869"
+    }
+  ],
+  "dedupe": "Existing review_queue had 0 Bluesky items. Candidate IDs use AT URI rkeys; each canonical bsky.app URL and CID is unique. Search result overlap was deduplicated by URI before selection.",
+  "policy": "worker_checked only; curator must independently approve. Public posts can be quoted for research with attribution but public visibility is not automatic reuse rights; no interaction/login.",
+  "bluesky_block_note": "At 2026-08-29 public AppView was reachable via api.bsky.app endpoint with trailing slash; bsky.app canonical page was browser-readable while search UI remained login-gated."
+}

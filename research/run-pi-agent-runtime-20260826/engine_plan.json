@@ -104,7 +104,7 @@
       "base_command": [
         "go",
         "-C",
-        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/engines/go-collector",
+        "<local-path>/.codex/skills/cross-platform-top50/engines/go-collector",
         "run",
         "."
       ],
@@ -129,7 +129,7 @@
       "command": [
         "go",
         "-C",
-        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/engines/go-collector",
+        "<local-path>/.codex/skills/cross-platform-top50/engines/go-collector",
         "run",
         ".",
         "probe",
@@ -173,7 +173,7 @@
     "python": {
       "base_command": [
         "/Library/Developer/CommandLineTools/usr/bin/python3",
-        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/scripts/rank_candidates.py"
+        "<local-path>/.codex/skills/cross-platform-top50/scripts/rank_candidates.py"
       ],
       "capabilities": [
         "control",
@@ -186,7 +186,7 @@
       ],
       "command": [
         "/Library/Developer/CommandLineTools/usr/bin/python3",
-        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/scripts/rank_candidates.py",
+        "<local-path>/.codex/skills/cross-platform-top50/scripts/rank_candidates.py",
         "--help"
       ],
       "contract": "top50-python-adapter/v1",
@@ -206,7 +206,7 @@
         "run",
         "--quiet",
         "--manifest-path",
-        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/engines/rust-processor/Cargo.toml",
+        "<local-path>/.codex/skills/cross-platform-top50/engines/rust-processor/Cargo.toml",
         "--"
       ],
       "capabilities": [
@@ -225,7 +225,7 @@
         "run",
         "--quiet",
         "--manifest-path",
-        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/engines/rust-processor/Cargo.toml",
+        "<local-path>/.codex/skills/cross-platform-top50/engines/rust-processor/Cargo.toml",
         "--",
         "probe",
         "--json"
@@ -268,7 +268,7 @@
       "rank"
     ],
     "risk": "medium",
-    "run_dir": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826",
+    "run_dir": "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826",
     "run_id": "pi-agent-runtime-20260826",
     "schema": "top50-router-request/v1",
     "source_kind": "local_bundle",
@@ -287,7 +287,7 @@
       "command": [],
       "completion_artifact": {
         "contract": "top50-curator-acceptance/v1",
-        "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/curate-result.json",
+        "path": "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/curate-result.json",
         "required_status": "accepted",
         "run_id": "pi-agent-runtime-20260826",
         "stage": "curate"
@@ -307,27 +307,27 @@
     {
       "command": [
         "/Library/Developer/CommandLineTools/usr/bin/python3",
-        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/scripts/rank_candidates.py",
+        "<local-path>/.codex/skills/cross-platform-top50/scripts/rank_candidates.py",
         "--input",
-        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/candidates.json",
+        "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/candidates.json",
         "--manifest",
-        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/run_manifest.json",
+        "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/run_manifest.json",
         "--queries",
-        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/queries.tsv",
+        "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/queries.tsv",
         "--sources",
-        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/sources.tsv",
+        "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/sources.tsv",
         "--source-outcomes",
-        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/source_outcomes.jsonl",
+        "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/source_outcomes.jsonl",
         "--evidence-cards",
-        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/evidence_cards.tsv",
+        "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/evidence_cards.tsv",
         "--platform-coverage",
-        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/platform_coverage.tsv",
+        "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/platform_coverage.tsv",
         "--lineage-manifest",
-        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/rank-input-manifest.json",
+        "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/rank-input-manifest.json",
         "--curator-acceptance",
-        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/curate-result.json",
+        "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/curate-result.json",
         "--output-dir",
-        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/ranking-output",
+        "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/ranking-output",
         "--top",
         "50"
       ],
@@ -339,7 +339,7 @@
       "gate": {
         "contract": "top50-curator-acceptance/v1",
         "fail_closed": true,
-        "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/curate-result.json",
+        "path": "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/curate-result.json",
         "required_status": "accepted",
         "run_id": "pi-agent-runtime-20260826",
         "stage": "curate",
@@ -348,7 +348,7 @@
       "id": "rank-primary",
       "input_contract": "top50-research-bundle/v1",
       "output_contract": "top50-ranking-summary/v1",
-      "output_path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/ranking-output/run_summary.json",
+      "output_path": "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/ranking-output/run_summary.json",
       "role": "primary",
       "stage": "rank",
       "timeout_seconds": 300.0

@@ -23,7 +23,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 RUN_DIR = Path(__file__).resolve().parent
 ROOT = RUN_DIR.parent.parent
-SKILL_DIR = Path("/Users/siuserxiaowei/.codex/skills/cross-platform-top50")
+SKILL_DIR = Path("<local-path>/.codex/skills/cross-platform-top50")
 RUN_ID = "pi-agent-runtime-20260826"
 CURATOR_ID = "primary-curator-codex"
 OBSERVED_AT = "2026-08-26T18:30:00+08:00"

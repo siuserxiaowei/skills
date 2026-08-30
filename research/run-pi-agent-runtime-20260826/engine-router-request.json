@@ -10,7 +10,7 @@
   ],
   "engine_mode": "auto",
   "dual_run": false,
-  "run_dir": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826",
+  "run_dir": "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826",
   "top_n": 50,
   "timeout_seconds": 300
 }

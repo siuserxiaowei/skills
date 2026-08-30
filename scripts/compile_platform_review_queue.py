@@ -14,12 +14,21 @@ from urllib.parse import urlsplit, urlunsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RUN = ROOT / "research" / "run-pi-platform10-20260826"
-SHARDS = ("china", "global", "ecosystem")
+BASE_SHARDS = ("china", "global", "ecosystem")
 REQUIRED = {
     "candidate_id", "platform_id", "title", "canonical_url", "creator_name",
     "published_at", "date_basis", "accessed_at", "language", "content_type",
     "content_track", "summary", "why_useful", "discovery_backend",
     "readback_backend", "evidence_status", "limitations", "query_id",
+}
+RULE_REQUIRED = {
+    "platform_id", "official_rule_sources", "discovery_route", "readback_route",
+    "login_requirement", "allowed_metadata", "interaction_caveats",
+    "rate_or_automation_caveats", "fallback", "last_checked_at",
+}
+CURATOR_RULE_REVIEW_REQUIRED = {
+    "platform_id", "reviewer_status", "curator_reviewer", "reviewed_at",
+    "official_rule_readback", "review_notes",
 }
 
 
@@ -45,8 +54,29 @@ def load_jsonl(path: Path) -> list[dict]:
             missing = sorted(REQUIRED - set(row))
             if missing:
                 raise ValueError(f"{path.name}:{line_no}: missing {missing}")
-            if row["evidence_status"] != "worker_checked":
-                raise ValueError(f"{path.name}:{line_no}: worker may only submit worker_checked")
+            submitted_status = row["evidence_status"]
+            if submitted_status not in {
+                "worker_checked", "curator_review_ready", "metadata_only", "not_ready",
+            }:
+                raise ValueError(
+                    f"{path.name}:{line_no}: unsupported worker evidence status "
+                    f"{submitted_status!r}"
+                )
+            # Supplemental researchers sometimes use ``curator_review_ready``
+            # to mean a strong worker readback.  Normalize it down to the only
+            # queue grade workers may grant; this is never curator acceptance.
+            if submitted_status != "worker_checked":
+                row["submitted_evidence_status"] = submitted_status
+                row["evidence_status"] = "worker_checked"
+            if submitted_status in {"metadata_only", "not_ready"}:
+                row["submitted_readback_backend"] = row.get("readback_backend", "")
+                row["readback_backend"] = "not_read_back_discovery_only"
+                row["limitations"] = (
+                    str(row.get("limitations", "")).strip()
+                    + " Supplemental shard status is metadata-only/not-ready; "
+                    "an independent rules-compliant original-page readback is mandatory "
+                    "before acceptance."
+                ).strip()
             row["canonical_url"] = canonical_url(row["canonical_url"])
             row["worker_shard"] = path.stem.replace("-candidates", "")
             rows.append(row)
@@ -64,20 +94,24 @@ def main() -> int:
     items: list[dict] = []
     rule_rows: list[dict[str, str]] = []
     missing_shards = []
-    for shard in SHARDS:
-        candidate_path = args.run_dir / "workers" / f"{shard}-candidates.jsonl"
-        rule_path = args.run_dir / "workers" / f"{shard}-rules.tsv"
-        if candidate_path.exists():
-            items.extend(load_jsonl(candidate_path))
-        else:
+    workers_dir = args.run_dir / "workers"
+    # Supplemental runs may carry a date suffix after ``-candidates``.  Keep
+    # those append-only shards in the deterministic queue instead of silently
+    # dropping them because of their filename.
+    candidate_paths = sorted(workers_dir.glob("*-candidates*.jsonl"))
+    rule_paths = sorted(workers_dir.glob("*-rules.tsv"))
+    for shard in BASE_SHARDS:
+        if workers_dir / f"{shard}-candidates.jsonl" not in candidate_paths:
             missing_shards.append(f"{shard}:candidates")
-        if rule_path.exists():
-            with rule_path.open(encoding="utf-8", newline="") as handle:
-                for row in csv.DictReader(handle, delimiter="\t"):
-                    row.setdefault("reviewer_status", "worker_checked")
-                    rule_rows.append(row)
-        else:
+        if workers_dir / f"{shard}-rules.tsv" not in rule_paths:
             missing_shards.append(f"{shard}:rules")
+    for candidate_path in candidate_paths:
+        items.extend(load_jsonl(candidate_path))
+    for rule_path in rule_paths:
+        with rule_path.open(encoding="utf-8", newline="") as handle:
+            for row in csv.DictReader(handle, delimiter="\t"):
+                row.setdefault("reviewer_status", "worker_checked")
+                rule_rows.append(row)
     if missing_shards and not args.allow_missing:
         raise ValueError(f"missing worker shards: {missing_shards}")
 
@@ -101,6 +135,7 @@ def main() -> int:
         seen_urls[item["canonical_url"]] = item["candidate_id"]
         unique_items.append(item)
 
+
     rule_by_platform: dict[str, dict[str, str]] = {}
     for row in rule_rows:
         platform_id = row.get("platform_id", "")
@@ -108,7 +143,43 @@ def main() -> int:
             raise ValueError(f"rule outside frozen scope: {platform_id}")
         if platform_id in rule_by_platform:
             raise ValueError(f"duplicate rule row: {platform_id}")
+        missing_rule_fields = sorted(
+            field for field in RULE_REQUIRED if not str(row.get(field, "")).strip()
+        )
+        if missing_rule_fields:
+            raise ValueError(f"{platform_id or '<unknown>'}: empty rule fields {missing_rule_fields}")
+        if row.get("reviewer_status") not in {"worker_checked", "curator_accepted"}:
+            raise ValueError(
+                f"{platform_id}: invalid reviewer_status {row.get('reviewer_status')!r}"
+            )
         rule_by_platform[platform_id] = row
+
+    curator_review_path = args.run_dir / "curator-rule-reviews.tsv"
+    if curator_review_path.exists():
+        with curator_review_path.open(encoding="utf-8", newline="") as handle:
+            curator_reviews = list(csv.DictReader(handle, delimiter="\t"))
+        seen_review_platforms: set[str] = set()
+        for review in curator_reviews:
+            platform_id = review.get("platform_id", "")
+            missing_fields = sorted(
+                field for field in CURATOR_RULE_REVIEW_REQUIRED
+                if not str(review.get(field, "")).strip()
+            )
+            if missing_fields:
+                raise ValueError(
+                    f"curator rule review {platform_id or '<unknown>'}: "
+                    f"empty fields {missing_fields}"
+                )
+            if platform_id in seen_review_platforms:
+                raise ValueError(f"duplicate curator rule review: {platform_id}")
+            seen_review_platforms.add(platform_id)
+            if platform_id not in rule_by_platform:
+                raise ValueError(f"curator review has no worker rule: {platform_id}")
+            if review["reviewer_status"] != "curator_accepted":
+                raise ValueError(
+                    f"{platform_id}: curator review may only declare curator_accepted"
+                )
+            rule_by_platform[platform_id].update(review)
 
     queue = {
         "schema_version": "pi-platform-review-queue/v1",

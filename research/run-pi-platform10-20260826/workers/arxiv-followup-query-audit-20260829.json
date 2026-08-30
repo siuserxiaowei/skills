@@ -1,0 +1,75 @@
+{
+  "checked_at": "2026-08-29",
+  "queries": [
+    "all:\"Pi\" AND all:\"coding agent\"",
+    "all:\"Pi Agent\"",
+    "all:\"pi.dev\"",
+    "all:\"pi-mono\"",
+    "all:\"earendil-works/pi\""
+  ],
+  "matches": [
+    {
+      "query": "all:\"Pi\" AND all:\"coding agent\"",
+      "query_index": 0,
+      "arxiv_id": "2608.23953v1",
+      "title": "The Empire, Long Divided, Must Unite: Architectural Convergence in Three LLM Agent Harnesses",
+      "published_at": "2026-08-25"
+    },
+    {
+      "query": "all:\"Pi\" AND all:\"coding agent\"",
+      "query_index": 0,
+      "arxiv_id": "2607.25890v1",
+      "title": "Distributing Security Controls Through Harness Engineering",
+      "published_at": "2026-07-28"
+    },
+    {
+      "query": "all:\"Pi\" AND all:\"coding agent\"",
+      "query_index": 0,
+      "arxiv_id": "2607.13085v1",
+      "title": "Baselines Before Architecture: Evaluating Coding Agents for Autonomous Penetration Testing",
+      "published_at": "2026-07-13"
+    },
+    {
+      "query": "all:\"Pi\" AND all:\"coding agent\"",
+      "query_index": 0,
+      "arxiv_id": "2606.19980v1",
+      "title": "ENPIRE: Agentic Robot Policy Self-Improvement in the Real World",
+      "published_at": "2026-06-18"
+    },
+    {
+      "query": "all:\"Pi\" AND all:\"coding agent\"",
+      "query_index": 0,
+      "arxiv_id": "2605.09055v1",
+      "title": "Octopus Protocol: One-Shot Hardware Discovery and Control for AI Agents via Infrastructure-as-Prompts",
+      "published_at": "2026-05-09"
+    },
+    {
+      "query": "all:\"Pi Agent\"",
+      "query_index": 1,
+      "arxiv_id": "2607.25890v1",
+      "title": "Distributing Security Controls Through Harness Engineering",
+      "published_at": "2026-07-28"
+    },
+    {
+      "query": "all:\"Pi Agent\"",
+      "query_index": 1,
+      "arxiv_id": "2607.15079v2",
+      "title": "BrainPilot: Automating Brain Discovery with Agentic Research",
+      "published_at": "2026-07-16"
+    },
+    {
+      "query": "all:\"Pi Agent\"",
+      "query_index": 1,
+      "arxiv_id": "2607.07666v3",
+      "title": "A hierarchical memory architecture overcomes context limits in long-horizon multi-agent computational modeling",
+      "published_at": "2026-07-08"
+    },
+    {
+      "query": "all:\"Pi Agent\"",
+      "query_index": 1,
+      "arxiv_id": "1701.00021v3",
+      "title": "Distributed Finite Time Termination of Consensus in the Presence of Delays",
+      "published_at": "2016-12-30"
+    }
+  ]
+}

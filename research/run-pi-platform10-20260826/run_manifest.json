@@ -7,8 +7,16 @@
   "purpose": "learning_knowledge_base",
   "audience": "想从 API demo 进阶到生产级 Agent 系统设计的中文开发者",
   "geography": "CN+global",
-  "languages": ["zh", "en", "ja"],
-  "timeframe": {"start": "2024-01-01", "end": "2026-08-26", "policy": "evergreen official material may be retained when current applicability is verified"},
+  "languages": [
+    "zh",
+    "en",
+    "ja"
+  ],
+  "timeframe": {
+    "start": "2024-01-01",
+    "end": "2026-08-26",
+    "policy": "evergreen official material may be retained when current applicability is verified"
+  },
   "login_mode": "user-assisted",
   "publish_mode": "github-pages",
   "storage_mode": "metadata_summary_short_excerpt_and_link",
@@ -19,31 +27,112 @@
   "candidate_pool_target": 705,
   "ranking_claim": "none; this is a 47 x 10 curated library, not a global Top 470 ranking",
   "required_platforms": [
-    "csdn", "wechat_official_accounts", "zhihu", "xiaohongshu", "weibo", "douyin",
-    "x", "bilibili", "juejin", "youtube", "linuxdo", "github", "baidu_search",
-    "google_search", "bing_search", "toutiao", "36kr", "infoq", "segmentfault",
-    "oschina", "v2ex", "reddit", "hacker_news", "medium", "linkedin", "kuaishou",
-    "wechat_channels", "tiktok", "official_web", "npm", "devto", "stackoverflow",
-    "product_hunt", "substack", "arxiv_openreview", "gitee", "zenn", "hackernoon",
-    "qiita", "hashnode", "note", "huggingface", "bluesky", "gitlab", "composio",
-    "pypi", "docker_hub"
+    "csdn",
+    "wechat_official_accounts",
+    "zhihu",
+    "xiaohongshu",
+    "weibo",
+    "douyin",
+    "x",
+    "bilibili",
+    "juejin",
+    "youtube",
+    "linuxdo",
+    "github",
+    "baidu_search",
+    "google_search",
+    "bing_search",
+    "toutiao",
+    "36kr",
+    "infoq",
+    "segmentfault",
+    "oschina",
+    "v2ex",
+    "reddit",
+    "hacker_news",
+    "medium",
+    "linkedin",
+    "kuaishou",
+    "wechat_channels",
+    "tiktok",
+    "official_web",
+    "npm",
+    "devto",
+    "stackoverflow",
+    "product_hunt",
+    "substack",
+    "arxiv_openreview",
+    "gitee",
+    "zenn",
+    "hackernoon",
+    "qiita",
+    "hashnode",
+    "note",
+    "huggingface",
+    "bluesky",
+    "gitlab",
+    "composio",
+    "pypi",
+    "docker_hub"
   ],
   "topic_aliases": [
-    "earendil-works/pi", "badlogic/pi-mono", "pi-coding-agent", "@mariozechner/pi-coding-agent",
-    "@earendil-works/pi-agent-core", "Pi AgentHarness", "Pi coding agent"
+    "earendil-works/pi",
+    "badlogic/pi-mono",
+    "pi-coding-agent",
+    "@mariozechner/pi-coding-agent",
+    "@earendil-works/pi-agent-core",
+    "Pi AgentHarness",
+    "Pi coding agent"
   ],
   "excluded_ambiguities": [
-    "Raspberry Pi", "Pi Network cryptocurrency", "mathematical constant pi", "policy iteration",
-    "unrelated products named Pi", "pages that only contain a coincidental pi token"
+    "Raspberry Pi",
+    "Pi Network cryptocurrency",
+    "mathematical constant pi",
+    "policy iteration",
+    "unrelated products named Pi",
+    "pages that only contain a coincidental pi token"
   ],
-  "content_tracks": ["入门", "技巧", "进阶", "商业化", "生态与案例", "批评与风险"],
-  "allowed_sources": ["public original pages", "official APIs", "platform-native read/detail/transcript", "user-assisted read-only browser session"],
-  "blocked_sources": ["private content", "paywalled full text", "unauthorized account data", "captcha bypass", "robots bypass", "search snippets used as final evidence"],
+  "content_tracks": [
+    "入门",
+    "技巧",
+    "进阶",
+    "商业化",
+    "生态与案例",
+    "批评与风险"
+  ],
+  "allowed_sources": [
+    "public original pages",
+    "official APIs",
+    "platform-native read/detail/transcript",
+    "user-assisted read-only browser session"
+  ],
+  "blocked_sources": [
+    "private content",
+    "paywalled full text",
+    "unauthorized account data",
+    "captcha bypass",
+    "robots bypass",
+    "search snippets used as final evidence"
+  ],
   "search_engine_policy": "Baidu, Google and Bing rows count ten distinct original pages actually discovered through that named engine and then read back; fallback engines are logged but do not satisfy the named-engine quota.",
   "acceptance_fields": [
-    "candidate_id", "platform_id", "title", "canonical_url", "creator_name", "published_at",
-    "date_basis", "accessed_at", "language", "content_type", "content_track", "summary",
-    "why_useful", "discovery_backend", "readback_backend", "evidence_status", "limitations"
+    "candidate_id",
+    "platform_id",
+    "title",
+    "canonical_url",
+    "creator_name",
+    "published_at",
+    "date_basis",
+    "accessed_at",
+    "language",
+    "content_type",
+    "content_track",
+    "summary",
+    "why_useful",
+    "discovery_backend",
+    "readback_backend",
+    "evidence_status",
+    "limitations"
   ],
   "acceptance_gate": [
     "directly relevant to the specified Pi project or its runtime ecosystem",
@@ -54,24 +143,32 @@
     "no access-control, privacy, copyright or platform-rule bypass"
   ],
   "platform_rule_fields": [
-    "platform_id", "official_rule_sources", "discovery_route", "readback_route", "login_requirement",
-    "allowed_metadata", "interaction_caveats", "rate_or_automation_caveats", "fallback", "last_checked_at"
+    "platform_id",
+    "official_rule_sources",
+    "discovery_route",
+    "readback_route",
+    "login_requirement",
+    "allowed_metadata",
+    "interaction_caveats",
+    "rate_or_automation_caveats",
+    "fallback",
+    "last_checked_at"
   ],
   "capability_snapshot": {
-    "checked_at": "2026-08-26T19:00:00+08:00",
-    "agent_reach": "doctor completed; GitHub, X, YouTube, Bilibili, V2EX, Exa and Jina reported available; Reddit and Xiaohongshu require Browser Bridge; LinkedIn backend not configured",
-    "opencli": "v1.8.6 daemon running; Browser Bridge extension disconnected",
-    "authorization": "public read-only and user-assisted login for this research; no posting, liking, following or account mutation"
+    "checked_at": "2026-08-30T17:58:00+08:00",
+    "agent_reach": "Historical agent-reach v1.5.0 doctor probes were recorded on 2026-08-29/30. The current shell has no agent-reach executable (command lookup failed); it was not installed or upgraded. Historical Jina/web, YouTube, Bilibili public API, V2EX and RSS routes remain recorded; Exa, Reddit, X API and OpenCLI active backends were unavailable. All research remained public read-only/user-assisted and did not bypass login, CAPTCHA, robots or paywalls.",
+    "opencli": "v1.8.6 daemon was available in the initial probe; the final accepted browser evidence uses explicit in-app-browser readback backends rather than claiming Browser Bridge access.",
+    "authorization": "public read-only and user-assisted login for this research; no posting, liking, following or account mutation; 2026-08-30 authenticated WeChat OA dashboard was readable, but direct historical publish-list token expired and the only tested article lacked Pi identity."
   },
   "phases": {
     "scope": "complete",
-    "platform_rule_research": "partial_37_of_47_worker_checked",
-    "discovery": "partial_unstructured_worker_notes_only",
-    "fetch": "pending",
-    "worker_check": "pending",
-    "curator_acceptance": "pending",
-    "site_update": "prototype_complete_not_published",
-    "publish_readback": "pending"
+    "platform_rule_research": "47_records_present_47_curator_accepted",
+    "discovery": "566_submitted_535_unique_worker_queue",
+    "fetch": "451_effective_curator_accepted_453_physical_before_2_cluster_exclusions",
+    "worker_check": "complete_for_current_535_unique_queue",
+    "curator_acceptance": "partial_451_effective_items_35_platforms_complete",
+    "site_update": "feishu_child_doc_created",
+    "publish_readback": "feishu_child_doc_verified"
   },
   "stop_conditions": [
     "all 47 platforms have a terminal coverage state and a current rule record",
@@ -81,7 +178,43 @@
     "GitHub Pages desktop, mobile, data count and live readback checks pass"
   ],
   "started_at": "2026-08-26T19:00:00+08:00",
-  "paused_at": "2026-08-26T09:10:00+08:00",
-  "pause_reason": "paused_by_user_for_cross_computer_handoff",
-  "status": "paused"
+  "last_progress_at": "2026-08-30T17:58:00+08:00",
+  "status": "in_progress_not_publishable",
+  "notes": {
+    "current_snapshot": {
+      "physical_accepted": 453,
+      "effective_accepted": 451,
+      "sources": 584,
+      "evidence_cards": 584,
+      "complete_platforms": 35,
+      "quota_shortage_platforms": {
+        "wechat_official_accounts": 10,
+        "xiaohongshu": 5,
+        "douyin": 9,
+        "bilibili": 9,
+        "36kr": 2,
+        "kuaishou": 10,
+        "wechat_channels": 10,
+        "tiktok": 10,
+        "stackoverflow": 10,
+        "product_hunt": 7,
+        "hackernoon": 7,
+        "hashnode": 4
+      }
+    },
+    "continuation": "2026-08-30 17:58 停止抓取：微博新增 8 条移动端 canonical 正文由主策展人逐条回读并晋级；重建后物理 accepted 453、2 条内容簇排除、有效 accepted 451；队列 566/535/31；queries/sources/evidence 250/584/584。小红书再次聚焦搜索触发登录弹窗，未新增候选；Bilibili/TikTok 未新增。"
+  },
+  "updated_at": "2026-08-30T17:58:00+08:00",
+  "feishu_publish": {
+    "status": "created_and_verified",
+    "parent_wiki_url": "<redacted-private-feishu-wiki>",
+    "parent_node_token": "<redacted-private-feishu-node>",
+    "space_id": "<redacted-private-feishu-space>",
+    "document_id": "<redacted-private-feishu-document-id>",
+    "document_url": "<redacted-private-feishu-document>",
+    "revision_id": 7,
+    "verified_at": "2026-08-30T12:08:59+08:00",
+    "verification": "Remote Feishu child-document verification was completed in the private session; locator IDs and URLs are redacted from this public release.",
+    "public_release_note": "Private Feishu locator metadata intentionally omitted."
+  }
 }

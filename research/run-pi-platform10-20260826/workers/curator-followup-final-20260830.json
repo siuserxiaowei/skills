@@ -1,0 +1,38 @@
+{
+  "schema_version": "pi-curator-followup-final/v1",
+  "run_id": "pi-platform10-20260826",
+  "audited_at": "2026-08-30T10:15:00+08:00",
+  "queue_snapshot": {
+    "submitted": 552,
+    "unique": 522,
+    "exact_url_duplicates": 30,
+    "physical_accepted": 440,
+    "content_cluster_exclusions": 2,
+    "effective_accepted": 438,
+    "remaining_worker_checked": 133
+  },
+  "newly_promoted": [
+    "worker-cn-021",
+    "china-followup-xhs-6a43e1b4-pi-harness-20260830",
+    "china-followup-xhs-6a7dac77-pi-source-notes-20260830",
+    "china-followup-xhs-6a87dff9-pi-harness-20260830",
+    "china-followup-xhs-6a92f430-pi-18cards-20260830",
+    "china-followup-xhs-6a930501-pi-0844-20260830"
+  ],
+  "explicitly_rejected_or_withheld": [
+    {
+      "candidate_id": "china-followup-xhs-6a817203-pi-guide-20260830",
+      "decision": "reject_author_body_not_visible",
+      "artifact": "workers/xhs-curator-decisions-20260830.jsonl",
+      "reason": "作者 note-content 仅显示标题、标签和编辑日期；长 Pi 文本来自评论区 AI 回复，不是原作者正文。"
+    }
+  ],
+  "evidence_artifacts": [
+    "workers/bilibili-curator-readbacks-20260830.jsonl",
+    "workers/xhs-followup-candidates-20260830.jsonl",
+    "workers/xhs-followup-readbacks-20260830.jsonl",
+    "workers/xhs-followup-audit-20260830.md",
+    "workers/xhs-curator-decisions-20260830.jsonl"
+  ],
+  "remaining_queue_note": "其余 133 条 worker_checked 均沿用既有 unaccepted-audit/priority/平台决策文件；本批不重复抓取相同 candidate_id 或 canonical_url。"
+}

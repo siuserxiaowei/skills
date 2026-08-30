@@ -1,0 +1,3 @@
+candidate_id	kept_candidate_id	cluster_basis	curator_reviewer	reviewed_at
+named-baidu-csdn-extension-evidence-ladder	seed-juejin-39-pi-extension	Same author/date/title cross-post; direct full-body comparison measured SequenceMatcher 0.9959 and 10-character n-gram Jaccard 0.8834; retain the previously curated Juejin copy.	primary-curator-codex	2026-08-26
+named-baidu-36kr-interview-digest	worker-global-057	36Kr is a secondary digest of the same Syntax interview with Mario Zechner and Armin Ronacher; retain the canonical YouTube interview and platform transcript as the primary object.	primary-curator-codex	2026-08-26

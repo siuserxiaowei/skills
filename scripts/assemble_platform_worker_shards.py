@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-"""Assemble per-platform worker JSONL files into the three frozen shards.
+"""Validate and inventory worker candidate shards before queue compilation.
 
-The handoff workers wrote one JSONL file per platform under ``workers/new``.
-The curator compiler intentionally consumes only the frozen china/global/ecosystem
-shards.  This script bridges those layouts without accepting any candidate: every
-row remains ``worker_checked`` and still requires curator review.
+The handoff contract refers to an ``assemble_platform_worker_shards.py``
+stage.  Older snapshots did not contain that entry point even though the
+worker shards were already present.  This command is intentionally
+fail-closed: it never promotes candidates and never rewrites the candidate
+shards.  It validates every ``*-candidates.jsonl`` row using the same minimum
+schema as the queue compiler, checks cross-shard ID/URL uniqueness, and writes
+an auditable, deterministic shard manifest for the next stage.
 """
 
 from __future__ import annotations
 
 import argparse
-import csv
 import hashlib
 import json
-import os
-import tempfile
 from collections import Counter
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
@@ -22,204 +22,103 @@ from urllib.parse import urlsplit, urlunsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RUN = ROOT / "research" / "run-pi-platform10-20260826"
-SHARDS = ("china", "global", "ecosystem")
-REQUIRED_FIELDS = {
-    "candidate_id",
-    "platform_id",
-    "title",
-    "canonical_url",
-    "creator_name",
-    "published_at",
-    "date_basis",
-    "accessed_at",
-    "language",
-    "content_type",
-    "content_track",
-    "summary",
-    "why_useful",
-    "discovery_backend",
-    "readback_backend",
-    "evidence_status",
-    "limitations",
-    "query_id",
+REQUIRED = {
+    "candidate_id", "platform_id", "title", "canonical_url", "creator_name",
+    "published_at", "date_basis", "accessed_at", "language", "content_type",
+    "content_track", "summary", "why_useful", "discovery_backend",
+    "readback_backend", "evidence_status", "limitations", "query_id",
 }
+ALLOWED_STATUS = {"worker_checked", "curator_review_ready", "metadata_only", "not_ready"}
 
 
-def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def normalize_url(raw: str) -> str:
+def canonical_url(raw: object) -> str:
     parsed = urlsplit(str(raw).strip())
     if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username:
         raise ValueError(f"invalid public URL: {raw!r}")
-    host = parsed.hostname.lower() + (f":{parsed.port}" if parsed.port else "")
-    path = parsed.path.rstrip("/") or "/"
-    return urlunsplit((parsed.scheme.lower(), host, path, parsed.query, ""))
-
-
-def load_platform_map(run_dir: Path, required_platforms: set[str]) -> dict[str, str]:
-    platform_to_shard: dict[str, str] = {}
-    for shard in SHARDS:
-        path = run_dir / "workers" / f"{shard}-rules.tsv"
-        if not path.exists():
-            raise ValueError(f"missing rule shard: {path}")
-        with path.open(encoding="utf-8", newline="") as handle:
-            rows = list(csv.DictReader(handle, delimiter="\t"))
-        for row in rows:
-            platform_id = row.get("platform_id", "").strip()
-            if not platform_id:
-                raise ValueError(f"{path.name}: empty platform_id")
-            if platform_id in platform_to_shard:
-                raise ValueError(
-                    f"platform {platform_id!r} appears in both "
-                    f"{platform_to_shard[platform_id]!r} and {shard!r} rules"
-                )
-            platform_to_shard[platform_id] = shard
-
-    missing = sorted(required_platforms - set(platform_to_shard))
-    extra = sorted(set(platform_to_shard) - required_platforms)
-    if missing or extra:
-        raise ValueError(f"rule shard scope mismatch: missing={missing}, extra={extra}")
-    return platform_to_shard
-
-
-def load_platform_file(path: Path, expected_platform: str) -> list[dict]:
-    rows: list[dict] = []
-    with path.open(encoding="utf-8") as handle:
-        for line_no, line in enumerate(handle, 1):
-            if not line.strip():
-                continue
-            try:
-                row = json.loads(line)
-            except json.JSONDecodeError as exc:
-                raise ValueError(f"{path.name}:{line_no}: invalid JSON: {exc}") from exc
-            missing = sorted(REQUIRED_FIELDS - set(row))
-            if missing:
-                raise ValueError(f"{path.name}:{line_no}: missing fields {missing}")
-            if row["platform_id"] != expected_platform:
-                raise ValueError(
-                    f"{path.name}:{line_no}: platform_id {row['platform_id']!r} "
-                    f"does not match filename {expected_platform!r}"
-                )
-            if row["evidence_status"] != "worker_checked":
-                raise ValueError(
-                    f"{path.name}:{line_no}: only worker_checked rows may be assembled"
-                )
-            if not str(row["candidate_id"]).strip() or not str(row["title"]).strip():
-                raise ValueError(f"{path.name}:{line_no}: empty candidate_id/title")
-            if len(str(row["summary"]).strip()) < 18:
-                raise ValueError(f"{path.name}:{line_no}: summary is too thin")
-            if len(str(row["why_useful"]).strip()) < 8:
-                raise ValueError(f"{path.name}:{line_no}: why_useful is too thin")
-            row["canonical_url"] = normalize_url(row["canonical_url"])
-            rows.append(row)
-    return rows
-
-
-def atomic_write(path: Path, content: bytes) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temp_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
-    try:
-        with os.fdopen(fd, "wb") as handle:
-            handle.write(content)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temp_name, path)
-    except Exception:
-        try:
-            os.unlink(temp_name)
-        except FileNotFoundError:
-            pass
-        raise
+    host = parsed.hostname.lower()
+    if parsed.port:
+        host += f":{parsed.port}"
+    return urlunsplit((parsed.scheme.lower(), host, parsed.path.rstrip("/") or "/", parsed.query, ""))
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-dir", type=Path, default=DEFAULT_RUN)
-    parser.add_argument("--check", action="store_true", help="validate without writing shards")
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
+    workers = args.run_dir / "workers"
+    # Accept append-only supplemental shard names such as
+    # ``docker-hub-supplemental-candidates-20260829.jsonl`` as well as the
+    # original ``<shard>-candidates.jsonl`` convention.  A shard is still
+    # validated row-by-row below; this is only filename discovery.
+    paths = sorted(workers.glob("*-candidates*.jsonl"))
+    if not paths:
+        raise ValueError(f"no worker candidate shards under {workers}")
 
-    run_dir = args.run_dir.resolve()
-    manifest_path = run_dir / "run_manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    required_platforms = set(manifest["required_platforms"])
-    platform_to_shard = load_platform_map(run_dir, required_platforms)
-
-    source_dir = run_dir / "workers" / "new"
-    source_files = sorted(source_dir.glob("*.jsonl"))
-    if not source_files:
-        raise ValueError(f"no per-platform JSONL files found in {source_dir}")
-
-    shard_rows: dict[str, list[dict]] = {shard: [] for shard in SHARDS}
-    source_records: list[dict] = []
+    manifest_rows = []
     seen_ids: dict[str, str] = {}
     seen_urls: dict[str, str] = {}
-    for path in source_files:
-        platform_id = path.stem
-        if platform_id not in platform_to_shard:
-            raise ValueError(f"{path.name}: platform is outside the frozen rule shards")
-        rows = load_platform_file(path, platform_id)
-        for row in rows:
-            candidate_id = row["candidate_id"]
-            canonical = row["canonical_url"]
-            if candidate_id in seen_ids:
-                raise ValueError(
-                    f"duplicate candidate_id {candidate_id!r}: {seen_ids[candidate_id]} and {path.name}"
-                )
-            if canonical in seen_urls:
-                raise ValueError(
-                    f"duplicate canonical URL {canonical!r}: {seen_urls[canonical]} and {candidate_id}"
-                )
-            seen_ids[candidate_id] = path.name
-            seen_urls[canonical] = candidate_id
-        shard = platform_to_shard[platform_id]
-        shard_rows[shard].extend(rows)
-        source_records.append(
-            {
-                "path": str(path.relative_to(run_dir)),
-                "platform_id": platform_id,
-                "shard": shard,
-                "record_count": len(rows),
-                "sha256": sha256(path),
-            }
-        )
+    duplicate_urls: list[dict[str, str]] = []
+    total = 0
+    for path in paths:
+        raw = path.read_bytes()
+        digest = hashlib.sha256(raw).hexdigest()
+        rows = []
+        for line_no, line in enumerate(raw.decode("utf-8").splitlines(), 1):
+            if not line.strip():
+                continue
+            try:
+                item = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"{path.name}:{line_no}: invalid JSON: {exc}") from exc
+            missing = sorted(REQUIRED - set(item))
+            if missing:
+                raise ValueError(f"{path.name}:{line_no}: missing {missing}")
+            if item["evidence_status"] not in ALLOWED_STATUS:
+                raise ValueError(f"{path.name}:{line_no}: unsupported evidence_status {item['evidence_status']!r}")
+            cid = str(item["candidate_id"]).strip()
+            if not cid:
+                raise ValueError(f"{path.name}:{line_no}: empty candidate_id")
+            url = canonical_url(item["canonical_url"])
+            if cid in seen_ids:
+                raise ValueError(f"duplicate candidate_id {cid} in {path.name} and {seen_ids[cid]}")
+            if url in seen_urls:
+                # URL duplicates are an expected worker-stage condition: the
+                # queue compiler keeps one deterministic representative and
+                # records the alias.  Do not silently create a second object,
+                # but retain the collision in this manifest for curator audit.
+                duplicate_urls.append({
+                    "canonical_url": url,
+                    "candidate_id": cid,
+                    "duplicate_of": seen_urls[url],
+                    "shard": path.name,
+                })
+            else:
+                seen_urls[url] = cid
+            seen_ids[cid] = path.name
+            seen_urls[url] = cid
+            rows.append(item)
+            total += 1
+        counts = Counter(str(row["platform_id"]) for row in rows)
+        manifest_rows.append({
+            "shard": path.name,
+            "sha256": digest,
+            "records": len(rows),
+            "by_platform": dict(sorted(counts.items())),
+        })
 
-    outputs: dict[str, dict] = {}
-    encoded_by_shard: dict[str, bytes] = {}
-    for shard in SHARDS:
-        rows = sorted(shard_rows[shard], key=lambda row: (row["platform_id"], row["candidate_id"]))
-        encoded = (
-            "".join(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n" for row in rows)
-        ).encode("utf-8")
-        encoded_by_shard[shard] = encoded
-        outputs[shard] = {
-            "path": f"workers/{shard}-candidates.jsonl",
-            "record_count": len(rows),
-            "sha256": hashlib.sha256(encoded).hexdigest(),
-            "platform_counts": dict(sorted(Counter(row["platform_id"] for row in rows).items())),
-        }
-
-    report = {
-        "schema_version": "pi-worker-shard-assembly/v1",
-        "run_id": manifest["run_id"],
-        "status": "validated" if args.check else "assembled",
-        "source_record_count": sum(record["record_count"] for record in source_records),
-        "source_files": source_records,
-        "outputs": outputs,
+    payload = {
+        "schema_version": "pi-platform-worker-shard-manifest/v1",
+        "run_id": json.loads((args.run_dir / "run_manifest.json").read_text(encoding="utf-8"))["run_id"],
+        "candidate_shards": manifest_rows,
+        "total_records": total,
+        "unique_candidate_ids": len(seen_ids),
+        "unique_canonical_urls": len(seen_urls),
+        "exact_url_duplicates": duplicate_urls,
     }
-    report_bytes = (json.dumps(report, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
-
-    if not args.check:
-        for shard, encoded in encoded_by_shard.items():
-            atomic_write(run_dir / "workers" / f"{shard}-candidates.jsonl", encoded)
-        atomic_write(run_dir / "worker_shard_assembly.json", report_bytes)
-
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    out = args.output or (args.run_dir / "worker_shard_manifest.json")
+    out.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"output": str(out), "shards": len(paths), "records": total}, ensure_ascii=False))
     return 0
 
 

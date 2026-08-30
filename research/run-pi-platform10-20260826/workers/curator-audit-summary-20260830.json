@@ -1,0 +1,38 @@
+{
+  "run_id": "pi-platform10-20260826",
+  "audited_at": "2026-08-30T10:15:00+08:00",
+  "scope": "all current review_queue items absent from candidates.json, plus newly appended probe evidence",
+  "queue_snapshot": {
+    "submitted": 552,
+    "unique": 522,
+    "exact_url_duplicates": 30,
+    "accepted_physical": 440,
+    "accepted_effective_after_cluster_exclusions": 438
+  },
+  "unaccepted_items": 133,
+  "unaccepted_items_with_explicit_decision_artifact": 133,
+  "decision_coverage_note": "Coverage is established by the authoritative unaccepted-audit/review artifacts plus priority and platform-specific decision files; the compact curator-followup JSONL covers the newly audited subset and is not intended to enumerate every historical decision row.",
+  "decision_artifact_sources": [
+    "workers/unaccepted-audit-20260830.json",
+    "workers/shortage-readback-curator-decisions-20260829.jsonl",
+    "workers/priority-platform-curator-audit-20260829.json",
+    "workers/china-curator-audit-decisions-20260829.jsonl",
+    "workers/curator-followup-decisions-20260830.jsonl"
+  ],
+  "priority_platform_audit": {
+    "official_web": "no_new_independent_object; four queue rows are canonical URL or redirect duplicates",
+    "v2ex": "no_new_independent_object; queue rows are duplicate topic URLs or duplicate topic_id 1218511",
+    "gitlab": "all ten queue rows already accepted",
+    "docker_hub": "all ten queue rows already accepted",
+    "bluesky": "all ten queue rows already accepted"
+  },
+  "new_negative_or_blocker_evidence": {
+    "bilibili": "17 new BVID probes lacked subtitles or complete watch evidence; worker-cn-021 was separately accepted after normal logged-in Chrome playback to the end with visible caption samples",
+    "stackoverflow": "7 new strict exact-alias Stack Exchange API probes; all HTTP 200 with items=[]",
+    "hackernoon": "14 focused public probes; no new curator-ready canonical object",
+    "36kr": "one full canonical readback rejected as thin Pi-secondary single-sentence comparison",
+    "oschina": "19724125 accepted as Pi-secondary adoption snapshot and 19728084 accepted as independent numbered Pi section; current OSChina count 7/10"
+  },
+  "additional_new_decision": "china-followup-36kr-3925157852493960-penguin-harness-20260830 is covered by workers/curator-followup-decisions-20260830.jsonl as reject_pi_secondary_thin_comparison.",
+  "next_safe_gate": "Request a normal user-assisted read-only browser session for remaining login/complete-playback gaps on the blocked or incomplete platforms; do not bypass CAPTCHA, paywall, region, robots, or platform risk controls."
+}

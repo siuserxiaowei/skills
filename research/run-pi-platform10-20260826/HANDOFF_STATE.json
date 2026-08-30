@@ -1,39 +1,90 @@
 {
   "schema_version": "pi-platform-handoff/v1",
   "run_id": "pi-platform10-20260826",
-  "status": "synced_for_remote_resume",
-  "paused_at": "2026-08-29T18:28:04+08:00",
-  "scope": {"platforms": 47, "minimum_per_platform": 10, "target_items": 470},
+  "status": "in_progress_not_publishable",
+  "updated_at": "2026-08-30T17:58:00+08:00",
+  "scope": {
+    "platforms": 47,
+    "minimum_per_platform": 10,
+    "target_items": 470
+  },
   "progress": {
-    "accepted_seed_items": 42,
-    "complete_platforms": 1,
-    "worker_checked_rule_rows": 47,
-    "structured_new_worker_candidates": 239,
-    "curator_accepted_new_candidates": 0,
+    "accepted_items": 451,
+    "physical_accepted_items": 453,
+    "content_cluster_exclusions": 2,
+    "complete_platforms": 35,
+    "partial_platforms": 8,
+    "blocked_platforms": 4,
+    "platform_rule_rows": 47,
+    "curator_accepted_rule_rows": 47,
+    "worker_checked_rule_rows": 0,
+    "worker_candidates_submitted": 566,
+    "worker_candidates_unique": 535,
+    "exact_url_duplicates_in_worker_queue": 31,
+    "accepted_quota_shortage": 93,
     "published": false
   },
-  "present_worker_files": [
-    "workers/china-rules.tsv",
-    "workers/global-rules.tsv",
-    "workers/ecosystem-rules.tsv",
-    "workers/china-candidates.jsonl",
-    "workers/global-candidates.jsonl",
-    "workers/ecosystem-candidates.jsonl"
-  ],
-  "missing_worker_files": [],
-  "worker_shard_assembly": {
-    "path": "worker_shard_assembly.json",
-    "source_record_count": 239,
-    "review_queue_digest_sha256": "3612d97272cd0cd008ecd0380a99e08838d5e94be921658e940e0590f1a15707"
+  "named_search_progress": {
+    "google_search": 10,
+    "bing_search": 10,
+    "baidu_search": 10,
+    "baidu_note": "Named-engine quotas remain backed by their native discovery and canonical readback records; fallback engines were not counted."
   },
   "gates": {
     "javascript_syntax": "passed",
+    "python_tests": "passed_26",
     "python_compile": "passed",
-    "desktop_ui": "passed",
-    "mobile_390px_ui": "passed",
+    "desktop_ui": "passed_previous_run",
+    "mobile_390px_ui": "passed_previous_run",
     "platform_search": "passed",
-    "strict_47x10": "failed_expected",
+    "strict_47x10": "failed_expected_only_12_quota_shortages",
     "github_pages_publish": "not_started"
   },
-  "resume_entrypoint": "research/run-pi-platform10-20260826/HANDOFF.md"
+  "blocking_platforms": {
+    "bilibili": "35 candidates audited; worker-cn-021 was accepted after normal logged-in Chrome playback to the end with visible caption samples; the other 34 remain metadata-only/blocked.",
+    "stackoverflow": "Thirteen official exact-alias probes HTTP 200 with items=[] (including seven new aliases on 2026-08-30); preserve partial zero-result.",
+    "wechat_official_accounts": "Public route login/QR/CAPTCHA gate; no article body.",
+    "xiaohongshu": "Normal logged-in Chrome session yielded five body-visible Pi note readbacks; a later focused search displayed the login gate again; five-item quota gap remains.",
+    "kuaishou": "Public shell login gate; no candidate body.",
+    "wechat_channels": "finder-helper-web JS shell; no detail/transcript.",
+    "tiktok": "Public search shell login/region/risk/CAPTCHA; no Pi result body.",
+    "hashnode": "Six Pi/Pi-fork articles accepted; additional publication/API routes constrained by ordinary browser/authorization boundary."
+  },
+  "notes": {
+    "current_snapshot": {
+      "physical_accepted": 453,
+      "effective_accepted": 451,
+      "sources": 584,
+      "evidence_cards": 584,
+      "complete_platforms": 35,
+      "quota_shortage_platforms": {
+        "wechat_official_accounts": 10,
+        "xiaohongshu": 5,
+        "douyin": 9,
+        "bilibili": 9,
+        "36kr": 2,
+        "kuaishou": 10,
+        "wechat_channels": 10,
+        "tiktok": 10,
+        "stackoverflow": 10,
+        "product_hunt": 7,
+        "hackernoon": 7,
+        "hashnode": 4
+      }
+    },
+    "continuation": "2026-08-30 17:58 停止抓取：微博新增 8 条移动端 canonical 正文由主策展人逐条回读并晋级；重建后物理 accepted 453、2 条内容簇排除、有效 accepted 451；队列 566/535/31；queries/sources/evidence 250/584/584。小红书再次聚焦搜索触发登录弹窗，未新增候选；Bilibili/TikTok 未新增。"
+  },
+  "resume_entrypoint": "research/run-pi-platform10-20260826/HANDOFF.md",
+  "feishu_publish": {
+    "status": "created_and_verified",
+    "parent_wiki_url": "<redacted-private-feishu-wiki>",
+    "parent_node_token": "<redacted-private-feishu-node>",
+    "space_id": "<redacted-private-feishu-space>",
+    "document_id": "<redacted-private-feishu-document-id>",
+    "document_url": "<redacted-private-feishu-document>",
+    "revision_id": 7,
+    "verified_at": "2026-08-30T12:08:59+08:00",
+    "verification": "Remote Feishu child-document verification was completed in the private session; locator IDs and URLs are redacted from this public release.",
+    "public_release_note": "Private Feishu locator metadata intentionally omitted."
+  }
 }

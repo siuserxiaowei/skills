@@ -33,7 +33,7 @@ Top 50 是截至 2026-08-26、在本次主题、时间窗、平台路线与 dete
 
 ## 47 × 10 进行中交接
 
-逐平台规则与“每个平台至少 10 条原页”的第二阶段任务已暂停，并保存在 `codex/pi-platform10-handoff` 分支。恢复入口是 [`research/run-pi-platform10-20260826/HANDOFF.md`](./research/run-pi-platform10-20260826/HANDOFF.md)。当前进行中快照为 42 条已接受种子、1 / 47 个平台达标、47 / 47 个平台规则已完成 worker check；另有 239 条、分布于 11 个平台的 `worker_checked` 候选已经装配进三类标准分片，但尚未经过主策展验收。严格门禁尚未通过，因此没有发布为完成版。
+逐平台规则与“每个平台至少 10 条原页”的第二阶段任务已暂停，并保存在 `codex/pi-platform10-handoff` 分支。恢复入口是 [`research/run-pi-platform10-20260826/HANDOFF.md`](./research/run-pi-platform10-20260826/HANDOFF.md)。当前公开快照为 451 条有效 accepted（物理 453，2 条内容簇排除）、35 / 47 个平台达标；严格门禁仍因 12 个真实缺口平台而未通过，不能声称 47 × 10 完成。
 
 ## 版本冻结
 

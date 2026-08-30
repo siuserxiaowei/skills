@@ -1,0 +1,99 @@
+{
+  "run_id": "pi-platform10-20260826",
+  "checked_at": "2026-08-30",
+  "scope": [
+    "official_web",
+    "v2ex",
+    "gitlab",
+    "docker_hub",
+    "bluesky"
+  ],
+  "method": "Read-only comparison of review_queue.json, candidates.json, duplicate records, and curator readback shards. A candidate is promotable only when it has an independent curator readback, is not already accepted, and has neither an exact nor a canonical/object-identity duplicate.",
+  "promotable_candidates": [],
+  "curator_readback_verified_nonaccepted_nonduplicates": [],
+  "platform_counts": {
+    "official_web": {"queue_unique": 19, "accepted": 19, "promotable": 0},
+    "v2ex": {"queue_unique": 11, "accepted": 11, "promotable": 0},
+    "gitlab": {"queue_unique": 10, "accepted": 10, "promotable": 0},
+    "docker_hub": {"queue_unique": 10, "accepted": 10, "promotable": 0},
+    "bluesky": {"queue_unique": 10, "accepted": 10, "promotable": 0}
+  },
+  "excluded_nonaccepted_candidates": [
+    {
+      "candidate_id": "worker-global-016",
+      "platform_id": "official_web",
+      "canonical_url": "https://pi.dev/",
+      "reason": "canonical URL duplicate of seed-official_web-17-pi-coding-agent; no independent promotion",
+      "curator_readback": "not present as an independent curator shard"
+    },
+    {
+      "candidate_id": "worker-global-017",
+      "platform_id": "official_web",
+      "canonical_url": "https://pi.dev/news/2026/5/7/pi-has-a-new-home",
+      "reason": "canonical URL duplicate of seed-official_web-18-pi-earendil; no independent promotion",
+      "curator_readback": "not present as an independent curator shard"
+    },
+    {
+      "candidate_id": "worker-global-018",
+      "platform_id": "official_web",
+      "canonical_url": "https://mariozechner.at/posts/2025-11-30-pi-coding-agent",
+      "reason": "canonical URL duplicate of seed-official_web-19-mario-coding-agent; no independent promotion",
+      "curator_readback": "not present as an independent curator shard"
+    },
+    {
+      "candidate_id": "worker-global-020",
+      "platform_id": "official_web",
+      "canonical_url": "https://deepseek.com/harness/en",
+      "reason": "redirects to the canonical URL accepted as seed-official_web-22-deepseek-harness",
+      "curator_readback": "redirect audit only; not an independent object"
+    },
+    {
+      "candidate_id": "community-api-v2ex-1202087",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1202087",
+      "reason": "same topic URL already accepted as worker-cn-078",
+      "curator_readback": "official-v2ex-curator-readbacks-20260829.jsonl"
+    },
+    {
+      "candidate_id": "community-api-v2ex-1226191",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1226191",
+      "reason": "same topic URL already accepted as worker-cn-077",
+      "curator_readback": "official-v2ex-curator-readbacks-20260829.jsonl"
+    },
+    {
+      "candidate_id": "community-api-v2ex-1229821",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1229821",
+      "reason": "same topic URL already accepted as worker-cn-074",
+      "curator_readback": "official-v2ex-curator-readbacks-20260829.jsonl"
+    },
+    {
+      "candidate_id": "community-api-v2ex-1234716",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1234716",
+      "reason": "same topic URL already accepted as worker-cn-076",
+      "curator_readback": "official-v2ex-curator-readbacks-20260829.jsonl"
+    },
+    {
+      "candidate_id": "community-api-v2ex-1235481",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1235481",
+      "reason": "same topic URL already accepted as seed-v2ex-44-pi",
+      "curator_readback": "official-v2ex-curator-readbacks-20260829.jsonl"
+    },
+    {
+      "candidate_id": "worker-cn-079",
+      "platform_id": "v2ex",
+      "canonical_url": "https://fast.v2ex.com/t/1218511",
+      "reason": "same V2EX topic object 1218511 already accepted under seed-v2ex-45-wolf-rbac-pi-agent-core",
+      "curator_readback": "no independent curator shard"
+    }
+  ],
+  "notes": {
+    "gitlab": "All 10 queue objects are already accepted and backed by code-hosts curator readbacks.",
+    "docker_hub": "All 10 queue objects are already accepted; sbx/pi-kit remains an OCI kit artifact, not an extra image quota item.",
+    "bluesky": "All 10 queue objects are already accepted and backed by public AppView curator readbacks.",
+    "result": "No candidate in the five priority platforms satisfies all three promotion predicates; no candidates, ledgers, or queue files were modified."
+  }
+}

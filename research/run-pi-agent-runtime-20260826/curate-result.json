@@ -470,7 +470,7 @@
     {
       "artifact_sha256": "2b4f90fec4911f7d57ee26f93d9c85aa218ececf7af1c9ffb2d1c53a397957f1",
       "contract": "top50-process-result/v1",
-      "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/process-result.json",
+      "path": "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/process-result.json",
       "producer_engine_id": "rust-processor",
       "record_count": 50,
       "record_ids_sha256": "0cb2f284e98765a8745fc6746f80dce008a7c8dbfd0fd0b9d9a96458f6e76114",
@@ -484,7 +484,7 @@
     {
       "artifact_sha256": "eee74e3da305696b6adf62cd30f8ec1dffd572e3d7fe7170a4a0b9e88ef5b18d",
       "contract": "top50-rank-input-manifest/v1",
-      "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/rank-input-manifest.json",
+      "path": "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/rank-input-manifest.json",
       "producer_engine_id": "python-control-plane",
       "record_count": 7,
       "record_ids_sha256": "caeb5bfbc03ad9ea499da9328e048789d838f4c9fc83487728b8896e8f5d12a3",

@@ -1,0 +1,2082 @@
+{
+  "schema_version": "pi-unaccepted-audit/v1",
+  "audited_at": "2026-08-30",
+  "queue_items": 493,
+  "unaccepted_items": 134,
+  "promotable_items": [],
+  "items": [
+    {
+      "candidate_id": "worker-cn-080",
+      "platform_id": "36kr",
+      "canonical_url": "https://36kr.com/p/3936187229142153",
+      "title": "DeepSeek + Pi 王炸组合跑赢 Claude Code？",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_content_cluster",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_content_cluster",
+          "reason": "36Kr 正文与已接受 InfoQ worker-cn-063 的 Composio 八 Harness/DeepSeek benchmark 逐段同稿；保留 InfoQ 代表。直接打开本 URL 还触发 36Kr 安全检测，本轮不绕过。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-082",
+      "platform_id": "36kr",
+      "canonical_url": "https://www.36kr.com/p/3784634069277961",
+      "title": "写了 17 年开源代码，我为什么认为 Coding Agents 堆功能是在瞎折腾",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_content_cluster",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_content_cluster",
+          "reason": "36Kr 页面明确署名 InfoQ，正文与已接受 InfoQ 演讲整理同稿；保留首发/可审计 InfoQ URL。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "arxiv-2607-19262-biosecbench-pi",
+      "platform_id": "arxiv_openreview",
+      "canonical_url": "https://arxiv.org/html/2607.19262v1",
+      "title": "BioSecBench-Surveillance: A Verifiable Benchmark for AI Agents in Pathogen Genomic Surveillance",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "curator_review_ready",
+      "recommendation": "hold_strict_pi_primary_review",
+      "decision_records": [
+        {
+          "file": "arxiv-domain-benchmarks-curator-decisions-20260829.jsonl",
+          "decision": "hold_strict_pi_primary_review",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": true,
+      "limitations": "论文主题是生物安全监测 benchmark，PI 是评测 harness 之一而不是唯一研究对象；作者报告的 3,962 次 gradable attempts 排除了不可评分拒答，正文明确指出这会改变分母并可能被策略利用。任务分布不均、只纳入单一客观答案且未复跑实验；未登录、未互动、未下载或执行代码。"
+    },
+    {
+      "candidate_id": "worker-global-083",
+      "platform_id": "arxiv_openreview",
+      "canonical_url": "https://arxiv.org/html/2607.25890v1",
+      "title": "Distributing Security Controls Through Harness Engineering",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_duplicate_no_candidate_created; reject_exact_url_duplicate",
+      "decision_records": [
+        {
+          "file": "arxiv-shard-duplicate-control-20260829.jsonl",
+          "decision": "reject_duplicate_no_candidate_created",
+          "reason": ""
+        },
+        {
+          "file": "shortage-readback-curator-decisions-20260829.jsonl",
+          "decision": "reject_exact_url_duplicate",
+          "reason": "Exact arXiv version and SHarD/Pi security-control paper are already accepted; duplicate-control artifact records current body hash."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary-research，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-001",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV139bD6gEa8",
+      "title": "Pi 大道至简，超越 Codex 和 Claude Code 的极简 Agent，保姆级全攻略",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-002",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1jX8462EFb",
+      "title": "PI Agent 架构设计，TypeScript 100 行代码实现通用智能体",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-003",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV15wGR6CEhY",
+      "title": "Pi Agent：比 Claude Code 和 Codex 更适合普通人的 AI 工具",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-004",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1qy3E6LEKb",
+      "title": "Pi Agent 从安装到配置保姆级全流程指南",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-005",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1LyuB6FEyv",
+      "title": "VibeCoding 极简神器 Pi",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-006",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1akKp6eEVf",
+      "title": "Pi 为什么能打赢 Claude Code 和 Codex",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-007",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1p68b6YEtE",
+      "title": "告别玩具 Agent：从 Pi Harness V2 看懂智能体全景架构",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "demoted_to_worker_checked; worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        },
+        {
+          "file": "bilibili-watch-evidence-audit-20260829.jsonl",
+          "decision": "demoted_to_worker_checked",
+          "reason": "No public subtitle/transcript or documented playback observation; detail metadata/chapters alone do not satisfy video watch evidence."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-008",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1CTbf6CEGu",
+      "title": "Pi 和 DeepSeek Harness 的核心设计有什么不同",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "demoted_to_worker_checked; worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        },
+        {
+          "file": "bilibili-watch-evidence-audit-20260829.jsonl",
+          "decision": "demoted_to_worker_checked",
+          "reason": "No public subtitle/transcript or documented playback observation; detail metadata/chapters alone do not satisfy video watch evidence."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-009",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1qS8m6uE3V",
+      "title": "DeepSeek Harness vs Pi Agent，同宗不同路你选谁",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-010",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV12WK666EhM",
+      "title": "哦对了，我将 Pi 源码写成了一本书",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-011",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1TUM26vEAC",
+      "title": "Pi Agent 扩展实战：pi-hermes-memory",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "demoted_to_worker_checked; worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        },
+        {
+          "file": "bilibili-watch-evidence-audit-20260829.jsonl",
+          "decision": "demoted_to_worker_checked",
+          "reason": "No public subtitle/transcript or documented playback observation; detail metadata/chapters alone do not satisfy video watch evidence."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-012",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1QwMU6yExQ",
+      "title": "也许 Pi 是最接近 DeepSeek Harness 的 Harness？缓存命中最重要",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "demoted_to_worker_checked; worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        },
+        {
+          "file": "bilibili-watch-evidence-audit-20260829.jsonl",
+          "decision": "demoted_to_worker_checked",
+          "reason": "No public subtitle/transcript or documented playback observation; detail metadata/chapters alone do not satisfy video watch evidence."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-013",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1ZnEJ6NEJ6",
+      "title": "Pi Agent 最佳实践：Harness Agent 定制全流程实战",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "demoted_to_worker_checked; worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        },
+        {
+          "file": "bilibili-watch-evidence-audit-20260829.jsonl",
+          "decision": "demoted_to_worker_checked",
+          "reason": "No public subtitle/transcript or documented playback observation; detail metadata/chapters alone do not satisfy video watch evidence."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-014",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1wBfvBnEkY",
+      "title": "PI：pi-ai 与 pi-agent-core",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "demoted_to_worker_checked; worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        },
+        {
+          "file": "bilibili-watch-evidence-audit-20260829.jsonl",
+          "decision": "demoted_to_worker_checked",
+          "reason": "No public subtitle/transcript or documented playback observation; detail metadata/chapters alone do not satisfy video watch evidence."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-015",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1gwb96kERJ",
+      "title": "PI core Runloop",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-016",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1j5NJ6AE6B",
+      "title": "2 分钟下载 Pi Agent 并接入 DeepSeek",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "demoted_to_worker_checked; worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        },
+        {
+          "file": "bilibili-watch-evidence-audit-20260829.jsonl",
+          "decision": "demoted_to_worker_checked",
+          "reason": "No public subtitle/transcript or documented playback observation; detail metadata/chapters alone do not satisfy video watch evidence."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-017",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV12Kh36dEDD",
+      "title": "Pi Agent Harness：极简的 AI Agent 底座",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-018",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1vL3o6UE5T",
+      "title": "Pi Subagents：让多个 AI Agent 自动分工协作",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "demoted_to_worker_checked; worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        },
+        {
+          "file": "bilibili-watch-evidence-audit-20260829.jsonl",
+          "decision": "demoted_to_worker_checked",
+          "reason": "No public subtitle/transcript or documented playback observation; detail metadata/chapters alone do not satisfy video watch evidence."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-019",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV11yM96nE45",
+      "title": "pi-dynamic-workflows：多个 Agent 动态编排、并行协作",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-020",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1WHGu6AEFp",
+      "title": "Pi MCP Adapter 接入 MCP Server",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "demoted_to_worker_checked; worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        },
+        {
+          "file": "bilibili-watch-evidence-audit-20260829.jsonl",
+          "decision": "demoted_to_worker_checked",
+          "reason": "No public subtitle/transcript or documented playback observation; detail metadata/chapters alone do not satisfy video watch evidence."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-021",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1k6E167Ext",
+      "title": "推荐一些 Pi Agent 插件",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "blocked_not_promotable; needs_curator_transcript_review",
+      "decision_records": [
+        {
+          "file": "bilibili-worker-cn-021-negative-audit-20260829.jsonl",
+          "decision": "blocked_not_promotable",
+          "reason": "The only subtitle entry has no URL/content and the player API requires login and reports that the full video is purchase-gated. Metadata, description, chapters, or a subtitle count cannot substitute for watched/transcript evidence under PLATFORM_ACCEPTANCE.md. Keep worker_checked and request a normal authenticated read-only browser session or publicly exposed transcript if the user wants to resume."
+        },
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "needs_curator_transcript_review",
+          "reason": ""
+        },
+        {
+          "file": "bilibili-worker-cn-021-browser-watch-blocker-20260829.jsonl",
+          "decision": "blocked_not_promotable",
+          "reason": "A metadata/detail row and a partial player clock are not equivalent to a watched transcript. The public canonical page requires login for subtitle use and advertises a 30-second trial; no complete subtitle or auditable full-content observation was available anonymously. Under PLATFORM_ACCEPTANCE.md this row must remain worker_checked and cannot be promoted."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-022",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV15WbB6GEXF",
+      "title": "pi-clean-tool-render：Pi Agent 插件分享",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-023",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1iUbD6CEVY",
+      "title": "plan-mode：先规划再动手",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-024",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1B8by6aER7",
+      "title": "pi-subagents：多 Agent 并行",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-025",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1LUbD6CECH",
+      "title": "pi-intercom：会话通信",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-026",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1i4826KE2K",
+      "title": "pi-prompt-template-model：一个命令一个模型",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-027",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1Ve826hE5t",
+      "title": "pi-permission-system：给 AI 立规矩",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-028",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1HTb16TEGd",
+      "title": "context-mode：省 98% 上下文",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-029",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1bsuJ6cEq6",
+      "title": "如何为 Pi Agent 配置本地大模型",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-030",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1n7826GE2o",
+      "title": "pi-deepseek-usage：余额看得见",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-031",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1aq826bEFW",
+      "title": "pi-hashline-edit-pro：每行代码都有身份证",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-032",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1Ye826hETW",
+      "title": "pi-lens：给 AI 一双代码眼",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-033",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1RDbD6GEk9",
+      "title": "pi-memory：AI 记忆扩展",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-034",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1Eyb86dEX5",
+      "title": "Pi Agent MCP 的演示使用",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-035",
+      "platform_id": "bilibili",
+      "canonical_url": "https://www.bilibili.com/video/BV1ct8T6AEW3",
+      "title": "Codex 没额度了，我用 Pi + DeepSeek V4 Flash 接过开发工作",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "worker_checked_only",
+      "decision_records": [
+        {
+          "file": "bilibili-remaining-subtitle-probe-20260829.jsonl",
+          "decision": "worker_checked_only",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-043",
+      "platform_id": "csdn",
+      "canonical_url": "https://yychan.blog.csdn.net/article/details/163904611",
+      "title": "Pi Agent 入门与核心使用指南",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_incomplete_body",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_incomplete_body",
+          "reason": "页面返回完整目录和首段后即截断（正文约 1,160 字符），无法回读后续章节；属于 metadata/partial shell，不能接受。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 D，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-045",
+      "platform_id": "csdn",
+      "canonical_url": "https://devpress.csdn.net/v1/article/detail/162597236",
+      "title": "OpenCode、Pi 与 Goose：开源 AI Agent 栈的三个层级",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_identity_weak",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_identity_weak",
+          "reason": "正文虽可读，但只泛称 Pi/Agent kernel，未出现 earendil-works/pi、pi-coding-agent 或相关 npm 锚点；三层 OpenCode/Goose/Pi 选型文不足以通过严格身份门。原 /v1/ URL 还重定向到 awstech canonical。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "community-api-devto-4231446",
+      "platform_id": "devto",
+      "canonical_url": "https://dev.to/zangetsu101/the-coding-agent-i-could-shape-around-my-workflow-3c38",
+      "title": "The Coding Agent I Could Shape Around My Workflow",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "curator_review_ready",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "此 URL 已存在上一轮 accepted seed；保留为最新官方 API 回读证据，编译时应按 canonical URL 去重，不得重复计数。"
+    },
+    {
+      "candidate_id": "worker-global-072",
+      "platform_id": "devto",
+      "canonical_url": "https://dev.to/codeaholicguy/i-use-codex-as-a-manager-for-claude-code-pi-copilot-and-opencode-executors-here-is-the-workflow-33m6",
+      "title": "I use Codex as a manager for Claude Code, Pi, Copilot, and OpenCode executors",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 medium/original-practitioner，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "code-hosts-gitee-001",
+      "platform_id": "gitee",
+      "canonical_url": "https://gitee.com/jianyuan/pi",
+      "title": "jianyuan/pi — earendil-works/pi mirror",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "curator_review_ready",
+      "recommendation": "reject_upstream_mirror",
+      "decision_records": [
+        {
+          "file": "shortage-readback-curator-decisions-20260829.jsonl",
+          "decision": "reject_upstream_mirror",
+          "reason": "Public README explicitly says the repository synchronizes the official earendil-works/pi GitHub repository; mirror is not an independent original content object."
+        },
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_upstream_mirror",
+          "reason": "公开 README 明确是 earendil-works/pi 同步镜像；按本轮验收协议和用户指令不把 upstream mirror 当独立原始内容。"
+        }
+      ],
+      "readback_evidence_present": true,
+      "limitations": "这是非官方镜像且内容与官方 GitHub 高度重复，不能用于源码归属、最新版或独立采用量结论；最终主审可因跨平台镜像去重而拒绝。"
+    },
+    {
+      "candidate_id": "worker-global-001",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi",
+      "title": "earendil-works/pi",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-002",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/README.md",
+      "title": "Pi monorepo README",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-003",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/packages/agent/README.md",
+      "title": "pi-agent-core README",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-004",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/packages/agent/docs/harness.md",
+      "title": "Agent Harness docs",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-007",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/packages/ai/README.md",
+      "title": "pi-ai README",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-008",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/README.md",
+      "title": "pi-coding-agent README",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-009",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/quickstart.md",
+      "title": "Pi quickstart",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-010",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/extensions.md",
+      "title": "Pi extensions",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-011",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/compaction.md",
+      "title": "Pi compaction docs",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-012",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/sessions.md",
+      "title": "Pi sessions",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-013",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/session-format.md",
+      "title": "Pi session format",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-014",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/sdk.md",
+      "title": "Pi SDK",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-015",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/rpc.md",
+      "title": "Pi RPC mode",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-019",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/deepseek-ai/deepseek-harness",
+      "title": "deepseek-ai/deepseek-harness",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-021",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.md",
+      "title": "DeepSeek Harness architecture",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-022",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/agent-lifecycle.md",
+      "title": "DeepSeek Harness agent lifecycle",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-023",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/capability-seams.md",
+      "title": "DeepSeek Harness capability seams",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-024",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/tool-execution-pipeline.md",
+      "title": "DeepSeek Harness tool execution pipeline",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-025",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/cordis-primer.md",
+      "title": "DeepSeek Harness Cordis primer",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-026",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/guide/python-sdk.md",
+      "title": "DeepSeek Harness Python SDK guide",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-027",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/enderzcx/pi-docs-playbook",
+      "title": "pi-docs-playbook",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-028",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/agegr/pi-web",
+      "title": "pi-web",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-029",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/nicobailon/pi-mcp-adapter",
+      "title": "pi-mcp-adapter",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-030",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/svkozak/pi-acp",
+      "title": "pi-acp",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-031",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/nicobailon/pi-web-access",
+      "title": "pi-web-access",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-032",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/badlogic/pi-skills",
+      "title": "pi-skills",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-033",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/nicobailon/pi-messenger",
+      "title": "pi-messenger",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-034",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/championswimmer/pi-context-prune",
+      "title": "pi-context-prune",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-035",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/nicobailon/pi-boomerang",
+      "title": "pi-boomerang",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-036",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/nicobailon/pi-review-loop",
+      "title": "pi-review-loop",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-037",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/MasuRii/pi-permission-system",
+      "title": "pi-permission-system",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-038",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/nicobailon/pi-interactive-shell",
+      "title": "pi-interactive-shell",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-039",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/MasuRii/pi-tool-display",
+      "title": "pi-tool-display",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-040",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/gooyoung/pi-langfuse",
+      "title": "pi-langfuse",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-041",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/lg320531124/pi-team-extension",
+      "title": "pi-team-extension",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-042",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/JWackerbauer/pi-sandbox",
+      "title": "pi-sandbox",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-043",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/ent-ini/pi-telegram",
+      "title": "pi-telegram",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-044",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/mannyc2/pi-agent-effect",
+      "title": "pi-agent-effect",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-045",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/ZY-LI-F/pi-workbench",
+      "title": "pi-workbench",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-046",
+      "platform_id": "github",
+      "canonical_url": "https://github.com/qualisero/awesome-pi-agent",
+      "title": "awesome-pi-agent",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_primary_curator_readback_required",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/index，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-063",
+      "platform_id": "hacker_news",
+      "canonical_url": "https://news.ycombinator.com/item?id=49289654",
+      "title": "How Compaction Works in Pi",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/platform-search，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-064",
+      "platform_id": "hacker_news",
+      "canonical_url": "https://news.ycombinator.com/item?id=46844822",
+      "title": "What I learned building an opinionated and minimal coding agent",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/platform-search，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-065",
+      "platform_id": "hacker_news",
+      "canonical_url": "https://news.ycombinator.com/item?id=48409020",
+      "title": "Pi: A coding agent for engineers who own their tools",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/platform-search，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-067",
+      "platform_id": "hacker_news",
+      "canonical_url": "https://news.ycombinator.com/item?id=47943466",
+      "title": "Show HN: Pi-hosts – Give the Pi coding agent access to your servers",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/platform-search，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-068",
+      "platform_id": "hacker_news",
+      "canonical_url": "https://news.ycombinator.com/item?id=47973320",
+      "title": "Parallel Pi coding agents in a sandbox",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/platform-search，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-069",
+      "platform_id": "hacker_news",
+      "canonical_url": "https://news.ycombinator.com/item?id=48005852",
+      "title": "Local Harness Benchmark: Pi Coding Agent vs. OpenCode with Qwen3.6 35B A3B",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/platform-search，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "web-hashnode-channels",
+      "platform_id": "hashnode",
+      "canonical_url": "https://ai-agent-economy.hashnode.dev/claude-code-channels-are-here-openclaw-was-already-doing-this",
+      "title": "Claude Code Channels Are Here - OpenClaw Was Already Doing This",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "metadata_only",
+      "recommendation": "reject_pi_secondary",
+      "decision_records": [
+        {
+          "file": "shortage-readback-curator-decisions-20260829.jsonl",
+          "decision": "reject_pi_secondary",
+          "reason": "The article is OpenClaw/Claude Code Channels primary; Pi Coding Agent appears as a named comparison section only. Metadata-only queue treatment is correct."
+        }
+      ],
+      "readback_evidence_present": true,
+      "limitations": "Pi is a secondary section, so this is not curator ready under the Pi-primary acceptance rule. Supplemental shard status is metadata-only/not-ready; an independent rules-compliant original-page readback is mandatory before acceptance."
+    },
+    {
+      "candidate_id": "web-hashnode-gary-components",
+      "platform_id": "hashnode",
+      "canonical_url": "https://gary-parker.hashnode.dev/7-essential-pi-mono-components-for-streamlining-test-automation",
+      "title": "7 Essential pi-mono Components for Streamlining Test Automation",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "not_ready",
+      "recommendation": "reject_same_name_false_positive",
+      "decision_records": [
+        {
+          "file": "shortage-readback-curator-decisions-20260829.jsonl",
+          "decision": "reject_same_name_false_positive",
+          "reason": "Body uses invented generic @pi-mono/lint-style examples and does not match the specified Pi project structure."
+        }
+      ],
+      "readback_evidence_present": true,
+      "limitations": "Rejected unrelated same-name article; do not count it toward Pi coverage. Supplemental shard status is metadata-only/not-ready; an independent rules-compliant original-page readback is mandatory before acceptance."
+    },
+    {
+      "candidate_id": "web-hashnode-gary-tools",
+      "platform_id": "hashnode",
+      "canonical_url": "https://gary-parker.hashnode.dev/7-essential-tools-in-the-badlogicpi-mono-ai-agent-toolkit",
+      "title": "7 Essential Tools in the badlogic/pi-mono AI Agent Toolkit",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "not_ready",
+      "recommendation": "reject_same_name_false_positive",
+      "decision_records": [
+        {
+          "file": "shortage-readback-curator-decisions-20260829.jsonl",
+          "decision": "reject_same_name_false_positive",
+          "reason": "Body discusses generic LangChain, Playwright, Zod, Retryable, TypeScript, Jest and Git LFS rather than earendil-works/pi internals."
+        }
+      ],
+      "readback_evidence_present": true,
+      "limitations": "Rejected same-name/misleading-title result; it must not be promoted without new evidence tying the body to earendil-works/pi. Supplemental shard status is metadata-only/not-ready; an independent rules-compliant original-page readback is mandatory before acceptance."
+    },
+    {
+      "candidate_id": "web-hashnode-symphony",
+      "platform_id": "hashnode",
+      "canonical_url": "https://plzai.hashnode.dev/2026-04-30-openai-symphony-codex-orchestration-linear",
+      "title": "Symphony: Why OpenAI's PRs Jumped 500% in 3 Weeks",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "metadata_only",
+      "recommendation": "reject_pi_incidental",
+      "decision_records": [
+        {
+          "file": "shortage-readback-curator-decisions-20260829.jsonl",
+          "decision": "reject_pi_incidental",
+          "reason": "The article is Symphony-primary; one pi-coding-agent/Kata CLI passage is incidental and not an independent Pi object."
+        }
+      ],
+      "readback_evidence_present": true,
+      "limitations": "Pi is incidental rather than the primary subject; keep metadata-only unless curator policy explicitly admits adjacent ecosystem cases. Supplemental shard status is metadata-only/not-ready; an independent rules-compliant original-page readback is mandatory before acceptance."
+    },
+    {
+      "candidate_id": "china-followup-infoq-KyLqAEKpkvrH3tJwMgiw-pi-podcast",
+      "platform_id": "infoq",
+      "canonical_url": "https://www.infoq.cn/article/KyLqAEKpkvrH3tJwMgiw",
+      "title": "Claude Code 已经过度设计？OpenClaw 背后的 Pi 给出了一个极简答案",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "not_ready",
+      "recommendation": "reject_duplicate_content_cluster",
+      "decision_records": [
+        {
+          "file": "zhihu-infoq-followup-decisions-20260829.jsonl",
+          "decision": "reject_duplicate_content_cluster",
+          "reason": ""
+        }
+      ],
+      "readback_evidence_present": true,
+      "limitations": "这是 InfoQ 对播客/访谈的编辑整理，不是独立 benchmark；访谈嘉宾观点、网页列出的 5 倍速度等说法未复现，音频播放器未下载或播放。与 accepted `seed-infoq-42-coding-agents`（Tessel 演讲整理）虽为不同活动，但后续全局比对发现本页与已接受 `named-baidu-36kr-interview-digest`（36Kr/Baidu）几乎逐字同稿，因此仅保留为排除证据，不应计入独立配额。 Supplemental shard status is metadata-only/not-ready; an independent rules-compliant original-page readback is mandatory before acceptance."
+    },
+    {
+      "candidate_id": "worker-cn-064",
+      "platform_id": "infoq",
+      "canonical_url": "https://www.infoq.cn/article/sLVv23TfVFxoBPjNwcZI",
+      "title": "写了 17 年开源代码，我为什么认为 Coding Agents 堆功能是在瞎折腾",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_exact_or_cluster_duplicate",
+      "decision_records": [
+        {
+          "file": "shortage-readback-curator-decisions-20260829.jsonl",
+          "decision": "reject_exact_or_cluster_duplicate",
+          "reason": "Complete canonical body readback exists, but this URL/content is already represented by the accepted InfoQ seed; the same Mario Zechner talk also has a 36Kr syndicated copy. Do not promote a second label."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-048",
+      "platform_id": "juejin",
+      "canonical_url": "https://juejin.cn/post/7675622412803358774",
+      "title": "Pi Extension 写完不等于可用：从类型检查到真实 Runtime 的证据阶梯",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_duplicate_exact_url",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_duplicate_exact_url",
+          "reason": "与已接受 Juejin seed 完全相同 URL、作者、标题和正文；另有 Baidu 搜索代表同稿，不能重复计数。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "social-linkedin-thinkrail",
+      "platform_id": "linkedin",
+      "canonical_url": "https://www.linkedin.com/feed/update/urn:li:share:7497988609350844416",
+      "title": "ThinkRail: an open-source worktree IDE for Pi",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "metadata_only",
+      "recommendation": "not_ready_metadata_or_rejection",
+      "decision_records": [],
+      "readback_evidence_present": true,
+      "limitations": "数字 URN 可见，但 share 与 UGC 对象类型尚需 canonical re-verification；在直接 URL 解析并重读原文前不得接受。 Supplemental shard status is metadata-only/not-ready; an independent rules-compliant original-page readback is mandatory before acceptance."
+    },
+    {
+      "candidate_id": "worker-cn-066",
+      "platform_id": "linuxdo",
+      "canonical_url": "https://linux.do/t/topic/2712169",
+      "title": "Pi + DeepSeek V4 Flash，用起来好爽",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "already_accepted_no_promotion; reject_duplicate_exact_url",
+      "decision_records": [
+        {
+          "file": "toutiao-oschina-curator-audit-20260829.jsonl",
+          "decision": "already_accepted_no_promotion",
+          "reason": "review_queue 中唯一 Toutiao 候选已在 candidates.json 以 accepted 存在（curator_reviewed_at=2026-08-29）；不重复 promotion。独立匿名 canonical 页面显示标题、cxuanAI、2026-08-10 12:16 和完整正文，明确命中 @earendil-works/pi-coding-agent、四工具、安装/命令、Provider、JSON/RPC/TypeScript SDK、Skills 与 DeepSeek models.json 配置。正文可审计，但其与 Linux.do worker-cn-066 同作者配置/体验内容簇已注明，不能复制计数。"
+        },
+        {
+          "file": "toutiao-oschina-curator-decisions-20260829.jsonl",
+          "decision": "already_accepted_no_promotion",
+          "reason": "该 review_queue 候选已在 candidates.json 以 accepted 存在（curator_reviewed_at=2026-08-29），不可重复 promotion。正文是可回读的 Pi 实践文章，但与 Linux.do worker-cn-066 同作者同一 DeepSeek 配置/体验内容簇，不能复制计数。"
+        },
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_duplicate_exact_url",
+          "reason": "与已接受 seed 完全相同 URL 和同一作者配置/体验正文；新增 readback 不能创造第二对象。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-068",
+      "platform_id": "linuxdo",
+      "canonical_url": "https://linux.do/t/topic/2799206",
+      "title": "DeepSeek Harness 和 Codex 用哪个好",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_thin_secondary",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_thin_secondary",
+          "reason": "匿名原页仅约 166 字符，首帖是 DSH/Codex 泛问题，Pi 只在一条简短回复中出现；正文过薄且非 Pi 主体。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-069",
+      "platform_id": "linuxdo",
+      "canonical_url": "https://linux.do/t/topic/2752077",
+      "title": "DeepSeek Harness 轻度体验中，佬友们感觉如何",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_thin_secondary",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_thin_secondary",
+          "reason": "约 283 字符，核心是 DSH 预览版安装体验；Pi 只作为配置背景，不能满足独立 Pi 内容证据门槛。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-070",
+      "platform_id": "linuxdo",
+      "canonical_url": "https://linux.do/t/topic/2761422",
+      "title": "利用 PWA 封装 DeepSeek Harness 桌面 App",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_secondary",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_secondary",
+          "reason": "正文是 DeepSeek Harness 的 macOS PWA/Automator 教程，末尾仅链接 pi-web；Pi 不是内容主体。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-071",
+      "platform_id": "linuxdo",
+      "canonical_url": "https://linux.do/t/topic/2748020",
+      "title": "DeepSeek Harness 发布前后：是否基于 Pi 二次开发",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_speculative_secondary",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_speculative_secondary",
+          "reason": "主题围绕 DSH 发布和未经核验的聊天记录，Pi/DSH 关系停留在猜测，缺乏可审计 Pi 原始内容。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-072",
+      "platform_id": "linuxdo",
+      "canonical_url": "https://linux.do/t/topic/2756656",
+      "title": "DeepSeek Harness 到底想解决什么问题",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_secondary",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_secondary",
+          "reason": "正文与解决方案讨论 DSH 的问题定义和论文，Pi 仅作为 fork 对照，非独立 Pi 原始内容。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-073",
+      "platform_id": "linuxdo",
+      "canonical_url": "https://linux.do/t/topic/2733445?page=4",
+      "title": "同模型在 Pi 与 OpenCode 中表现差异：Harness 提示影响",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_unverified_locator",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_unverified_locator",
+          "reason": "队列声称第 4 页/第 61 页的 Pi 与 OpenCode 测试，但匿名直接 canonical readback 落到第一页逻辑题正文，未能验证目标回复；不能用猜测或页面参数替代正文证据。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "social-medium-pi-vs-opencode-member",
+      "platform_id": "medium",
+      "canonical_url": "https://medium.com/@balazskocsis/pi-vs-opencode-the-case-for-minimal-ai-coding-harnesses-1c00ee7553f7",
+      "title": "Pi vs OpenCode: The Case for Minimal AI Coding Harnesses",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "metadata_only",
+      "recommendation": "not_ready_metadata_or_rejection",
+      "decision_records": [],
+      "readback_evidence_present": true,
+      "limitations": "Member-only；未绕过付费墙，不得把隐藏或完整正文作为证据，也不得从标题推断结论。 Supplemental shard status is metadata-only/not-ready; an independent rules-compliant original-page readback is mandatory before acceptance."
+    },
+    {
+      "candidate_id": "worker-global-076",
+      "platform_id": "medium",
+      "canonical_url": "https://medium.com/@dminhk/pi-build-your-ai-coding-tool-your-way-c0e4115619ba",
+      "title": "Pi: Build Your AI Coding Tool Your Way",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 medium/secondary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "web-note-lazy-radar",
+      "platform_id": "note",
+      "canonical_url": "https://note.com/lazy_engineer/n/n843134c41ee6",
+      "title": "今日のAI注目リポジトリ TOP3",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "not_ready",
+      "recommendation": "not_ready_metadata_or_rejection",
+      "decision_records": [],
+      "readback_evidence_present": true,
+      "limitations": "Original page was read, but Pi is only one item in a broader repository roundup; retain as a rejected discovery outcome unless the curator finds enough Pi-primary depth. Supplemental shard status is metadata-only/not-ready; an independent rules-compliant original-page readback is mandatory before acceptance."
+    },
+    {
+      "candidate_id": "worker-global-089",
+      "platform_id": "npm",
+      "canonical_url": "https://www.npmjs.com/package/agentic-pi",
+      "title": "agentic-pi",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 medium/registry-metadata，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-090",
+      "platform_id": "npm",
+      "canonical_url": "https://www.npmjs.com/package/@deepseek-ai/dsh",
+      "title": "@deepseek-ai/dsh",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary-metadata，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-016",
+      "platform_id": "official_web",
+      "canonical_url": "https://pi.dev/",
+      "title": "Pi Coding Agent",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-017",
+      "platform_id": "official_web",
+      "canonical_url": "https://pi.dev/news/2026/5/7/pi-has-a-new-home",
+      "title": "Pi Has a New Home at Earendil",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-018",
+      "platform_id": "official_web",
+      "canonical_url": "https://mariozechner.at/posts/2025-11-30-pi-coding-agent",
+      "title": "What I learned building an opinionated and minimal coding agent",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-020",
+      "platform_id": "official_web",
+      "canonical_url": "https://deepseek.com/harness/en",
+      "title": "DeepSeek Harness developer preview",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 strong/primary，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "web-producthunt-reviews",
+      "platform_id": "product_hunt",
+      "canonical_url": "https://www.producthunt.com/products/pi-coding-agent-3/reviews",
+      "title": "Pi Coding Agent Reviews (2026)",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "metadata_only",
+      "recommendation": "reject_subroute_metadata_only",
+      "decision_records": [
+        {
+          "file": "shortage-readback-curator-decisions-20260829.jsonl",
+          "decision": "reject_subroute_metadata_only",
+          "reason": "Reviews is a mutable sub-route of the accepted Pi Coding Agent product object, with no independent stable publication object/date; metadata-only treatment is correct."
+        }
+      ],
+      "readback_evidence_present": true,
+      "limitations": "The reviews are user claims and overlap the product overview; curator must decide near-duplicate handling. No interaction occurred. Supplemental shard status is metadata-only/not-ready; an independent rules-compliant original-page readback is mandatory before acceptance."
+    },
+    {
+      "candidate_id": "worker-cn-059",
+      "platform_id": "segmentfault",
+      "canonical_url": "https://segmentfault.com/a/1190000048176674",
+      "title": "Pi Agent 完整指南：从安装到 Extension 开发",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_duplicate_exact_url_and_cluster",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_duplicate_exact_url_and_cluster",
+          "reason": "URL 已由 SegmentFault seed 接受；正文还是七牛云 2026-08-19 的 Pi 完整指南，与 OSCHINA 同作者同日指南形成内容簇，不能重复计数。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "web-substack-nader-agent-stack",
+      "platform_id": "substack",
+      "canonical_url": "https://nader.substack.com/p/how-to-build-a-custom-agent-framework",
+      "title": "How to Build a Custom Agent Framework with PI: The Agent Stack Powering OpenClaw",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "curator_review_ready",
+      "recommendation": "reject_cross_platform_content_cluster",
+      "decision_records": [
+        {
+          "file": "shortage-readback-curator-decisions-20260829.jsonl",
+          "decision": "reject_cross_platform_content_cluster",
+          "reason": "Full 47,766-character Pi-primary body was read, but the article explicitly says it was originally posted on X and the accepted X object represents the same tutorial cluster. Do not count twice."
+        }
+      ],
+      "readback_evidence_present": true,
+      "limitations": "正文是作者教程和作者自述，不是官方规范或独立 benchmark；包名、模型目录和命令会随版本变化；文章明确写明 originally posted on X，正文与已接受的 X 原生文章（social-gap-x-dabit-agent-stack）属于同一内容簇，本行仅保留作证据，不应再次计入 Substack 独立配额。未登录、未互动、未下载。"
+    },
+    {
+      "candidate_id": "worker-global-078",
+      "platform_id": "substack",
+      "canonical_url": "https://georgeracu.substack.com/p/pi-agent-vs-claude-code-in-custom",
+      "title": "Pi-Agent vs Claude Code in Custom Code Review Agents",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_exact_url_duplicate",
+      "decision_records": [
+        {
+          "file": "shortage-readback-curator-decisions-20260829.jsonl",
+          "decision": "reject_exact_url_duplicate",
+          "reason": "Complete public body and hash are available, but canonical URL is already accepted under the seed ID."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 medium/original-practitioner，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-079",
+      "platform_id": "substack",
+      "canonical_url": "https://scaileagency.substack.com/p/introducing-pi-web-browse-give-your",
+      "title": "Introducing pi-web-browse: Give Your AI Agent Eyes on the Web",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_exact_url_duplicate",
+      "decision_records": [
+        {
+          "file": "shortage-readback-curator-decisions-20260829.jsonl",
+          "decision": "reject_exact_url_duplicate",
+          "reason": "Complete public body and hash are available, but canonical URL is already accepted under the seed ID."
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 medium/original-project，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "community-api-v2ex-1202087",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1202087",
+      "title": "开发了自用的 Claw：微信 + Docker + Pi Code Agent + Corn",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "curator_review_ready",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "标题将 Cron 误写为 Corn；主题正文较短，未独立回读 GitHub 项目或验证安全性。"
+    },
+    {
+      "candidate_id": "community-api-v2ex-1226191",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1226191",
+      "title": "[自荐] 做了个 Pi Agent 的自动审批扩展",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "curator_review_ready",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "AI 分类器不是安全证明；无人值守审批仍需最小权限、sandbox 和独立审计，未安装扩展。"
+    },
+    {
+      "candidate_id": "community-api-v2ex-1229821",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1229821",
+      "title": "Pi Coding Agent",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "curator_review_ready",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "模型 ID、窗口和上游供应情况会变化；需要用户自己的 V2EX access token，未执行配置。"
+    },
+    {
+      "candidate_id": "community-api-v2ex-1234716",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1234716",
+      "title": "各位 Pi 选手转 dsh 了吗",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "curator_review_ready",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "DSH 当时仍为 preview，社区说法和模型后训练推断需回到官方资料。"
+    },
+    {
+      "candidate_id": "community-api-v2ex-1235481",
+      "platform_id": "v2ex",
+      "canonical_url": "https://www.v2ex.com/t/1235481",
+      "title": "Pi 体验如何，大家现在生产主力是什么",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "curator_review_ready",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "此 URL 已存在 accepted seed；保留作最新 API readback，编译时必须按 canonical URL 去重。讨论包含 Oh-My-Pi 等分支经验。"
+    },
+    {
+      "candidate_id": "worker-cn-079",
+      "platform_id": "v2ex",
+      "canonical_url": "https://fast.v2ex.com/t/1218511",
+      "title": "Wolf RBAC：40 美元 vibe coding，给开源权限系统接了 Pi Agent",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "social-gap-x-yusukebe-lai",
+      "platform_id": "x",
+      "canonical_url": "https://x.com/yusukebe/status/2070752841350947255",
+      "title": "作って使うAIエージェント —— Pi Coding Agentで足りない機能を自作しよう",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "curator_review_ready",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": true,
+      "limitations": "这是导流/推荐帖，技术细节属于所链接的 blog.lai.so 原文；该原文已在 Google 平台作为 google-lai-so-pi-coding-agent 接受，因此跨平台内容簇检查必须保留两者不同对象类型，不能把本帖当作第二份技术原文。未登录、未互动。"
+    },
+    {
+      "candidate_id": "worker-global-047",
+      "platform_id": "youtube",
+      "canonical_url": "https://www.youtube.com/watch?v=N30XGyPrr6I",
+      "title": "Pi Agent – Crash Course | Minimal Coding Agent",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-048",
+      "platform_id": "youtube",
+      "canonical_url": "https://www.youtube.com/watch?v=gTeujlv8qK0",
+      "title": "PI Architecture EXPLAINED | Agent Loop, Tools, TUI and More",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-053",
+      "platform_id": "youtube",
+      "canonical_url": "https://www.youtube.com/watch?v=fvIVGmwgk4w",
+      "title": "Pi Agent vs OpenCode: Same Qwen 3.8 Model, Completely Different Results",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-global-058",
+      "platform_id": "youtube",
+      "canonical_url": "https://www.youtube.com/watch?v=PIdETjcXNIk",
+      "title": "Pi to Pi: Two-Way Agent Orchestration with the Pi Coding Agent",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "not_ready_worker_checked_no_curator_decision",
+      "decision_records": [],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 discovery_only/metadata，仅完成发现或平台元数据读取；未回读正文/字幕，不得在主策展复核前标为 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-051",
+      "platform_id": "zhihu",
+      "canonical_url": "https://zhuanlan.zhihu.com/p/2017400881730056207",
+      "title": "OpenClaw 背后核心框架 Pi：好的 Coding Agent 应该让用户决定需要什么",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_duplicate_exact_url",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_duplicate_exact_url",
+          "reason": "与已接受知乎条目完全相同的 canonical URL；本轮匿名正文虽可读，但不能作为第二对象计数。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-052",
+      "platform_id": "zhihu",
+      "canonical_url": "https://zhuanlan.zhihu.com/p/2014274873778786410",
+      "title": "OpenClaw 技术解构：从 WhatsApp 聊天机器人到 AI 操作系统",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_content_cluster",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_content_cluster",
+          "reason": "完整正文是 OpenClaw 架构/Pi Runtime 解构，与已接受 SegmentFault worker-cn-058 属同一跨站内容簇；保留更适合作为 Pi Runtime 代表的既有条目。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-054",
+      "platform_id": "zhihu",
+      "canonical_url": "https://zhuanlan.zhihu.com/p/2027029874909397801",
+      "title": "详尽从零开始设计实现一个 AI Agent 框架",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "hold_peripheral_pi",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "hold_peripheral_pi",
+          "reason": "原页完整且可读，但全文主线是通用 AI Agent 理论与自实现教程，Pi 主要作为四工具对照，未达到本轮严格 Pi-primary/Pi-runtime 取向；不安全地扩充知乎配额。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    },
+    {
+      "candidate_id": "worker-cn-055",
+      "platform_id": "zhihu",
+      "canonical_url": "https://zhuanlan.zhihu.com/p/2017644431591899897",
+      "title": "OpenClaw 实践与 AI Agent 发展思考",
+      "evidence_card_count": 1,
+      "submitted_evidence_status": "worker_checked",
+      "recommendation": "reject_peripheral_pi",
+      "decision_records": [
+        {
+          "file": "china-curator-audit-decisions-20260829.jsonl",
+          "decision": "reject_peripheral_pi",
+          "reason": "原页完整但主题是 Fabarta/OpenClaw 企业实践，正文仅少量提及 Pi/PI Agent，不足以形成独立 Pi 内容对象。"
+        }
+      ],
+      "readback_evidence_present": false,
+      "limitations": "原 worker 等级为 M，笔记记录已读取原页或原生 detail；仍须由主策展人独立回读、核对版本与近重复后才能 accepted。"
+    }
+  ]
+}

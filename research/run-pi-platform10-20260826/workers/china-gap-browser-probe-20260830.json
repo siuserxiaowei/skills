@@ -1,0 +1,73 @@
+{
+  "audit_id": "china-gap-browser-probe-20260830",
+  "run_id": "pi-platform10-20260826",
+  "checked_at": "2026-08-30T10:33:00+08:00",
+  "mode": "normal Chrome user-assisted read-only probe",
+  "agent_reach": "unavailable_in_shell_command_lookup; no installation or upgrade attempted",
+  "candidate_policy": "No new candidate unless canonical body/detail/transcript was visibly read; no guessed IDs, snippets, media download, interaction, login bypass or CAPTCHA solving.",
+  "probes": [
+    {
+      "platform_id": "weibo",
+      "url": "https://s.weibo.com/weibo?q=%22pi%20coding%20agent%22",
+      "http_or_navigation": "browser navigation",
+      "visible_text": ["登录 - 微博", "扫描二维码登录", "验证码登录", "账号登录", "手机号", "验证码", "登录/注册"],
+      "status": "login_shell",
+      "candidate_created": false,
+      "reason": "Public internal search redirected to passport login; no search result or canonical post body was visible. Existing three accepted Weibo objects were not revisited or duplicated."
+    },
+    {
+      "platform_id": "douyin",
+      "url": "https://www.douyin.com/search/pi%20coding%20agent",
+      "http_or_navigation": "browser navigation",
+      "visible_text": ["综合", "视频", "用户", "直播", "筛选", "登录后即可搜索更多精彩视频", "扫码登录", "验证码登录", "密码登录", "登录即代表同意用户协议和隐私政策"],
+      "status": "login_shell",
+      "candidate_created": false,
+      "reason": "Search route rendered a QR/login panel and no result detail body. No new ID inferred from the shell."
+    },
+    {
+      "platform_id": "douyin",
+      "url": "https://www.douyin.com/video/7668306230381560163",
+      "http_or_navigation": "browser navigation",
+      "visible_text": ["视频数据加载中", "请登录后继续使用", "为保障更好的访问体验，请在登录后继续使用抖音", "确定", "取消"],
+      "status": "detail_login_gate",
+      "candidate_created": false,
+      "reason": "Google discovery exposed this possible alias hit, but direct canonical detail stayed behind the login gate and never exposed title/creator/body/transcript. It is not counted."
+    },
+    {
+      "platform_id": "kuaishou",
+      "url": "https://www.kuaishou.com/search/video?searchKey=pi%20coding%20agent",
+      "http_or_navigation": "browser navigation",
+      "visible_text": ["pi coding agent - 快手", "登录即可享受", "更懂你的优质内容", "点赞、评论和收藏", "立即 登录", "视频", "用户"],
+      "status": "login_shell",
+      "candidate_created": false,
+      "reason": "Search page exposed only the anonymous shell and login prompt; no video detail, transcript, or stable result object was visible."
+    },
+    {
+      "platform_id": "wechat_official_accounts",
+      "url": "https://mp.weixin.qq.com/",
+      "http_or_navigation": "existing Chrome tab / browser navigation",
+      "visible_text": ["小程序"],
+      "status": "authenticated-account-surface-not-article",
+      "candidate_created": false,
+      "reason": "Existing tab was a WeChat mini-program/account surface, not a known Pi article detail. No article URL was guessed or opened; public article routes remain subject to QR/CAPTCHA/anti-abuse gate."
+    },
+    {
+      "platform_id": "wechat_channels",
+      "url": "https://channels.weixin.qq.com/platform",
+      "http_or_navigation": "existing Chrome tab / browser navigation",
+      "visible_text": ["视频号助手"],
+      "status": "creator-console-shell",
+      "candidate_created": false,
+      "reason": "Existing tab exposed the Video Account assistant shell only; no public video detail or transcript was visible. No QR/CAPTCHA or access-control bypass attempted."
+    }
+  ],
+  "existing_objects_not_repeated": {
+    "weibo": [
+      "china-weibo-pi-autoresearch-20260829",
+      "china-weibo-pi-minimal-philosophy-20260829",
+      "china-weibo-wake-session-manager"
+    ],
+    "douyin": ["china-douyin-pi-sdk-part3"]
+  },
+  "next_safe_step": "User may complete normal login/QR verification in the already-open Chrome pages. After user says the read-only session is ready, inspect only visible canonical details/transcripts and append new readbacks; do not submit credentials or solve CAPTCHA on the user's behalf."
+}

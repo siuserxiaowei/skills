@@ -1,0 +1,750 @@
+{
+  "schema_version": "pi-platform-worker-shard-manifest/v1",
+  "run_id": "pi-platform10-20260826",
+  "candidate_shards": [
+    {
+      "shard": "36kr-oschina-toutiao-followup-candidates-20260830.jsonl",
+      "sha256": "b4b5aab8441f117738e09406284ad2845e90344faf386a880b973ac2b34b3dea",
+      "records": 3,
+      "by_platform": {
+        "36kr": 1,
+        "toutiao": 2
+      }
+    },
+    {
+      "shard": "api-packages-candidates.jsonl",
+      "sha256": "edcd8da62cc2682d3e1a2ca6b348e62d53ac53a3367056367c3b491a925969be",
+      "records": 40,
+      "by_platform": {
+        "docker_hub": 5,
+        "npm": 20,
+        "pypi": 15
+      }
+    },
+    {
+      "shard": "arxiv-2608-01347-candidates-20260829.jsonl",
+      "sha256": "a09828dbb6c916ebd0ae5dbfb4adfa5d17ae5a2503b7620f2d16588ad41cdb1d",
+      "records": 1,
+      "by_platform": {
+        "arxiv_openreview": 1
+      }
+    },
+    {
+      "shard": "arxiv-brainpilot-candidates-20260829.jsonl",
+      "sha256": "ba533f98150eee59061a3ab7f72607c07a581140f9e49c6cb915bc89632eb8bb",
+      "records": 1,
+      "by_platform": {
+        "arxiv_openreview": 1
+      }
+    },
+    {
+      "shard": "arxiv-domain-benchmarks-candidates-20260829.jsonl",
+      "sha256": "a86f99a8603183559d9b836ab893292218e9ef030cc976e06c268460a7a0bef8",
+      "records": 3,
+      "by_platform": {
+        "arxiv_openreview": 3
+      }
+    },
+    {
+      "shard": "arxiv-new-pi-harness-candidates-20260829.jsonl",
+      "sha256": "66244c5c9c523a881a2e88f920add648a059352403e407560eb2885233d6de7b",
+      "records": 3,
+      "by_platform": {
+        "arxiv_openreview": 3
+      }
+    },
+    {
+      "shard": "baidu-dedup-replacement-candidates.jsonl",
+      "sha256": "89bab5dada75f5c6ea83f0ddcad3f568834ac87aafe2bc2dfb2d29c994b236c4",
+      "records": 1,
+      "by_platform": {
+        "baidu_search": 1
+      }
+    },
+    {
+      "shard": "baidu-security-replacement-candidates.jsonl",
+      "sha256": "b60ba00141b0c48a2e737b22dad1b753cd9d0bf52a1d45558f169e80b05adf14",
+      "records": 1,
+      "by_platform": {
+        "baidu_search": 1
+      }
+    },
+    {
+      "shard": "bilibili-followup-candidates-20260830.jsonl",
+      "sha256": "3aa226b7baeffbfc4a3eae8f17e55e474c415612780bb0945256a06140051077",
+      "records": 1,
+      "by_platform": {
+        "bilibili": 1
+      }
+    },
+    {
+      "shard": "bluesky-supplemental-candidates.jsonl",
+      "sha256": "87084cd0c1084b51f8d76dfb7c43379ece5ab792b03edaae41ccaefa4d774ef9",
+      "records": 10,
+      "by_platform": {
+        "bluesky": 10
+      }
+    },
+    {
+      "shard": "china-candidates.jsonl",
+      "sha256": "1d4e0c55a269a233f84f34d341712a2bec5246bcff3e2ca21adef3e10b76867d",
+      "records": 80,
+      "by_platform": {
+        "36kr": 5,
+        "bilibili": 35,
+        "csdn": 12,
+        "gitee": 2,
+        "infoq": 3,
+        "juejin": 3,
+        "linuxdo": 8,
+        "segmentfault": 7,
+        "zhihu": 5
+      }
+    },
+    {
+      "shard": "china-public-gap-supplemental-candidates.jsonl",
+      "sha256": "3d080ff3cc789cd3cba306c0e8c428f5453fd3f238807525ac048feb216076ac",
+      "records": 6,
+      "by_platform": {
+        "douyin": 1,
+        "oschina": 3,
+        "toutiao": 1,
+        "weibo": 1
+      }
+    },
+    {
+      "shard": "china-scarce-candidates-20260830.jsonl",
+      "sha256": "dccc7fc5bdcf82a8d3649382b05c91025fc3e0a415089b6a6958e7e5b9bcfd39",
+      "records": 3,
+      "by_platform": {
+        "36kr": 2,
+        "toutiao": 1
+      }
+    },
+    {
+      "shard": "china-scarce-followup-20260830-candidates.jsonl",
+      "sha256": "02f6e4f1947d408986022e6af9864c84e2db8d122e275f8de03fb0de19a8aff6",
+      "records": 3,
+      "by_platform": {
+        "oschina": 1,
+        "toutiao": 2
+      }
+    },
+    {
+      "shard": "cn-gap-search-20260830-candidates.jsonl",
+      "sha256": "0338dd4ad142f81ea6e71e0acd086256ea9b1d55afe6c219aa99e6d455f00669",
+      "records": 1,
+      "by_platform": {
+        "36kr": 1
+      }
+    },
+    {
+      "shard": "code-hosts-candidates.jsonl",
+      "sha256": "49349389b47459bf4194c69f30c3444ae00737804683c717e7571de05c9139b5",
+      "records": 22,
+      "by_platform": {
+        "gitee": 2,
+        "gitlab": 10,
+        "huggingface": 10
+      }
+    },
+    {
+      "shard": "community-api-candidates.jsonl",
+      "sha256": "c544a1b59f01c88ca2c1eab9c71eb6fe8255ea0adab3d4a92f4226728556cbae",
+      "records": 55,
+      "by_platform": {
+        "devto": 16,
+        "hacker_news": 18,
+        "qiita": 15,
+        "v2ex": 6
+      }
+    },
+    {
+      "shard": "docker-hub-sbx-supplemental-candidates-20260829.jsonl",
+      "sha256": "f6cdd581d1742e24dbf4d2fb1e594ce6de2cc573e775f6308973be48c985f6c6",
+      "records": 2,
+      "by_platform": {
+        "docker_hub": 2
+      }
+    },
+    {
+      "shard": "docker-hub-supplemental-candidates-20260829.jsonl",
+      "sha256": "8b11ce5f66f556e6712f393bea3a571c342dc0f741e0274c2e35b34743b2e289",
+      "records": 3,
+      "by_platform": {
+        "docker_hub": 3
+      }
+    },
+    {
+      "shard": "ecosystem-candidates.jsonl",
+      "sha256": "31b2795ed9048d2280b9c0d6dc87fe76044a5926f36ca76f267f83d9af3d240d",
+      "records": 17,
+      "by_platform": {
+        "npm": 7,
+        "official_web": 4,
+        "v2ex": 6
+      }
+    },
+    {
+      "shard": "gap-china-broad-20260830-candidates.jsonl",
+      "sha256": "fb72df0a5e2ce62f448ae4bc277560854b8e59aab7da7b92ea648830c4b284bc",
+      "records": 1,
+      "by_platform": {
+        "gitee": 1
+      }
+    },
+    {
+      "shard": "gap-global-broad-20260830-candidates.jsonl",
+      "sha256": "5289e1a49c7a52e115850efb67b7b53161a74b402f7d7960ab60b16e71b09991",
+      "records": 1,
+      "by_platform": {
+        "hashnode": 1
+      }
+    },
+    {
+      "shard": "gap-public-supplemental-candidates-20260829.jsonl",
+      "sha256": "33470c7e0dc29dfead42182a946b5fd1658309326c1d74369558b6fa11e14ea7",
+      "records": 1,
+      "by_platform": {
+        "medium": 1
+      }
+    },
+    {
+      "shard": "gitee-jmc12138-supplemental-candidates-20260830.jsonl",
+      "sha256": "b9b0418bc4d5bf9f1a65f34c77ab471f5325f13fd6a5992937b6f92e7337e863",
+      "records": 3,
+      "by_platform": {
+        "gitee": 3
+      }
+    },
+    {
+      "shard": "gitee-public-gap-candidates-20260829.jsonl",
+      "sha256": "7c88b42817028aff21d50633e90536f3c491a48be482190fdc32b9e5fa52d672",
+      "records": 3,
+      "by_platform": {
+        "gitee": 3
+      }
+    },
+    {
+      "shard": "gitee-voice2024-followup-candidates-20260830.jsonl",
+      "sha256": "c91c04a08cb08e336361261ccfaf5188b2b03abfa9b2dd50de8bc6ca5ecde342",
+      "records": 1,
+      "by_platform": {
+        "gitee": 1
+      }
+    },
+    {
+      "shard": "global-candidates.jsonl",
+      "sha256": "e578472fbda31b7fbbe0f9b4d8e42f90aa30d9c3876cc98a05b06b17bd79deb7",
+      "records": 79,
+      "by_platform": {
+        "arxiv_openreview": 1,
+        "devto": 4,
+        "github": 42,
+        "hacker_news": 8,
+        "linkedin": 2,
+        "medium": 3,
+        "substack": 4,
+        "youtube": 15
+      }
+    },
+    {
+      "shard": "google-search-candidates.jsonl",
+      "sha256": "f4dade03113c945a46d820f2bff6c2fa7a4324b4c600c0ab1d880ba27ba63084",
+      "records": 10,
+      "by_platform": {
+        "google_search": 10
+      }
+    },
+    {
+      "shard": "hashnode-hackernoon-followup-candidates-20260829.jsonl",
+      "sha256": "84eb790dce12a22f02367268e0a46c6b5b88051982c8c8905770317d8c7792c8",
+      "records": 2,
+      "by_platform": {
+        "hackernoon": 1,
+        "hashnode": 1
+      }
+    },
+    {
+      "shard": "hashnode-sparse-followup-20260830-candidates.jsonl",
+      "sha256": "80f631c1691c37113cfcf542b57978f75c9b22caf1043361d03470e24236d16d",
+      "records": 2,
+      "by_platform": {
+        "hashnode": 2
+      }
+    },
+    {
+      "shard": "hashnode-thinkthroo-candidates-20260830.jsonl",
+      "sha256": "06ee73406cf9b06fc92652c086d8f3f32c3b6371e16ba3f6884fc7dcf54b889a",
+      "records": 2,
+      "by_platform": {
+        "hashnode": 2
+      }
+    },
+    {
+      "shard": "infoq-myclaw-followup-20260830-candidates.jsonl",
+      "sha256": "af89d2a75e4301873e642e270046d7b387bf89e10ff414b6dddf965ae43244ae",
+      "records": 1,
+      "by_platform": {
+        "infoq": 1
+      }
+    },
+    {
+      "shard": "infoq-pi-mono-followup-candidates-20260829.jsonl",
+      "sha256": "e8f9d0705a8081eec2546449165daff8b28d66cdc5102ccc03bec02bf771088c",
+      "records": 1,
+      "by_platform": {
+        "infoq": 1
+      }
+    },
+    {
+      "shard": "infoq-rca-followup-20260830-candidates.jsonl",
+      "sha256": "688c9a5ee561d57c9fd3fcb79d070e55e78f003ef1aead921f54cc84ff5ddf6a",
+      "records": 1,
+      "by_platform": {
+        "infoq": 1
+      }
+    },
+    {
+      "shard": "infoq-sparse-followup-20260830-candidates.jsonl",
+      "sha256": "43daa77370dc48ded675d9689b03e7a665199ed9ab6be77c6323886d8ba37887",
+      "records": 2,
+      "by_platform": {
+        "infoq": 2
+      }
+    },
+    {
+      "shard": "infoq-weekly-pi-20260830-candidates.jsonl",
+      "sha256": "aea0d1a71af1efa2448499e59c27358a1074026e1648294a8058063e98dd02e4",
+      "records": 1,
+      "by_platform": {
+        "infoq": 1
+      }
+    },
+    {
+      "shard": "juejin-supplemental-candidates.jsonl",
+      "sha256": "6bc40a789af3b765cd8f728412ca08d5ca25d7633cf92bee7193bd84a28b7181",
+      "records": 8,
+      "by_platform": {
+        "juejin": 8
+      }
+    },
+    {
+      "shard": "linkedin-final-candidates.jsonl",
+      "sha256": "6f7c151408505ebf49e961080b09e0cf64693d37080b5e9179220587d28b9955",
+      "records": 1,
+      "by_platform": {
+        "linkedin": 1
+      }
+    },
+    {
+      "shard": "linuxdo-supplemental-candidates.jsonl",
+      "sha256": "89310f3b706b1f986729586d909b24bba87e63525580d322168a5569336fb5d7",
+      "records": 8,
+      "by_platform": {
+        "linuxdo": 8
+      }
+    },
+    {
+      "shard": "medium-rss-new-candidates-20260829.jsonl",
+      "sha256": "0bfffbb3101a80c9585c899400549b3cebefb90f5c51ffa99793ca91f18d4ad2",
+      "records": 2,
+      "by_platform": {
+        "medium": 2
+      }
+    },
+    {
+      "shard": "named-search-candidates.jsonl",
+      "sha256": "433e16af4f3b31fc9dff7f11c2decb41a66abffb71484d49f084887149ed76e2",
+      "records": 20,
+      "by_platform": {
+        "baidu_search": 10,
+        "bing_search": 10
+      }
+    },
+    {
+      "shard": "note-curator-supplemental-candidates.jsonl",
+      "sha256": "1c46a7f28f19dc937b7a529809f5cd2d558955f2385299c91ef4f7b8697c98d7",
+      "records": 1,
+      "by_platform": {
+        "note": 1
+      }
+    },
+    {
+      "shard": "oschina-miaoyun-pi-20260830-candidates.jsonl",
+      "sha256": "2f463af9305811e410cbfbc8d197cf5be24f00b483890cadb12b0d082bbc6f61",
+      "records": 1,
+      "by_platform": {
+        "oschina": 1
+      }
+    },
+    {
+      "shard": "oschina-shortage-followup-20260830-candidates.jsonl",
+      "sha256": "2909db25164ec826731076eed6c88a1042feed97551289f9e1ebdb8962296988",
+      "records": 3,
+      "by_platform": {
+        "oschina": 3
+      }
+    },
+    {
+      "shard": "producthunt-bb-built-with-candidates-20260830.jsonl",
+      "sha256": "062d1af2c79852b1d5f8f712ddd014f1a77e983c261bf545250d68c594df2564",
+      "records": 1,
+      "by_platform": {
+        "product_hunt": 1
+      }
+    },
+    {
+      "shard": "producthunt-tyndale-built-with-candidates-20260830.jsonl",
+      "sha256": "360730cabbd6b4e9b2c2726b067f8769f5e1be284db3f51583c6e8900ec3a3cc",
+      "records": 1,
+      "by_platform": {
+        "product_hunt": 1
+      }
+    },
+    {
+      "shard": "public-api-research-supplemental-candidates.jsonl",
+      "sha256": "ffb6fc01bcae5ee327657dfd1f278c563c7eb2abbfe7ca4418f9b0097a3a64f7",
+      "records": 2,
+      "by_platform": {
+        "arxiv_openreview": 2
+      }
+    },
+    {
+      "shard": "qiita-replacement-candidates.jsonl",
+      "sha256": "59c58056ed4c813022dad80cc60df74fc4788ec0312fb65feaaf7a1b91b8910e",
+      "records": 1,
+      "by_platform": {
+        "qiita": 1
+      }
+    },
+    {
+      "shard": "segmentfault-supplemental-candidates.jsonl",
+      "sha256": "56ed4b8024ceaf2764d030435105a76d0066dbdad417a77231608eb4694fdc23",
+      "records": 3,
+      "by_platform": {
+        "segmentfault": 3
+      }
+    },
+    {
+      "shard": "social-global-candidates.jsonl",
+      "sha256": "4420a4a042bfc3b0dfae177d5bf6e53ad3fd35b986ebd0d4910ad3d981616ca8",
+      "records": 26,
+      "by_platform": {
+        "linkedin": 7,
+        "medium": 6,
+        "reddit": 10,
+        "x": 3
+      }
+    },
+    {
+      "shard": "social-public-gap-candidates.jsonl",
+      "sha256": "c00518c9a2b473176d90817af58e15679d1d3e2839adcde24e46184cd2a1ccde",
+      "records": 9,
+      "by_platform": {
+        "linkedin": 1,
+        "x": 8
+      }
+    },
+    {
+      "shard": "sparse-global-supplemental-candidates.jsonl",
+      "sha256": "8bf77545dac564f53049d3d093425de79e9b04f48597c94efebebd8801d12860",
+      "records": 15,
+      "by_platform": {
+        "docker_hub": 1,
+        "gitee": 1,
+        "hackernoon": 2,
+        "note": 9,
+        "product_hunt": 1,
+        "substack": 1
+      }
+    },
+    {
+      "shard": "substack-followup-candidates-20260829.jsonl",
+      "sha256": "e538fa9a938ef545e281ac53e23de7a79147c1e0678e8b8220801df018f20c98",
+      "records": 5,
+      "by_platform": {
+        "substack": 5
+      }
+    },
+    {
+      "shard": "substack-followup2-candidates-20260829.jsonl",
+      "sha256": "86d851a65882fde19cb5a0e741b2ae61053983591f7521bfd3b72b1fc21ac29b",
+      "records": 1,
+      "by_platform": {
+        "substack": 1
+      }
+    },
+    {
+      "shard": "toutiao-pi-web-candidates-20260829.jsonl",
+      "sha256": "892d824b058ad3302b0921f619a5d855e680fb8f60c2d30d511be20e96e7a974",
+      "records": 1,
+      "by_platform": {
+        "toutiao": 1
+      }
+    },
+    {
+      "shard": "v2ex-supplemental-candidates.jsonl",
+      "sha256": "2da88b8b785bb35a3cea3eb439d7b0c1741be6fa78aa34c19749065c4b36e263",
+      "records": 4,
+      "by_platform": {
+        "v2ex": 4
+      }
+    },
+    {
+      "shard": "web-ecosystem-candidates.jsonl",
+      "sha256": "356ffdfafdcfdb2ecabaab38cc6e6649e09a33f4c1d28b1b5863ad163722fa7e",
+      "records": 58,
+      "by_platform": {
+        "composio": 15,
+        "hackernoon": 2,
+        "hashnode": 4,
+        "note": 10,
+        "official_web": 15,
+        "product_hunt": 2,
+        "zenn": 10
+      }
+    },
+    {
+      "shard": "weibo-logged-followup-candidates-20260830.jsonl",
+      "sha256": "0447d981231dbbf776f37b89fa731e586091917aaab15d5bb3b12660f38626a7",
+      "records": 8,
+      "by_platform": {
+        "weibo": 8
+      }
+    },
+    {
+      "shard": "weibo-sitemap-supplemental-candidates-20260829.jsonl",
+      "sha256": "6a395783d229edc191ffd90f277d1d117cbf0996fd706c3e37bd479ec582d360",
+      "records": 2,
+      "by_platform": {
+        "weibo": 2
+      }
+    },
+    {
+      "shard": "xhs-followup-candidates-20260830.jsonl",
+      "sha256": "5cacee6f80e311f44e4e1f1e4fc95f2c46dc8c58b32369a6db4fa08aa6995c48",
+      "records": 5,
+      "by_platform": {
+        "xiaohongshu": 5
+      }
+    },
+    {
+      "shard": "zhihu-followup2-candidates-20260829.jsonl",
+      "sha256": "6001e2f2645b7bb48ff02888d44c76e544f3d5f5a75659dfef7009b66b5708bb",
+      "records": 4,
+      "by_platform": {
+        "zhihu": 4
+      }
+    },
+    {
+      "shard": "zhihu-followup3-candidates-20260829.jsonl",
+      "sha256": "3f871bfbcfaf1515bad18a1dd4d5b49e9a042acfff4202e59d84f29bd6ab970b",
+      "records": 5,
+      "by_platform": {
+        "zhihu": 5
+      }
+    },
+    {
+      "shard": "zhihu-infoq-followup-candidates-20260829.jsonl",
+      "sha256": "fde3068d5a9ca4e006f041c9ba3d41ac9bd4bbc5e8224412e077389527418243",
+      "records": 4,
+      "by_platform": {
+        "36kr": 1,
+        "infoq": 2,
+        "zhihu": 1
+      }
+    }
+  ],
+  "total_records": 566,
+  "unique_candidate_ids": 566,
+  "unique_canonical_urls": 535,
+  "exact_url_duplicates": [
+    {
+      "canonical_url": "https://www.bilibili.com/video/BV1jX8462EFb",
+      "candidate_id": "worker-cn-002",
+      "duplicate_of": "china-followup-bilibili-BV1jX8462EFb-architecture-20260830",
+      "shard": "china-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://gitee.com/jianyuan/pi",
+      "candidate_id": "code-hosts-gitee-001",
+      "duplicate_of": "worker-cn-085",
+      "shard": "code-hosts-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://www.npmjs.com/package/@earendil-works/pi-coding-agent",
+      "candidate_id": "worker-global-084",
+      "duplicate_of": "api-packages-npm-earendil-works-pi-coding-agent",
+      "shard": "ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://www.npmjs.com/package/@earendil-works/pi-agent-core",
+      "candidate_id": "worker-global-085",
+      "duplicate_of": "api-packages-npm-earendil-works-pi-agent-core",
+      "shard": "ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://www.npmjs.com/package/@earendil-works/pi-ai",
+      "candidate_id": "worker-global-086",
+      "duplicate_of": "api-packages-npm-earendil-works-pi-ai",
+      "shard": "ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://www.npmjs.com/package/@earendil-works/pi-session-backend-sqlite-node",
+      "candidate_id": "worker-global-087",
+      "duplicate_of": "api-packages-npm-earendil-works-pi-session-backend-sqlite-node",
+      "shard": "ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://www.npmjs.com/package/@ai-sdk/harness-pi",
+      "candidate_id": "worker-global-088",
+      "duplicate_of": "api-packages-npm-ai-sdk-harness-pi",
+      "shard": "ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://www.v2ex.com/t/1229821",
+      "candidate_id": "worker-cn-074",
+      "duplicate_of": "community-api-v2ex-1229821",
+      "shard": "ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://www.v2ex.com/t/1235481",
+      "candidate_id": "worker-cn-075",
+      "duplicate_of": "community-api-v2ex-1235481",
+      "shard": "ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://www.v2ex.com/t/1234716",
+      "candidate_id": "worker-cn-076",
+      "duplicate_of": "community-api-v2ex-1234716",
+      "shard": "ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://www.v2ex.com/t/1226191",
+      "candidate_id": "worker-cn-077",
+      "duplicate_of": "community-api-v2ex-1226191",
+      "shard": "ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://www.v2ex.com/t/1202087",
+      "candidate_id": "worker-cn-078",
+      "duplicate_of": "community-api-v2ex-1202087",
+      "shard": "ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://dev.to/zangetsu101/the-coding-agent-i-could-shape-around-my-workflow-3c38",
+      "candidate_id": "worker-global-070",
+      "duplicate_of": "community-api-devto-4231446",
+      "shard": "global-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://dev.to/huiyu9144/huiyu-piai-coding-agent-stripped-to-essentials-7jc",
+      "candidate_id": "worker-global-071",
+      "duplicate_of": "community-api-devto-3805275",
+      "shard": "global-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://dev.to/wenyu_zhang/i-copied-a-minimal-coding-agent-then-i-read-it-and-minimal-didnt-mean-what-i-thought-55g4",
+      "candidate_id": "worker-global-073",
+      "duplicate_of": "community-api-devto-4467643",
+      "shard": "global-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://news.ycombinator.com/item?id=49328206",
+      "candidate_id": "worker-global-062",
+      "duplicate_of": "community-api-hn-49328206",
+      "shard": "global-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://news.ycombinator.com/item?id=48991997",
+      "candidate_id": "worker-global-066",
+      "duplicate_of": "community-api-hn-48991997",
+      "shard": "global-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://hub.docker.com/r/stck/pi",
+      "candidate_id": "sparse-dockerhub-stck-pi",
+      "duplicate_of": "api-packages-docker-stck-pi",
+      "shard": "sparse-global-supplemental-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://gitee.com/yonja/feynman",
+      "candidate_id": "sparse-gitee-feynman-product",
+      "duplicate_of": "code-hosts-gitee-002",
+      "shard": "sparse-global-supplemental-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://note.com/immmmmmmu/n/nac57bcd1a239",
+      "candidate_id": "web-note-imds-low-cost",
+      "duplicate_of": "sparse-note-imds-low-cost",
+      "shard": "web-ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://note.com/keity717/n/n4a42309e93d0",
+      "candidate_id": "web-note-keity-textbook",
+      "duplicate_of": "sparse-note-keity-textbook",
+      "shard": "web-ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://note.com/keity717/n/ndd6623e4ff5f",
+      "candidate_id": "web-note-keity-extensions",
+      "duplicate_of": "sparse-note-keity-extensions",
+      "shard": "web-ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://note.com/humble_bobcat51/n/n02a214f85d8c",
+      "candidate_id": "web-note-yuimaru-ohmypi",
+      "duplicate_of": "sparse-note-yuimaru-oh-my-pi",
+      "shard": "web-ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://note.com/deft_gecko6923/n/n795a6edc6e7c",
+      "candidate_id": "web-note-yui-session",
+      "duplicate_of": "sparse-note-yui-session",
+      "shard": "web-ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://note.com/_kihonushi/n/n4e4bd035c453",
+      "candidate_id": "web-note-kiki-subtraction",
+      "duplicate_of": "sparse-note-kiki-subtraction",
+      "shard": "web-ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://note.com/deft_gecko6923/n/nbf91fe098cf9",
+      "candidate_id": "web-note-yui-provider",
+      "duplicate_of": "sparse-note-yui-provider",
+      "shard": "web-ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://note.com/eiji71/n/n5d2925a554b9",
+      "candidate_id": "web-note-eiji-private",
+      "duplicate_of": "sparse-note-eiji-private",
+      "shard": "web-ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://note.com/shali_note/n/n552f152a14cb",
+      "candidate_id": "web-note-shali-context",
+      "duplicate_of": "sparse-note-shali-context",
+      "shard": "web-ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://hackernoon.com/how-i-manage-my-vps-with-pis-ssh-extension",
+      "candidate_id": "web-hackernoon-ssh",
+      "duplicate_of": "sparse-hackernoon-ssh-extension",
+      "shard": "web-ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://hackernoon.com/decent-colors-for-pidev-on-a-bare-linux-vt",
+      "candidate_id": "web-hackernoon-vt-theme",
+      "duplicate_of": "sparse-hackernoon-vt-theme",
+      "shard": "web-ecosystem-candidates.jsonl"
+    },
+    {
+      "canonical_url": "https://www.producthunt.com/products/pi-coding-agent-3",
+      "candidate_id": "web-producthunt-overview",
+      "duplicate_of": "sparse-producthunt-pi-launch",
+      "shard": "web-ecosystem-candidates.jsonl"
+    }
+  ]
+}

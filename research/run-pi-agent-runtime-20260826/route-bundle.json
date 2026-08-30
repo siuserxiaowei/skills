@@ -191,7 +191,7 @@
   "platform_scope_mode": "required_plus_default",
   "query_plan_binding": {
     "artifact_sha256": "60ad7fe825f04997992b70af1c575aee1d52c41b224c63969c53963457c20a1e",
-    "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/query_plan.json",
+    "path": "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/query_plan.json",
     "plan_digest_sha256": "8934f777c375b856fdba8cd453d8132a936b5cf78ba6e4b7a9b1b9af1dae49ea",
     "query_count": 280,
     "query_ids_sha256": "3b39bcc0428ea4c7ebe9454771ba558c0063cada2ac2092b8a9695e53a10a00f"
@@ -247,7 +247,7 @@
         "engine_mode": "python",
         "query_plan_binding": {
           "artifact_sha256": "60ad7fe825f04997992b70af1c575aee1d52c41b224c63969c53963457c20a1e",
-          "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/query_plan.json",
+          "path": "<local-path>/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/query_plan.json",
           "plan_digest_sha256": "8934f777c375b856fdba8cd453d8132a936b5cf78ba6e4b7a9b1b9af1dae49ea",
           "query_count": 280,
           "query_ids_sha256": "3b39bcc0428ea4c7ebe9454771ba558c0063cada2ac2092b8a9695e53a10a00f"
