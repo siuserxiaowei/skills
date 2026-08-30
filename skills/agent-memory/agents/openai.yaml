@@ -1,4 +1,4 @@
 interface:
-  display_name: "Agent Memory Vault"
-  short_description: "Set up and maintain a shared Agent Memory Vault"
-  default_prompt: "Use $agent-memory when installing, inspecting, or maintaining a local Agent Memory Vault system."
+  display_name: "Agent Memory"
+  short_description: "Design and maintain private Markdown-first agent memory"
+  default_prompt: "Use $agent-memory to inspect or improve a private, source-readable memory system shared by agents."

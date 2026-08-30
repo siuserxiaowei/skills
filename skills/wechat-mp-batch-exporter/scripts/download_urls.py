@@ -1,175 +1,172 @@
 #!/usr/bin/env python3
-"""Fetch a batch of known WeChat article URLs via the public exporter API."""
+"""Download a bounded list of known public WeChat article URLs."""
 
 from __future__ import annotations
 
 import argparse
 import csv
-import datetime as dt
-import hashlib
+import datetime as datetime_module
 import json
 import re
-import sys
 import time
 import urllib.parse
 import urllib.request
+import uuid
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Iterable
 
 
-URL_RE = re.compile(r"https?://mp\.weixin\.qq\.com/[^\s\"'<>]+", re.I)
+ARTICLE_URL = re.compile(r"https?://mp\.weixin\.qq\.com/[A-Za-z0-9_?=&%./:-]+", re.IGNORECASE)
+EXTENSIONS = {"markdown": ".md", "json": ".json", "text": ".txt", "html": ".html"}
 
 
-def now_iso() -> str:
-    return dt.datetime.now(dt.timezone.utc).isoformat()
+@dataclass
+class DownloadRecord:
+    position: int
+    source_url: str
+    status: str
+    title: str = ""
+    relative_path: str = ""
+    retrieved_at: str = ""
+    error: str = ""
 
 
-def make_run_id() -> str:
-    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
-    suffix = hashlib.sha256(f"{stamp}-{time.time()}".encode()).hexdigest()[:8]
-    return f"{stamp}-{suffix}"
+def utc_now() -> str:
+    return datetime_module.datetime.now(datetime_module.timezone.utc).isoformat()
 
 
-def safe_name(value: str, fallback: str) -> str:
-    value = re.sub(r"[\\/:*?\"<>|]+", "_", value or "").strip()
-    value = re.sub(r"\s+", " ", value)
-    return value[:100] or fallback
+def run_label() -> str:
+    return datetime_module.datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
 
 
-def extract_urls_from_text(text: str) -> list[str]:
-    return [m.group(0).rstrip(")，。；,;") for m in URL_RE.finditer(text)]
+def urls_in(value: str) -> list[str]:
+    return [match.group(0).rstrip(".,;，。；)") for match in ARTICLE_URL.finditer(value)]
 
 
-def read_urls(files: Iterable[str], inline: Iterable[str]) -> list[str]:
-    urls: list[str] = []
-    for item in inline:
-        urls.extend(extract_urls_from_text(item))
-    for file_value in files:
-        path = Path(file_value).expanduser()
-        text = path.read_text(encoding="utf-8")
-        if path.suffix.lower() == ".json":
+def flatten_json(value) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        return [item for child in value for item in flatten_json(child)]
+    if isinstance(value, dict):
+        return [item for child in value.values() for item in flatten_json(child)]
+    return []
+
+
+def collect_urls(arguments: list[str], files: list[Path]) -> list[str]:
+    discovered = [url for value in arguments for url in urls_in(value)]
+    for path in files:
+        text = path.expanduser().read_text(encoding="utf-8")
+        if path.suffix.casefold() == ".json":
             try:
-                data = json.loads(text)
-                if isinstance(data, list):
-                    text = "\n".join(str(x) for x in data)
-                elif isinstance(data, dict):
-                    text = json.dumps(data, ensure_ascii=False)
+                values = flatten_json(json.loads(text))
             except json.JSONDecodeError:
-                pass
-        urls.extend(extract_urls_from_text(text))
+                values = [text]
+        else:
+            values = [text]
+        discovered.extend(url for value in values for url in urls_in(value))
+    ordered: list[str] = []
     seen: set[str] = set()
-    deduped: list[str] = []
-    for url in urls:
+    for url in discovered:
         if url not in seen:
             seen.add(url)
-            deduped.append(url)
-    return deduped
+            ordered.append(url)
+    return ordered
 
 
-def title_from_body(body: str, seq: int) -> str:
-    for line in body.splitlines()[:30]:
-        line = line.strip()
-        if line.startswith("# "):
-            return line[2:].strip()
-    match = re.search(r'"title"\s*:\s*"([^"]+)"', body)
-    if match:
-        return match.group(1)
-    return f"article-{seq:03d}"
+def request_article(api_base: str, source_url: str, output_format: str, timeout: float) -> str:
+    parameters = urllib.parse.urlencode({"url": source_url, "format": output_format})
+    endpoint = api_base.rstrip("/") + "/api/public/v1/download?" + parameters
+    request = urllib.request.Request(endpoint, headers={"User-Agent": "wechat-public-article-client/1"})
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        encoding = response.headers.get_content_charset() or "utf-8"
+        return response.read().decode(encoding, errors="replace")
 
 
-def fetch_article(api_base: str, url: str, fmt: str, timeout: int) -> str:
-    query = urllib.parse.urlencode({"url": url, "format": fmt})
-    endpoint = api_base.rstrip("/") + "/api/public/v1/download?" + query
-    req = urllib.request.Request(endpoint, headers={"User-Agent": "wechat-mp-batch-exporter/1.0"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        charset = resp.headers.get_content_charset() or "utf-8"
-        return resp.read().decode(charset, errors="replace")
+def infer_title(payload: str, fallback: str) -> str:
+    heading = next((line[2:].strip() for line in payload.splitlines()[:40] if line.startswith("# ")), "")
+    if heading:
+        return heading
+    try:
+        data = json.loads(payload)
+    except json.JSONDecodeError:
+        return fallback
+    if isinstance(data, dict):
+        for key in ("title", "name"):
+            if data.get(key):
+                return str(data[key])
+    return fallback
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Download known mp.weixin.qq.com article URLs")
-    parser.add_argument("urls", nargs="*", help="Article URLs or text containing URLs")
-    parser.add_argument("--file", action="append", default=[], help="File containing URLs; may be repeated")
-    parser.add_argument("--output-dir", default="", help="Output directory; defaults to ~/Downloads/wechat-mp-batch/<run-id>")
-    parser.add_argument("--format", choices=["markdown", "json", "text", "html"], default="markdown")
-    parser.add_argument("--api-base", default="https://down.mptext.top")
-    parser.add_argument("--timeout", type=int, default=45)
-    parser.add_argument("--sleep", type=float, default=0.8, help="Delay between requests")
-    args = parser.parse_args()
+def safe_stem(title: str) -> str:
+    cleaned = re.sub(r"[^0-9A-Za-z\u3400-\u9fff._ -]+", "_", title)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip(" ._")
+    return cleaned[:80] or "untitled"
 
-    urls = read_urls(args.file, args.urls)
-    if not urls:
-        print(json.dumps({"ok": False, "error": "no mp.weixin.qq.com URLs found"}, ensure_ascii=False, indent=2))
-        return 2
 
-    run_id = make_run_id()
-    out_dir = Path(args.output_dir).expanduser() if args.output_dir else Path.home() / "Downloads" / "wechat-mp-batch" / run_id
-    article_dir = out_dir / "articles"
-    article_dir.mkdir(parents=True, exist_ok=True)
-
-    rows: list[dict[str, str]] = []
-    errors: list[dict[str, str]] = []
-    suffix = {"markdown": ".md", "json": ".json", "text": ".txt", "html": ".html"}[args.format]
-
-    for index, url in enumerate(urls, 1):
-        seq = f"{index:03d}"
-        try:
-            body = fetch_article(args.api_base, url, args.format, args.timeout)
-            title = title_from_body(body, index)
-            rel_path = Path("articles") / f"{seq}-{safe_name(title, f'article-{seq}')}{suffix}"
-            target = out_dir / rel_path
-            target.write_text(body, encoding="utf-8")
-            rows.append(
-                {
-                    "seq": seq,
-                    "title": title,
-                    "source_url": url,
-                    "format": args.format,
-                    "path": str(rel_path),
-                    "status": "success",
-                    "error": "",
-                    "downloaded_at": now_iso(),
-                }
-            )
-        except Exception as exc:
-            error = str(exc)
-            rows.append(
-                {
-                    "seq": seq,
-                    "title": "",
-                    "source_url": url,
-                    "format": args.format,
-                    "path": "",
-                    "status": "failed",
-                    "error": error,
-                    "downloaded_at": now_iso(),
-                }
-            )
-            errors.append({"seq": seq, "source_url": url, "error": error})
-        if args.sleep > 0 and index < len(urls):
-            time.sleep(args.sleep)
-
-    index_path = out_dir / "index.csv"
-    with index_path.open("w", encoding="utf-8", newline="") as fh:
-        fieldnames = ["seq", "title", "source_url", "format", "path", "status", "error", "downloaded_at"]
-        writer = csv.DictWriter(fh, fieldnames=fieldnames)
+def write_index(destination: Path, records: list[DownloadRecord]) -> Path:
+    path = destination / "index.csv"
+    fields = list(asdict(records[0]).keys()) if records else list(DownloadRecord.__dataclass_fields__)
+    with path.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fields)
         writer.writeheader()
-        writer.writerows(rows)
-    errors_path = out_dir / "errors.json"
-    errors_path.write_text(json.dumps(errors, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        writer.writerows(asdict(record) for record in records)
+    return path
 
-    payload = {
-        "ok": not errors,
-        "run_id": run_id,
-        "output_dir": str(out_dir),
-        "index_csv": str(index_path),
-        "errors_json": str(errors_path),
-        "success_count": sum(1 for row in rows if row["status"] == "success"),
-        "failure_count": len(errors),
-        "failed_urls": [item["source_url"] for item in errors],
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("values", nargs="*", help="known article URLs or text containing them")
+    parser.add_argument("--file", action="append", type=Path, default=[])
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--format", choices=tuple(EXTENSIONS), default="markdown")
+    parser.add_argument("--api-base", default="https://down.mptext.top")
+    parser.add_argument("--timeout", type=float, default=40)
+    parser.add_argument("--interval", type=float, default=1.0)
+    parser.add_argument("--max-items", type=int, default=100)
+    parser.add_argument("--apply", action="store_true", help="perform network downloads after previewing the URL list")
+    args = parser.parse_args(argv)
+    urls = collect_urls(args.values, args.file)
+    if not urls:
+        parser.error("no mp.weixin.qq.com article URL was found")
+    if len(urls) > args.max_items:
+        parser.error(f"found {len(urls)} URLs, exceeding --max-items={args.max_items}")
+    preview = {"count": len(urls), "urls": urls, "api_base": args.api_base, "format": args.format, "network_requested": args.apply}
+    if not args.apply:
+        print(json.dumps(preview, ensure_ascii=False, indent=2))
+        return 0
+    destination = args.output.expanduser() if args.output else Path.cwd() / "wechat-mp-runs" / run_label()
+    destination = destination.resolve(strict=False)
+    articles = destination / "articles"
+    articles.mkdir(parents=True, exist_ok=False)
+    records: list[DownloadRecord] = []
+    for position, url in enumerate(urls, start=1):
+        record = DownloadRecord(position=position, source_url=url, status="failed", retrieved_at=utc_now())
+        try:
+            body = request_article(args.api_base, url, args.format, args.timeout)
+            record.title = infer_title(body, f"article-{position:03d}")
+            relative = Path("articles") / f"{position:03d}-{safe_stem(record.title)}{EXTENSIONS[args.format]}"
+            (destination / relative).write_text(body, encoding="utf-8")
+            record.relative_path = str(relative)
+            record.status = "success"
+        except Exception as exc:
+            record.error = str(exc)
+        records.append(record)
+        if position != len(urls) and args.interval > 0:
+            time.sleep(args.interval)
+    index = write_index(destination, records)
+    failures = [asdict(record) for record in records if record.status != "success"]
+    failure_path = destination / "failures.json"
+    failure_path.write_text(json.dumps(failures, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    result = {
+        "output": str(destination),
+        "index": str(index),
+        "failures": str(failure_path),
+        "success": sum(record.status == "success" for record in records),
+        "failed": len(failures),
     }
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
-    return 0 if not errors else 1
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":

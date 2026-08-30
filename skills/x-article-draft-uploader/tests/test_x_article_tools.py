@@ -85,14 +85,14 @@ class UploadPlanningTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             article = Path(directory) / "sample.md"
             article.write_text("---\ntitle: x\n---\n\n![cover](cover.png)\n", encoding="utf-8")
-            self.assertTrue(upload_module.inspect_leading_cover(article)["starts_with_image"])
+            self.assertTrue(upload_module.leading_content(article)["is_image"])
 
     def test_text_checkpoints_work_for_short_articles(self):
-        start, end = upload_module.text_checkpoints("一篇很短但有效的文章")
+        start, end = upload_module.text_edges("一篇很短但有效的文章")
         self.assertEqual(start, "一篇很短但有效的文章")
         self.assertEqual(end, start)
 
-    def test_integrated_dry_run_never_needs_browser_or_cookies(self):
+    def test_integrated_preview_never_needs_browser_or_cookie_contents(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "cover.png").write_bytes(b"cover")
@@ -103,23 +103,31 @@ class UploadPlanningTests(unittest.TestCase):
                 encoding="utf-8",
             )
             completed = subprocess.run(
-                [sys.executable, str(ROOT / "scripts/upload_markdown_to_x_article.py"), str(article), "--dry-run"],
+                [
+                    sys.executable,
+                    str(ROOT / "scripts/upload_markdown_to_x_article.py"),
+                    str(article),
+                    "--cookies",
+                    str(root / "not-read-in-preview.json"),
+                ],
                 capture_output=True,
                 text=True,
                 check=True,
             )
             plan = json.loads(completed.stdout)
-            self.assertTrue(plan["cover_upload"])
-            self.assertEqual(plan["expected_body_images"], 1)
-            self.assertEqual(plan["anchors"][0]["anchor"], "正文锚点")
+            self.assertEqual(plan["cover"], str((root / "cover.png").resolve()))
+            self.assertFalse(plan["creates_draft"])
+            self.assertFalse(plan["publishes"])
+            self.assertEqual(len(plan["body_images"]), 1)
+            self.assertEqual(plan["body_images"][0]["anchor_candidates"][0], "正文锚点")
 
 
 class CookieBoundaryTests(unittest.TestCase):
     def test_domain_match_uses_dns_boundary(self):
-        self.assertTrue(cookie_module.host_matches_domain(".x.com", "x.com"))
-        self.assertTrue(cookie_module.host_matches_domain("api.twitter.com", "twitter.com"))
-        self.assertFalse(cookie_module.host_matches_domain("notx.com", "x.com"))
-        self.assertFalse(cookie_module.host_matches_domain("twitter.com.example.org", "twitter.com"))
+        self.assertTrue(cookie_module.exact_domain_match(".x.com", "x.com"))
+        self.assertTrue(cookie_module.exact_domain_match("api.twitter.com", "twitter.com"))
+        self.assertFalse(cookie_module.exact_domain_match("notx.com", "x.com"))
+        self.assertFalse(cookie_module.exact_domain_match("twitter.com.example.org", "twitter.com"))
 
 
 if __name__ == "__main__":

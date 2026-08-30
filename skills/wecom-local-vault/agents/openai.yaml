@@ -1,4 +1,4 @@
 interface:
-  display_name: "Mac 企业微信本地数据私密 Vault"
-  short_description: "不控制客户端，只读解密 Mac 企业微信本地聊天数据库并导出"
-  default_prompt: "Use $wecom-local-vault to read and export my local WeCom chat data without operating the client."
+  display_name: "WeCom 私密本地 Vault"
+  short_description: "只读发现、解密并查询获授权的 Mac 企业微信本地数据"
+  default_prompt: "Use $wecom-local-vault to inspect my authorized local WeCom data through a private read-only snapshot."

@@ -1,145 +1,102 @@
 ---
 name: mac-wechat-dual-open
-description: |
-  Build, check, fix, and refine a second WeChat app on macOS. Duplicate the
-  WeChat bundle, swap its bundle identifier, ad-hoc re-sign it, start the
-  extra instance, apply Chinese language preferences, and tint only the
-  duplicate's icon from WeChat green to blue. Use when the user asks whether
-  Mac WeChat dual-open methods are reliable, wants to double-open WeChat,
-  needs WeChat-2 language/icon/cache issues fixed, or wants the second
-  WeChat visually distinct without installing third-party injection tools.
+description: Inspect, create, repair, launch, or visually distinguish a second local WeChat app bundle on macOS by copying the official app, assigning the copy a separate bundle identifier, and ad-hoc signing only the copy. Use when the user explicitly asks for two WeChat instances or a duplicate-app diagnosis. Do not use injection tools or modify the original app.
 ---
 
-# Running Two WeChat Instances on macOS
+# macOS WeChat second instance
 
-## 案例入口
+This is an unofficial, reversible local workaround. It may stop working after a macOS or WeChat update, and notification behavior is not guaranteed.
 
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+Read [references/examples.md](references/examples.md) and [references/reliability-and-risks.md](references/reliability-and-risks.md) before changing an app bundle.
 
-Run two WeChat accounts side by side on macOS by giving the system a second,
-separately identified copy of the app.
+## Non-negotiable boundary
 
-## How It Works
+- The source app is read-only.
+- The target must be a different `.app` path under the user's control.
+- Never overwrite an existing target.
+- Never install an injector, patch executable code, disable Gatekeeper, or ask for administrator access merely to create the copy.
+- Creating, signing, changing preferences, recoloring, and launching are separate mutations. Use the helper's `plan` output before `--apply`.
 
-macOS tells applications apart through the bundle identifier, so the whole
-trick comes down to handing the system a clone whose identity differs from
-the original. Once the clone has its own bundle ID and a fresh local
-signature, it runs as an independent app next to the real WeChat:
+## Locate the helper
 
-1. Duplicate `/Applications/WeChat.app` into `~/Applications/WeChat-2.app`.
-2. Rewrite the duplicate's `CFBundleIdentifier` (for example `com.tencent.xin2`).
-3. Sign the duplicate again using `codesign --force --deep --sign -`.
-4. Start the duplicate by invoking its executable directly.
-
-Everything stays local: no third-party injection tools and no patched
-binaries are involved.
-
-## Prerequisites
-
-- macOS 12 or later, with WeChat present at `/Applications/WeChat.app`
-- Python 3.10 or newer (the system interpreter is fine)
-- Pillow (`pip3 install Pillow`) — used solely by `recolor-icon`
-- Xcode Command Line Tools (`xcode-select --install`) — provides `codesign`, `iconutil`, `sips`
-
-## Finding the Helper Script
-
-Relative to this skill's folder, the helper sits at
-`scripts/wechat_dual_open.py`. Since each agent drops skills into its own
-location, work out the absolute path on the fly instead of hardcoding it:
+Resolve this Skill's installed directory through the active skill registry, then use:
 
 ```bash
-# Auto-detect skill directory
-SKILL_DIR="$(dirname "$(find ~ -path '*/mac-wechat-dual-open/SKILL.md' -maxdepth 4 2>/dev/null | head -1)")"
-SCRIPT="$SKILL_DIR/scripts/wechat_dual_open.py"
+python3 <skill-directory>/scripts/wechat_dual_open.py --help
 ```
 
-## Quick Commands
+Do not search the user's entire home directory for the script when the registry already gives its location.
+
+## Preflight
+
+Run the read-only plan first:
 
 ```bash
-python3 "$SCRIPT" status          # Check current state
-python3 "$SCRIPT" create          # Create the second WeChat
-python3 "$SCRIPT" set-language --languages zh-Hans en   # Set Chinese
-python3 "$SCRIPT" recolor-icon --blue "#1296db"         # Blue icon
-python3 "$SCRIPT" launch          # Start the second instance
-python3 "$SCRIPT" repair          # Fix bundle id, signing, language, caches
+python3 <script> plan
 ```
 
-Built-in defaults (change them via `--source-app`, `--target-app`, `--bundle-id`):
+The default source is `/Applications/WeChat.app`; the default target is `~/Applications/WeChat-Second.app`. Review the resolved paths, source version/identifier, target existence, requested identifier, languages, and mutation list.
 
-- Source: `/Applications/WeChat.app`
-- Target: `~/Applications/WeChat-2.app`
-- Bundle ID: `com.tencent.xin2`
+If a previous duplicate exists, use `status` and decide whether repair is sufficient. Removing or replacing it requires separate approval and a recoverable backup plan.
 
-## Recommended Sequence
+## Create
 
-1. **Inspect the state first.** `status` shows what is already in place.
-2. **Build the copy.** When no second app exists yet, run `create`. It
-   duplicates the app, rewrites the bundle ID, applies the Chinese language
-   preference, strips `CFBundleIconName`, re-signs, and registers the result
-   with Launch Services.
-3. **Fix the language.** When the second instance comes up in English, run
-   `set-language` and then restart that instance.
-4. **Tint the icon.** `recolor-icon` turns the WeChat green into a blue of
-   the user's choice. Both the outer `AppIcon.icns` and the embedded
-   `WeChatAppEx.app/.../app.icns` are covered; `CFBundleIconName` is removed
-   so stale `Assets.car` entries cannot shadow the new icon; and when the
-   Carbon-era tools (`DeRez`, `Rez`, `SetFile`) happen to be installed, a
-   Finder custom icon is set as well.
-5. **Start it.** Run `launch`. A second WeChat window with its own login
-   prompt should appear; pin it to the Dock as a separate entry from the
-   original.
+After the user approves the plan:
 
-## How Reliable Is It
+```bash
+python3 <script> create --apply
+```
 
-Treat this as an unofficial technique, roughly 6.5–7 out of 10 on the
-reliability scale:
+The helper stages a complete copy, renames it into place only after copying succeeds, changes the duplicate's identifier, writes language preferences for that identifier, clears extended metadata on the copy, ad-hoc signs it, verifies the signature, and refreshes Launch Services.
 
-- Succeeds across many macOS and WeChat version pairings.
-- Nothing is injected and no tweaks are installed, so it is easy to audit
-  and to reverse.
-- **A WeChat update breaks the copy.** After the original app updates, run
-  `create` again (or `repair`).
-- Push notifications can be flaky because APNs stays bound to the original
-  app identity.
-- Login state and Keychain entries are kept apart per bundle ID.
-- Ad-hoc signing can stop working if WeChat ever enforces stricter
-  signature validation.
+Use `--source`, `--target`, `--identifier`, and `--languages` to override defaults. Show the resolved values before applying them.
 
-The deeper write-up lives in `references/reliability-and-risks.md`.
+## Launch and verify
 
-## Icon Pitfalls
+```bash
+python3 <script> launch --apply
+python3 <script> status
+```
 
-WeChat keeps its icon in several spots, and every one of them is handled by
-the script:
+Completion requires visible evidence of two independently running windows plus a status readback showing different bundle identifiers. A new login window is expected; never enter account credentials for the user.
 
-| Where it lives | What it controls |
-|----------------|------------------|
-| `Contents/Resources/AppIcon.icns` | Main app icon |
-| `Contents/MacOS/WeChatAppEx.app/Contents/Resources/app.icns` | Icon used by the embedded runtime |
-| `Contents/Resources/Assets.car` | Asset catalog (neutralized by deleting `CFBundleIconName`) |
-| `Icon\r` plus the Finder custom-icon attribute | How Finder shows the app under "Applications" |
+## Repair after an update
 
-When the user says the icon is still green:
+The copied bundle does not update with the source. Compare versions first. If the duplicate files are intact but identity/signature metadata is wrong:
 
-- Maybe they opened `/Applications/WeChat.app` (the original) instead of
-  `~/Applications/WeChat-2.app`. Confirm with `open -R ~/Applications/WeChat-2.app`.
-- The Dock remembers icons per process. Fully quit WeChat-2 and start it again.
-- Setting a Finder custom icon depends on `DeRez`/`Rez`/`SetFile`, which are
-  often absent on macOS 13 and later; the script moves on without them, and
-  swapping the icns file alone is normally enough.
+```bash
+python3 <script> repair --apply
+```
 
-## Safety
+If the source app has a newer version, propose creating a fresh target at a new path, verifying it, and only then archiving the old duplicate. Do not silently merge application bundles.
 
-- **Never touch `/Applications/WeChat.app`** — every change stays confined
-  to the copy.
-- Get the user's consent before removing an existing second app; reach for
-  `repair` instead of delete-and-recreate.
-- Signing has to happen **before** a Finder custom icon is attached; doing it
-  the other way around makes macOS refuse the bundle with "resource fork,
-  Finder information, or similar detritus not allowed".
+## Language preference
 
-## Technical Notes
+```bash
+python3 <script> --languages zh-Hans en set-language --apply
+```
 
-- Icon recoloring rotates hue in HSV/HLS space through Pillow.
-- The Finder custom icon step relies on the classic Carbon resource tools
-  (`DeRez`/`Rez`).
+Quit and relaunch the duplicate before judging the result. The preference is scoped to the duplicate identifier; verify the identifier in status output.
+
+## Distinct icon
+
+Icon recoloring is optional and requires Pillow plus the macOS `iconutil` command:
+
+```bash
+python3 <script> recolor-icon --color '#2878d0' --apply
+```
+
+The helper decodes the official icon locally, remaps green pixels to the selected hue, replaces icon resources only inside the duplicate, signs it again, and writes a preview PNG next to the target. Review the preview and the visible Finder/Dock result. Cached icons may require quitting the duplicate or revisiting the folder.
+
+The original icon is not redistributed by this repository; it is read from the user's installed application at runtime.
+
+## Verification checklist
+
+- Source path, identifier, version, and signature remain unchanged.
+- Target path exists and has the requested different identifier.
+- `codesign --verify --deep --strict <target>` succeeds.
+- Both processes can be distinguished by executable path.
+- The user can tell which window is the duplicate before entering credentials.
+- No injector, modified source executable, privileged installer, or third-party binary was introduced.
+
+Report notification uncertainty and the fact that a future application update may invalidate the copy.

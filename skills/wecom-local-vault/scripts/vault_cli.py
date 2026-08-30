@@ -1,544 +1,461 @@
 #!/usr/bin/env python3
-"""CLI for querying decrypted WeCom local snapshots in read-only fashion."""
+"""Build and query private, read-only WeCom snapshots."""
 
 from __future__ import annotations
 
-import argparse
-import json
-import os
-import re
 import sqlite3
-from datetime import datetime
+import re
+import os
+import json
+import argparse
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any, Iterable
 
-from wecom_common import (
-    choose_dataset,
-    dataset_id,
-    discover_datasets,
-    inspect_dataset,
-    iter_databases,
-    key_for_database,
-    latest_snapshot,
-    load_key_file,
-    utc_now,
-    vault_root,
+from local_state import (
+    REQUIRED_DATABASES,
+    account_label,
+    active_home,
+    database_files,
+    describe_account,
+    discover_accounts,
+    newest_snapshot,
+    read_secret_record,
+    select_account,
 )
-from wecom_crypto import PAGE_SIZE, database_format, decrypt_database
+from page_store import materialize_database
 
 
-MESSAGE_TABLES = ("message_table", "message_small_table", "kf_message_tableV1")
-CORE_NAMES = ("message.db", "session.db", "user.db")
-TYPE_NAMES = {
-    0: "文本/混合",
-    2: "文本",
-    4: "图片",
-    7: "语音",
-    15: "图片/文件",
-    38: "应用消息",
-    40: "通话/音视频",
-    503: "状态",
-    1011: "会议通知",
-}
+MESSAGE_SOURCES = ("message_table", "message_small_table", "kf_message_tableV1")
+CONTENT_LABELS = {}
+CONTENT_LABELS.update({0: "混合正文", 2: "纯文本", 4: "图片内容"})
+CONTENT_LABELS.update({7: "音频", 15: "文件或图片", 38: "应用卡片"})
+CONTENT_LABELS.update({40: "通话事件", 503: "状态变化", 1011: "会议事件"})
 
 
-def connect(path: Path) -> sqlite3.Connection:
-    connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+def emit(payload: Any) -> None:
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
+def _readonly(database: Path) -> sqlite3.Connection:
+    connection = sqlite3.connect(f"file:{database}?mode=ro", uri=True)
     connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA query_only = ON")
     return connection
 
 
-def table_exists(connection: sqlite3.Connection, table: str) -> bool:
-    return connection.execute(
-        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)
-    ).fetchone() is not None
+def _has_table(connection: sqlite3.Connection, name: str) -> bool:
+    return connection.execute("SELECT 1 FROM sqlite_master WHERE type=? AND name=?", ("table", name)).fetchone() is not None
 
 
-def table_columns(connection: sqlite3.Connection, table: str) -> set[str]:
-    return {str(row[1]) for row in connection.execute(f'PRAGMA table_info("{table}")')}
+def _columns(connection: sqlite3.Connection, name: str) -> set[str]:
+    names: set[str] = set()
+    cursor = connection.execute(f'PRAGMA table_info("{name}")')
+    for entry in cursor:
+        names.add(str(entry[1]))
+    return names
 
 
-def output(value, fmt: str = "json") -> None:
-    if fmt == "json":
-        print(json.dumps(value, ensure_ascii=False, indent=2))
-    else:
-        print(value)
+def _fields(connection: sqlite3.Connection, table: str, candidates: Iterable[str]) -> list[str]:
+    available = _columns(connection, table)
+    return [field for field in candidates if field in available]
 
 
-def snapshot_path(value: str | None) -> Path:
-    path = Path(value).expanduser() if value else latest_snapshot()
-    if not path.is_dir():
-        raise SystemExit(f"快照目录不存在: {path}")
-    return path
+def _clean(text: str) -> str:
+    filtered = "".join(char if char in "\n\t" or char.isprintable() else " " for char in text)
+    return re.sub(r"\n\s*\n\s*\n+", "\n\n", re.sub(r"[ \t]+", " ", filtered)).strip()
 
 
-def parse_time(value: str | None) -> int | None:
+def _varint(buffer: bytes, cursor: int) -> tuple[int, int]:
+    total = 0
+    for shift in range(0, 64, 7):
+        if cursor >= len(buffer):
+            break
+        byte = buffer[cursor]
+        cursor += 1
+        total |= (byte & 0x7F) << shift
+        if not byte & 0x80:
+            return total, cursor
+    raise ValueError("truncated protobuf varint")
+
+
+def _wire_strings(buffer: bytes, level: int = 0) -> list[str]:
+    if not buffer or level > 4:
+        return []
+    cursor, found = 0, []
+    try:
+        while cursor < len(buffer):
+            tag, cursor = _varint(buffer, cursor)
+            wire = tag & 7
+            if tag == 0:
+                return []
+            if wire == 0:
+                _ignored, cursor = _varint(buffer, cursor)
+            elif wire in {1, 5}:
+                cursor += 8 if wire == 1 else 4
+            elif wire == 2:
+                width, cursor = _varint(buffer, cursor)
+                piece, cursor = buffer[cursor : cursor + width], cursor + width
+                if cursor > len(buffer):
+                    return []
+                try:
+                    decoded = "" if b"\x00" in piece else _clean(piece.decode("utf-8"))
+                except UnicodeDecodeError:
+                    decoded = ""
+                if len(decoded) > 1 and not re.fullmatch(r"[0-9a-fA-F]{32,}", decoded):
+                    found.append(decoded)
+                else:
+                    found.extend(_wire_strings(piece, level + 1))
+            else:
+                return []
+    except (IndexError, ValueError):
+        return []
+    return list(dict.fromkeys(value for value in found if value))
+
+
+def readable_content(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return _clean(value)
+    payload = bytes(value)
+    if not payload:
+        return ""
+    try:
+        text = payload.decode("utf-8")
+        controls = sum(byte < 32 and byte not in {9, 10, 13} for byte in payload)
+        if controls / len(payload) <= 0.08:
+            return _clean(text)
+    except UnicodeDecodeError:
+        pass
+    fragments = _wire_strings(payload)
+    return "\n".join(fragments[:12]) if fragments else f"[无法显示的二进制内容：{len(payload)} 字节]"
+
+
+def _snapshot(value: str | None) -> Path:
+    selected = Path(value).expanduser() if value else newest_snapshot(active_home())
+    if not selected.is_dir():
+        raise SystemExit(f"快照目录不存在: {selected}")
+    return selected
+
+
+def _time(value: str | None) -> int | None:
     if not value:
         return None
-    for form in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
-        try:
-            return int(datetime.strptime(value, form).timestamp())
-        except ValueError:
-            pass
-    raise SystemExit(f"无法解析时间: {value}")
+    normalized = value.strip().replace(" ", "T", 1)
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise SystemExit(f"时间必须采用 ISO 日期或日期时间格式: {value}") from exc
+    return int(parsed.timestamp())
 
 
-def format_time(value) -> str:
+def _formatted_time(value: Any) -> str:
     try:
         stamp = int(value or 0)
     except (TypeError, ValueError):
         return ""
-    if stamp > 20_000_000_000:
-        stamp //= 1000
-    return datetime.fromtimestamp(stamp).strftime("%Y-%m-%d %H:%M:%S") if stamp > 0 else ""
+    stamp = stamp // 1000 if stamp > 20_000_000_000 else stamp
+    if not stamp:
+        return ""
+    moment = datetime.fromtimestamp(stamp)
+    return moment.isoformat(sep=" ", timespec="seconds")
 
 
-def _read_varint(data: bytes, position: int) -> tuple[int, int]:
-    value = 0
-    shift = 0
-    while position < len(data) and shift < 64:
-        byte = data[position]
-        position += 1
-        value |= (byte & 0x7F) << shift
-        if byte < 0x80:
-            return value, position
-        shift += 7
-    raise ValueError("invalid protobuf varint")
+def _people(snapshot: Path) -> dict[int, dict]:
+    database, result = snapshot / "user.db", {}
+    if not database.is_file():
+        return result
+    with _readonly(database) as connection:
+        if _has_table(connection, "user_table"):
+            fields = _fields(connection, "user_table", ("id", "name", "real_name", "account", "external_corp_name", "external_job"))
+            if "id" in fields:
+                for row in connection.execute(f'SELECT {",".join(fields)} FROM "user_table"'):
+                    item = dict(row)
+                    try:
+                        identifier = int(item["id"])
+                    except (TypeError, ValueError):
+                        continue
+                    label = str(identifier)
+                    for candidate in (item.get("real_name"), item.get("name"), item.get("account")):
+                        if candidate:
+                            label = candidate
+                            break
+                    company = item.get("external_corp_name") or ""
+                    item["display_name"] = f"{label} ({company})" if company and company not in str(label) else label
+                    result[identifier] = item
+        relation = "external_user_relation_v3"
+        if _has_table(connection, relation):
+            fields = _fields(connection, relation, ("user_id", "remarks", "real_remarks", "corp_remark"))
+            if "user_id" in fields:
+                for row in connection.execute(f'SELECT {",".join(fields)} FROM "{relation}"'):
+                    item = dict(row)
+                    try:
+                        identifier = int(item["user_id"])
+                    except (TypeError, ValueError):
+                        continue
+                    alias = next((item[field] for field in ("real_remarks", "remarks", "corp_remark") if item.get(field)), None)
+                    if alias:
+                        result.setdefault(identifier, {"id": identifier})["display_name"] = alias
+    return result
 
 
-def _clean_text(value: str) -> str:
-    value = "".join(character if character in "\n\t" or character.isprintable() else " " for character in value)
-    value = re.sub(r"[ \t]+", " ", value)
-    return re.sub(r"\n{3,}", "\n\n", value).strip()
-
-
-def _protobuf_text(data: bytes, depth: int = 0) -> list[str]:
-    if depth > 4 or not data:
-        return []
-    position = 0
-    values: list[str] = []
-    try:
-        while position < len(data):
-            tag, position = _read_varint(data, position)
-            wire_type = tag & 7
-            if tag == 0:
-                return []
-            if wire_type == 0:
-                _, position = _read_varint(data, position)
-            elif wire_type == 1:
-                position += 8
-            elif wire_type == 5:
-                position += 4
-            elif wire_type == 2:
-                length, position = _read_varint(data, position)
-                if position + length > len(data):
-                    return []
-                segment = data[position : position + length]
-                position += length
-                try:
-                    text = _clean_text(segment.decode("utf-8")) if b"\x00" not in segment else ""
-                except UnicodeDecodeError:
-                    text = ""
-                if len(text) >= 2 and not re.fullmatch(r"[0-9a-fA-F]{32,}", text):
-                    values.append(text)
+def _conversations(snapshot: Path) -> dict[str, dict]:
+    database, result = snapshot / "session.db", {}
+    if not database.is_file():
+        return result
+    with _readonly(database) as connection:
+        table = "conversation_table"
+        if not _has_table(connection, table):
+            return result
+        fields = _fields(connection, table, ("id", "name", "roomname_remark", "last_message_time", "last_message_id"))
+        if "id" not in fields:
+            return result
+        for row in connection.execute(f'SELECT {",".join(fields)} FROM "{table}"'):
+            item, identifier = dict(row), str(row["id"] or "")
+            if identifier:
+                prefix = identifier[:1]
+                if prefix == "R":
+                    conversation_kind = "群聊"
+                elif prefix == "S":
+                    conversation_kind = "单聊"
+                elif prefix == "M":
+                    conversation_kind = "微信联系人"
+                elif prefix == "O":
+                    conversation_kind = "应用"
+                elif prefix == "Y":
+                    conversation_kind = "系统"
                 else:
-                    values.extend(_protobuf_text(segment, depth + 1))
-            else:
-                return []
-            if position > len(data):
-                return []
-    except (ValueError, IndexError):
-        return []
-    deduped = []
-    seen = set()
-    for value in values:
-        if value and value not in seen:
-            seen.add(value)
-            deduped.append(value)
-    return deduped
+                    conversation_kind = "其他"
+                record = {"conversation_id": identifier, "kind": conversation_kind}
+                record["display_name"] = item.get("roomname_remark") or item.get("name") or identifier
+                record["last_message_id"] = int(item.get("last_message_id") or 0)
+                record["last_message_time"] = int(item.get("last_message_time") or 0)
+                result[identifier] = record
+    return result
 
 
-def decode_content(raw) -> str:
-    if raw is None:
-        return ""
-    if isinstance(raw, str):
-        return _clean_text(raw)
-    data = bytes(raw)
-    if not data:
-        return ""
-    try:
-        plain = data.decode("utf-8")
-        controls = sum(1 for byte in data if byte < 32 and byte not in (9, 10, 13))
-        if controls / len(data) <= 0.08:
-            return _clean_text(plain)
-    except UnicodeDecodeError:
-        pass
-    values = _protobuf_text(data)
-    if values:
-        return "\n".join(values[:12])
-    return f"[二进制内容 {len(data)} 字节]"
+def _aliases(snapshot: Path) -> dict[str, dict[int, str]]:
+    database, result = snapshot / "session.db", {}
+    if not database.is_file():
+        return result
+    with _readonly(database) as connection:
+        table = "conversation_user_table"
+        needed = {"conversation_id", "user_id", "nick_name"}
+        if not _has_table(connection, table) or not needed.issubset(_columns(connection, table)):
+            return result
+        cursor = connection.execute('SELECT "nick_name","user_id","conversation_id" FROM "conversation_user_table"')
+        for row in cursor:
+            if row["nick_name"]:
+                result.setdefault(str(row["conversation_id"]), {})[int(row["user_id"])] = str(row["nick_name"])
+    return result
 
 
-def load_users(snapshot: Path) -> dict[int, dict]:
-    path = snapshot / "user.db"
-    users: dict[int, dict] = {}
-    if not path.exists():
-        return users
-    with connect(path) as connection:
-        if table_exists(connection, "user_table"):
-            columns = table_columns(connection, "user_table")
-            wanted = [name for name in ("id", "name", "real_name", "account", "external_corp_name", "external_job") if name in columns]
-            if "id" in wanted:
-                for row in connection.execute(f'SELECT {",".join(wanted)} FROM user_table'):
-                    item = dict(row)
-                    try:
-                        user_id = int(item["id"])
-                    except (TypeError, ValueError):
-                        continue
-                    display = item.get("real_name") or item.get("name") or item.get("account") or str(user_id)
-                    corp = item.get("external_corp_name") or ""
-                    if corp and corp not in display:
-                        display = f"{display} ({corp})"
-                    item["display_name"] = display
-                    users[user_id] = item
-        if table_exists(connection, "external_user_relation_v3"):
-            columns = table_columns(connection, "external_user_relation_v3")
-            wanted = [name for name in ("user_id", "remarks", "real_remarks", "corp_remark") if name in columns]
-            if "user_id" in wanted:
-                for row in connection.execute(f'SELECT {",".join(wanted)} FROM external_user_relation_v3'):
-                    item = dict(row)
-                    try:
-                        user_id = int(item["user_id"])
-                    except (TypeError, ValueError):
-                        continue
-                    display = item.get("real_remarks") or item.get("remarks") or item.get("corp_remark")
-                    if display:
-                        users.setdefault(user_id, {"id": user_id})["display_name"] = display
-    return users
-
-
-def conversation_kind(conversation_id: str) -> str:
-    return {"R": "群聊", "S": "单聊", "M": "微信联系人", "O": "应用/公众号", "Y": "系统会话"}.get(conversation_id[:1], "其他")
-
-
-def load_sessions(snapshot: Path) -> dict[str, dict]:
-    path = snapshot / "session.db"
-    sessions: dict[str, dict] = {}
-    if not path.exists():
-        return sessions
-    with connect(path) as connection:
-        if not table_exists(connection, "conversation_table"):
-            return sessions
-        columns = table_columns(connection, "conversation_table")
-        wanted = [name for name in ("id", "name", "roomname_remark", "last_message_time", "last_message_id") if name in columns]
-        if "id" not in wanted:
-            return sessions
-        for row in connection.execute(f'SELECT {",".join(wanted)} FROM conversation_table'):
-            item = dict(row)
-            conversation_id = str(item.get("id") or "")
-            if not conversation_id:
-                continue
-            sessions[conversation_id] = {
-                "conversation_id": conversation_id,
-                "display_name": item.get("roomname_remark") or item.get("name") or conversation_id,
-                "kind": conversation_kind(conversation_id),
-                "last_message_time": int(item.get("last_message_time") or 0),
-                "last_message_id": int(item.get("last_message_id") or 0),
-            }
-    return sessions
-
-
-def load_member_names(snapshot: Path) -> dict[str, dict[int, str]]:
-    path = snapshot / "session.db"
-    mapping: dict[str, dict[int, str]] = {}
-    if not path.exists():
-        return mapping
-    with connect(path) as connection:
-        if table_exists(connection, "conversation_user_table"):
-            columns = table_columns(connection, "conversation_user_table")
-            if {"conversation_id", "user_id", "nick_name"} <= columns:
-                for row in connection.execute("SELECT conversation_id,user_id,nick_name FROM conversation_user_table"):
-                    if row["nick_name"]:
-                        mapping.setdefault(str(row["conversation_id"]), {})[int(row["user_id"])] = str(row["nick_name"])
-    return mapping
-
-
-def resolve_session(query: str, sessions: dict[str, dict]) -> dict:
-    if query in sessions:
-        return sessions[query]
-    lowered = query.lower()
-    exact = [item for item in sessions.values() if item["display_name"].lower() == lowered]
-    fuzzy = [item for item in sessions.values() if lowered in item["display_name"].lower() or lowered in item["conversation_id"].lower()]
-    matches = exact or fuzzy
-    if not matches:
-        raise SystemExit(f"找不到会话: {query}")
-    if len(matches) > 1:
-        names = ", ".join(item["display_name"] for item in matches[:8])
-        raise SystemExit(f"会话名称不唯一，请使用 conversation_id: {names}")
+def _select_chat(value: str, sessions: dict[str, dict]) -> dict:
+    if value in sessions:
+        return sessions[value]
+    needle = value.casefold()
+    exact = [item for item in sessions.values() if str(item["display_name"]).casefold() == needle]
+    fuzzy = [item for item in sessions.values() if needle in str(item["display_name"]).casefold() or needle in item["conversation_id"].casefold()]
+    matches = exact if exact else fuzzy
+    if len(matches) == 0:
+        raise SystemExit(f"找不到会话: {value}")
+    if len(matches) != 1:
+        raise SystemExit("会话名称不唯一，请使用 conversation_id")
     return matches[0]
 
 
-def iter_messages(snapshot: Path, conversation_id: str | None, start: int | None, end: int | None, keyword: str | None, limit: int) -> list[dict]:
-    path = snapshot / "message.db"
-    if not path.exists():
+def _messages(snapshot, chat_id, start, end, keyword, limit):
+    database = snapshot / "message.db"
+    if not database.is_file():
         raise SystemExit(f"快照缺少 message.db: {snapshot}")
-    sessions = load_sessions(snapshot)
-    users = load_users(snapshot)
-    members = load_member_names(snapshot)
-    messages = []
-    with connect(path) as connection:
-        for table in MESSAGE_TABLES:
-            if not table_exists(connection, table):
+    users, sessions, aliases, result = _people(snapshot), _conversations(snapshot), _aliases(snapshot), []
+    with _readonly(database) as connection:
+        for table in MESSAGE_SOURCES:
+            if not _has_table(connection, table):
                 continue
-            columns = table_columns(connection, table)
-            required = {"conversation_id", "sender_id", "content_type", "send_time"}
-            if not required <= columns:
+            available = _columns(connection, table)
+            if not {"conversation_id", "sender_id", "content_type", "send_time"}.issubset(available):
                 continue
-            fields = [name for name in ("message_id", "server_id", "sequence", "sender_id", "conversation_id", "content_type", "send_time", "flag", "content", "extra_content", "local_extra_content") if name in columns]
-            clauses = []
-            params = []
-            if conversation_id:
-                clauses.append("conversation_id=?")
-                params.append(conversation_id)
-            max_time_row = connection.execute(f'SELECT MAX(send_time) FROM "{table}"').fetchone()
-            time_scale = 1000 if max_time_row and int(max_time_row[0] or 0) > 20_000_000_000 else 1
+            desired = ("conversation_id", "send_time", "sender_id", "content_type", "content", "message_id", "sequence", "server_id", "local_extra_content", "extra_content", "flag")
+            fields = [column for column in desired if column in available]
+            conditions, parameters = [], []
+            if chat_id:
+                conditions.append('"conversation_id"=?')
+                parameters.append(chat_id)
+            maximum = connection.execute(f'SELECT MAX("send_time") FROM "{table}"').fetchone()
+            scale = 1
+            if maximum and int(maximum[0] or 0) > 20_000_000_000:
+                scale = 1000
             if start is not None:
-                clauses.append("send_time>=?")
-                params.append(start * time_scale)
+                conditions.append('"send_time">=?')
+                parameters.append(start * scale)
             if end is not None:
-                clauses.append("send_time<=?")
-                params.append(end * time_scale)
-            where = " WHERE " + " AND ".join(clauses) if clauses else ""
-            scan_limit = min(max(limit * 50, 1000), 50000) if keyword else limit
-            sql = f'SELECT {",".join(fields)} FROM "{table}"{where} ORDER BY send_time DESC LIMIT ?'
-            params.append(scan_limit)
-            for row in connection.execute(sql, params):
+                conditions.append('"send_time"<=?')
+                parameters.append(end * scale)
+            where = " WHERE " + " AND ".join(conditions) if conditions else ""
+            parameters.append(min(max(limit * 50, 1000), 50000) if keyword else limit)
+            projection = ",".join(fields)
+            query = f'SELECT {projection} FROM "{table}"{where}'
+            query += ' ORDER BY "send_time" DESC LIMIT ?'
+            for row in connection.execute(query, parameters):
                 item = dict(row)
-                cid = str(item.get("conversation_id") or "")
-                sender_id = int(item.get("sender_id") or 0)
-                content = decode_content(item.get("content")) or decode_content(item.get("extra_content")) or decode_content(item.get("local_extra_content"))
-                content_type = int(item.get("content_type") or 0)
-                display_content = content or f"[{TYPE_NAMES.get(content_type, f'未知类型 {content_type}')}]"
-                if keyword and keyword.lower() not in display_content.lower():
+                body = next((readable_content(item.get(name)) for name in ("content", "extra_content", "local_extra_content") if readable_content(item.get(name))), "")
+                kind = int(item.get("content_type") or 0)
+                body = body or f"[{CONTENT_LABELS.get(kind, f'未知类型 {kind}')}]"
+                if keyword and keyword.casefold() not in body.casefold():
                     continue
-                messages.append({
-                    "source_table": table,
-                    "message_id": int(item.get("message_id") or 0),
-                    "server_id": int(item.get("server_id") or 0),
-                    "sequence": int(item.get("sequence") or 0),
-                    "conversation_id": cid,
-                    "conversation": sessions.get(cid, {}).get("display_name") or cid,
-                    "sender_id": sender_id,
-                    "sender": members.get(cid, {}).get(sender_id) or users.get(sender_id, {}).get("display_name") or (str(sender_id) if sender_id else "系统"),
-                    "content_type": content_type,
-                    "type_name": TYPE_NAMES.get(content_type, f"未知({content_type})"),
-                    "send_time": int(item.get("send_time") or 0),
-                    "time": format_time(item.get("send_time")),
-                    "content": display_content,
-                })
-    messages.sort(key=lambda item: (item["send_time"], item["sequence"], item["message_id"]))
-    return messages[-limit:]
+                cid, sender = str(item.get("conversation_id") or ""), int(item.get("sender_id") or 0)
+                record = {"conversation_id": cid, "sender_id": sender, "content": body}
+                record["source_table"] = table
+                record["sequence"] = int(item.get("sequence") or 0)
+                record["server_id"] = int(item.get("server_id") or 0)
+                record["message_id"] = int(item.get("message_id") or 0)
+                record["conversation"] = sessions.get(cid, {}).get("display_name") or cid
+                record["sender"] = aliases.get(cid, {}).get(sender) or users.get(sender, {}).get("display_name") or (str(sender) if sender else "系统")
+                record["content_type"] = kind
+                record["type_name"] = CONTENT_LABELS.get(kind, f"未知类型 {kind}")
+                record["send_time"] = int(item.get("send_time") or 0)
+                record["time"] = _formatted_time(item.get("send_time"))
+                result.append(record)
+    result.sort(key=lambda item: (item["send_time"], item["sequence"], item["message_id"]))
+    return result[-limit:]
 
 
-def command_discover(args) -> None:
-    datasets = discover_datasets(args.data_dir)
-    result = [{"dataset_id": dataset_id(path), "core_databases": list(CORE_NAMES)} for path in datasets]
+def _message_request(args: argparse.Namespace) -> tuple[dict | None, list[dict]]:
+    snapshot, chat = _snapshot(args.snapshot), getattr(args, "chat", None)
+    session = _select_chat(chat, _conversations(snapshot)) if chat else None
+    rows = _messages(snapshot, session["conversation_id"] if session else None, _time(args.start), _time(args.end), getattr(args, "keyword", None), args.limit)
+    return session, rows
+
+
+def command_discover(args: argparse.Namespace) -> None:
+    accounts = discover_accounts(args.data_dir)
+    rows = [{"dataset_id": account_label(path), "core_databases": sorted(REQUIRED_DATABASES)} for path in accounts]
     if args.show_paths:
-        for item, path in zip(result, datasets):
-            item["path"] = str(path)
-    output({"count": len(result), "datasets": result})
+        for row, path in zip(rows, accounts):
+            row["path"] = str(path)
+    emit({"count": len(rows), "datasets": rows})
 
 
-def command_status(args) -> None:
-    dataset = choose_dataset(args.data_dir)
-    summary = inspect_dataset(dataset)
+def command_status(args: argparse.Namespace) -> None:
+    account = select_account(args.data_dir)
+    result = describe_account(account)
     if args.show_paths:
-        summary["path"] = str(dataset)
-    output(summary)
+        result["path"] = str(account)
+    emit(result)
 
 
-def decrypt_dataset(explicit: str | None, keys: dict) -> Path:
-    if explicit:
-        return choose_dataset(explicit)
-    expected = keys.get("dataset_id")
-    if expected:
-        matches = [path for path in discover_datasets() if dataset_id(path) == expected]
-        if len(matches) == 1:
-            return matches[0]
-    return choose_dataset(None)
-
-
-def command_decrypt(args) -> None:
-    keys = load_key_file(Path(args.key_file).expanduser() if args.key_file else None)
-    dataset = decrypt_dataset(args.data_dir, keys)
-    stamp = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S-%f")
-    destination = vault_root() / "snapshots" / f"{stamp}-{dataset_id(dataset)}"
-    destination.mkdir(parents=True, exist_ok=False)
-    os.chmod(destination, 0o700)
-    results = []
-    for relative, source in iter_databases(dataset):
-        with source.open("rb") as handle:
-            kind = database_format(handle.read(PAGE_SIZE))
-        key = key_for_database(keys, relative)
-        if kind == "wecom-wxsqlite3-aes128" and key is None:
-            results.append({"database": str(relative), "status": "skipped", "reason": "missing key"})
-            continue
+def command_decrypt(args: argparse.Namespace) -> None:
+    home = active_home()
+    record = read_secret_record(home, Path(args.key_file).expanduser() if args.key_file else None)
+    if args.data_dir:
+        account = select_account(args.data_dir)
+    else:
+        matches = [path for path in discover_accounts() if account_label(path) == record.account_label]
+        account = matches[0] if len(matches) == 1 else select_account(None)
+    if record.account_label and account_label(account) != record.account_label:
+        raise SystemExit("密钥记录与所选数据集不匹配")
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+    target = home.snapshots / f"{stamp}-{account_label(account)}"
+    target.mkdir(parents=True, exist_ok=False)
+    target.chmod(0o700)
+    reports = []
+    for relative, source in database_files(account):
         try:
-            details = decrypt_database(source, destination / relative, key or bytes(16), apply_wal=not args.no_wal)
-            results.append({"database": str(relative), "status": "ok", **details})
+            reports.append({"database": str(relative), "status": "ok", **materialize_database(source, target / relative, record.secret, merge_wal=not args.no_wal)})
         except Exception as exc:
-            results.append({"database": str(relative), "status": "failed", "reason": str(exc)})
-    manifest = {
-        "version": 1,
-        "created_at": utc_now(),
-        "dataset_id": dataset_id(dataset),
-        "contains_plaintext_wecom_data": True,
-        "wal_merge_enabled": not args.no_wal,
-        "results": results,
-    }
-    manifest_path = destination / "manifest.json"
-    with manifest_path.open("x", encoding="utf-8") as handle:
-        json.dump(manifest, handle, ensure_ascii=False, indent=2)
-        handle.write("\n")
-    os.chmod(manifest_path, 0o600)
-    failed = [item for item in results if item["status"] != "ok"]
-    output({"snapshot": str(destination), "decrypted": len(results) - len(failed), "not_decrypted": len(failed), "manifest": str(manifest_path)})
+            reports.append({"database": str(relative), "status": "failed", "reason": str(exc)})
+    manifest = {"schema": 2, "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "dataset_id": account_label(account), "contains_plaintext_wecom_data": True, "wal_merge_enabled": not args.no_wal, "results": reports}
+    manifest_path = target / "manifest.json"
+    descriptor = os.open(manifest_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        serialized = json.dumps(manifest, ensure_ascii=False, indent=2)
+        handle.write(serialized + chr(10))
+    failures = sum(row["status"] != "ok" for row in reports)
+    emit({"snapshot": str(target), "decrypted": len(reports) - failures, "not_decrypted": failures, "manifest": str(manifest_path)})
 
 
-def command_sessions(args) -> None:
-    snapshot = snapshot_path(args.snapshot)
-    sessions = list(load_sessions(snapshot).values())
-    sessions.sort(key=lambda item: item["last_message_time"], reverse=True)
+def command_sessions(args: argparse.Namespace) -> None:
+    rows = sorted(_conversations(_snapshot(args.snapshot)).values(), key=lambda item: item["last_message_time"], reverse=True)
     if args.query:
-        query = args.query.lower()
-        sessions = [item for item in sessions if query in item["display_name"].lower() or query in item["conversation_id"].lower()]
-    output({"count": min(len(sessions), args.limit), "sessions": sessions[: args.limit]})
+        needle = args.query.casefold()
+        rows = [row for row in rows if needle in str(row["display_name"]).casefold() or needle in row["conversation_id"].casefold()]
+    emit({"count": len(rows[: args.limit]), "sessions": rows[: args.limit]})
 
 
-def command_contacts(args) -> None:
-    users = list(load_users(snapshot_path(args.snapshot)).values())
+def command_contacts(args: argparse.Namespace) -> None:
+    rows = list(_people(_snapshot(args.snapshot)).values())
     if args.query:
-        query = args.query.lower()
-        users = [item for item in users if query in str(item.get("display_name", "")).lower() or query in str(item.get("account", "")).lower()]
-    users.sort(key=lambda item: str(item.get("display_name", "")))
-    output({"count": min(len(users), args.limit), "contacts": users[: args.limit]})
+        needle = args.query.casefold()
+        rows = [row for row in rows if needle in str(row.get("display_name", "")).casefold() or needle in str(row.get("account", "")).casefold()]
+    rows.sort(key=lambda row: str(row.get("display_name", "")).casefold())
+    emit({"count": len(rows[: args.limit]), "contacts": rows[: args.limit]})
 
 
-def messages_for_args(args) -> tuple[dict | None, list[dict]]:
-    snapshot = snapshot_path(args.snapshot)
-    session = resolve_session(args.chat, load_sessions(snapshot)) if getattr(args, "chat", None) else None
-    messages = iter_messages(
-        snapshot,
-        session["conversation_id"] if session else None,
-        parse_time(args.start),
-        parse_time(args.end),
-        getattr(args, "keyword", None),
-        args.limit,
-    )
-    return session, messages
+def command_history(args: argparse.Namespace) -> None:
+    session, rows = _message_request(args)
+    emit({"session": session, "count": len(rows), "messages": rows})
 
 
-def command_history(args) -> None:
-    session, messages = messages_for_args(args)
-    output({"session": session, "count": len(messages), "messages": messages})
+def command_search(args: argparse.Namespace) -> None:
+    _session, rows = _message_request(args)
+    emit({"keyword": args.keyword, "count": len(rows), "messages": rows})
 
 
-def command_search(args) -> None:
-    _, messages = messages_for_args(args)
-    output({"keyword": args.keyword, "count": len(messages), "messages": messages})
-
-
-def safe_name(value: str) -> str:
-    value = re.sub(r'[\\/:*?"<>|\r\n\t]+', "_", value).strip(" .")
-    return value[:100] or "wecom-export"
-
-
-def command_export(args) -> None:
-    session, messages = messages_for_args(args)
-    if session is None:
-        raise SystemExit("export 需要指定会话")
+def command_export(args: argparse.Namespace) -> None:
+    session, rows = _message_request(args)
     suffix = "json" if args.format == "json" else "md"
-    if args.output:
-        destination = Path(args.output).expanduser()
-    else:
-        stamp = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S")
-        destination = vault_root() / "exports" / f"{stamp}-{safe_name(session['display_name'])}.{suffix}"
-    if destination.exists():
-        raise SystemExit(f"拒绝覆盖已有文件: {destination}")
+    if not session:
+        raise SystemExit("export 缺少必需的会话参数")
+    safe = re.sub(r'[\\/:*?"<>|\r\n\t]+', "_", str(session["display_name"])).strip(" .")[:100] or "wecom-export"
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    destination = Path(args.output).expanduser() if args.output else active_home().exports / f"{stamp}-{safe}.{suffix}"
     destination.parent.mkdir(parents=True, exist_ok=True)
-    if args.format == "json":
-        with destination.open("x", encoding="utf-8") as handle:
-            json.dump({"session": session, "count": len(messages), "messages": messages}, handle, ensure_ascii=False, indent=2)
+    try:
+        descriptor = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError as exc:
+        raise SystemExit(f"目标已存在，未执行写入: {destination}") from exc
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        if args.format == "json":
+            json.dump({"session": session, "count": len(rows), "messages": rows}, handle, ensure_ascii=False, indent=2)
             handle.write("\n")
-    else:
-        with destination.open("x", encoding="utf-8") as handle:
-            handle.write(f"# {session['display_name']}\n\n")
-            handle.write(f"- conversation_id: `{session['conversation_id']}`\n- messages: {len(messages)}\n\n")
-            for message in messages:
-                content = message["content"].replace("\n", "\n  ")
-                handle.write(f"- {message['time']} · {message['sender']}\n  {content}\n")
-    os.chmod(destination, 0o600)
-    output({"output": str(destination), "messages": len(messages), "contains_plaintext_wecom_data": True})
+        else:
+            handle.write(f"# {session['display_name']}\n\n消息数：{len(rows)}\n\n")
+            for row in rows:
+                body = str(row["content"]).replace("\n", "\n  ")
+                handle.write(f"- {row['time']} · {row['sender']}\n  {body}\n")
+    emit({"output": str(destination), "messages": len(rows), "contains_plaintext_wecom_data": True})
 
 
-def add_message_filters(parser, *, chat_required: bool) -> None:
-    parser.add_argument("chat" if chat_required else "--chat", help="会话名称或 conversation_id")
+def _message_options(parser: argparse.ArgumentParser, positional: bool) -> None:
+    parser.add_argument("chat" if positional else "--chat", help="会话名称或 conversation_id")
+    parser.add_argument("--limit", type=int, default=200)
+    parser.add_argument("--end")
     parser.add_argument("--snapshot")
     parser.add_argument("--start")
-    parser.add_argument("--end")
-    parser.add_argument("--limit", type=int, default=200)
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Query a private decrypted WeCom snapshot")
-    sub = parser.add_subparsers(dest="command", required=True)
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Query a private WeCom snapshot")
+    commands = parser.add_subparsers(dest="command", required=True)
+    discover = commands.add_parser("discover"); discover.add_argument("--data-dir"); discover.add_argument("--show-paths", action="store_true"); discover.set_defaults(handler=command_discover)
+    status = commands.add_parser("status"); status.add_argument("--data-dir"); status.add_argument("--show-paths", action="store_true"); status.set_defaults(handler=command_status)
+    decrypt = commands.add_parser("decrypt"); decrypt.add_argument("--data-dir"); decrypt.add_argument("--key-file"); decrypt.add_argument("--no-wal", action="store_true"); decrypt.set_defaults(handler=command_decrypt)
+    sessions = commands.add_parser("sessions"); sessions.add_argument("--snapshot"); sessions.add_argument("--query"); sessions.add_argument("--limit", type=int, default=50); sessions.set_defaults(handler=command_sessions)
+    contacts = commands.add_parser("contacts"); contacts.add_argument("--snapshot"); contacts.add_argument("--query"); contacts.add_argument("--limit", type=int, default=100); contacts.set_defaults(handler=command_contacts)
+    history = commands.add_parser("history"); _message_options(history, True); history.set_defaults(handler=command_history)
+    search = commands.add_parser("search"); search.add_argument("keyword"); _message_options(search, False); search.set_defaults(handler=command_search)
+    export = commands.add_parser("export"); _message_options(export, True); export.add_argument("--format", choices=("markdown", "json"), default="markdown"); export.add_argument("--output"); export.set_defaults(handler=command_export)
+    return parser
 
-    command = sub.add_parser("discover", help="发现本机企业微信数据集")
-    command.add_argument("--data-dir")
-    command.add_argument("--show-paths", action="store_true")
-    command.set_defaults(func=command_discover)
 
-    command = sub.add_parser("status", help="检查数据库数量和加密格式")
-    command.add_argument("--data-dir")
-    command.add_argument("--show-paths", action="store_true")
-    command.set_defaults(func=command_status)
-
-    command = sub.add_parser("decrypt", help="创建新的只读明文快照")
-    command.add_argument("--data-dir")
-    command.add_argument("--key-file")
-    command.add_argument("--no-wal", action="store_true")
-    command.set_defaults(func=command_decrypt)
-
-    command = sub.add_parser("sessions", help="列出会话")
-    command.add_argument("--snapshot")
-    command.add_argument("--query")
-    command.add_argument("--limit", type=int, default=50)
-    command.set_defaults(func=command_sessions)
-
-    command = sub.add_parser("contacts", help="列出联系人")
-    command.add_argument("--snapshot")
-    command.add_argument("--query")
-    command.add_argument("--limit", type=int, default=100)
-    command.set_defaults(func=command_contacts)
-
-    command = sub.add_parser("history", help="查询指定会话历史")
-    add_message_filters(command, chat_required=True)
-    command.set_defaults(func=command_history)
-
-    command = sub.add_parser("search", help="全文搜索已解密消息")
-    command.add_argument("keyword")
-    add_message_filters(command, chat_required=False)
-    command.set_defaults(func=command_search)
-
-    command = sub.add_parser("export", help="导出指定会话")
-    add_message_filters(command, chat_required=True)
-    command.add_argument("--format", choices=("markdown", "json"), default="markdown")
-    command.add_argument("--output")
-    command.set_defaults(func=command_export)
-
-    args = parser.parse_args()
-    if getattr(args, "limit", 1) < 1:
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    limit = getattr(args, "limit", 1)
+    if limit <= 0:
         raise SystemExit("--limit 必须大于 0")
-    args.func(args)
+    args.handler(args)
     return 0
 
 

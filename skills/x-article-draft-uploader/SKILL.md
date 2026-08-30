@@ -1,94 +1,94 @@
 ---
 name: x-article-draft-uploader
-description: 将 Obsidian 或本地 Markdown 文章上传为 X/Twitter Articles 草稿：自动以第一张图作为封面，正文图片全部按原文位置插入。适用于用户要求上传、发布、保存 Markdown 到 X Article 时，特别是需要复用 Chrome 登录态、使用独立 Playwright 浏览器而不接管用户当前浏览器、封面必须是最上方图片，或旧脚本出现缺图、错位、MPH_MARKER 等残留的情况。
+description: 把本地 Markdown 转为经核验的 X Articles 新草稿。适用于需要保留首图封面、正文图片相对位置，并在独立 Playwright 会话中复用用户已授权 Chrome 登录态的任务；不负责公开发布。
 ---
 
 # X Article Draft Uploader
 
-## 案例入口
+这个 Skill 只创建草稿。公开发布、删除旧草稿或替换线上内容都需要用户另行明确授权。
 
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+先阅读 [references/examples.md](references/examples.md)，再按下面的安全门执行。
 
-## 两条不可违反的原则
+## 运行约束
 
-- 本 Skill 的产物只有草稿。在没有得到用户明确同意公开发布之前，绝不能替用户点下 X 上最终的 `发布` 按钮。
-- 自动化全程运行在一个独立的 Playwright 浏览器会话中，不得抢占用户正在操作的 Chrome 窗口。Chrome 的登录态可以复用，但唯一合法的方式是先临时导出成 Playwright cookie JSON，再注入到这个独立会话里。
+- 只接受用户明确选择的 Markdown、Chrome profile 和输出目录。
+- cookie 导出前先预览；只有带 `--apply` 才读取浏览器数据库并写出登录态。
+- 上传脚本默认也只是预览；只有带 `--apply` 才访问 X 并创建草稿。
+- cookie 文件可能等同于登录凭据：不得打印值、提交 Git、写进 Skill 或长期留存。
+- 自动化使用独立 Chromium context，不接管用户当前 Chrome 窗口。
+- 脚本没有发布动作，结果中的 `publishes` / `published` 必须始终为 `false`。
 
-## 三步上手
+## 1. 选择并预览 cookie 导出
 
-### 第 1 步：导出 X 的登录 cookies
-
-当 `/tmp/x_current_cookies.json` 不存在，或登录态已经失效时，先重新导出一份：
-
-```bash
-python3 ~/.codex/skills/x-article-draft-uploader/scripts/export_x_cookies_from_chrome.py --output /tmp/x_current_cookies.json
-```
-
-### 第 2 步：dry-run 预检
-
-真正访问 X 之前，先用 dry-run 模式解析文章，核对封面、正文图片数量和每一处插入锚点：
+`--profile` 必须是 Chrome profile 的精确路径，不要自动猜测账号。
 
 ```bash
-python3 ~/.codex/skills/x-article-draft-uploader/scripts/upload_markdown_to_x_article.py \
-  "/absolute/path/to/article.md" \
-  --cookies-json /tmp/x_current_cookies.json \
-  --dry-run
+python3 ~/.codex/skills/x-article-draft-uploader/scripts/export_x_cookies_from_chrome.py \
+  --profile "/absolute/path/to/Chrome/Profile 1" \
+  --output /tmp/x-storage-state.json
 ```
 
-一旦 dry-run 提示“文章第一个有效内容不是图片”，必须中止流程并告知用户：最好在文章开头补一张封面图，此时不要继续上传。仅当用户明确表示不加封面、仍坚持上传无封面草稿时，才追加 `--allow-no-cover`：
+预览应只显示路径、域名范围以及是否读取 cookie 值。确认无误后再执行：
 
 ```bash
-python3 ~/.codex/skills/x-article-draft-uploader/scripts/upload_markdown_to_x_article.py \
-  "/absolute/path/to/article.md" \
-  --cookies-json /tmp/x_current_cookies.json \
-  --allow-no-cover
+python3 ~/.codex/skills/x-article-draft-uploader/scripts/export_x_cookies_from_chrome.py \
+  --profile "/absolute/path/to/Chrome/Profile 1" \
+  --output /tmp/x-storage-state.json \
+  --apply
 ```
 
-### 第 3 步：创建全新草稿并上传
+导出器只保留 `x.com` 与 `twitter.com` DNS 边界内的 cookie，并把 JSON 以 `0600` 权限原子写入。终端仅返回数量、路径和权限。
+
+## 2. 本地预览文章计划
 
 ```bash
 python3 ~/.codex/skills/x-article-draft-uploader/scripts/upload_markdown_to_x_article.py \
   "/absolute/path/to/article.md" \
-  --cookies-json /tmp/x_current_cookies.json
+  --cookies /tmp/x-storage-state.json
 ```
 
-上传完成后，可以在这些位置找到产物：
+未加 `--apply` 时不会读取 cookie 文件、启动浏览器或创建草稿。检查 JSON 中的：
 
-- 草稿 URL 写在 `/tmp/x_article_upload_url.txt`
-- 校验数据（JSON）写在 `/tmp/x_article_upload_result.json`
-- 上传后的整页截图存在 `/tmp/x_article_final_uploaded.png`
+- `title`：最终标题；
+- `first_content`：正文首个有效内容及其行号；
+- `cover`：准备上传的封面绝对路径；
+- `body_images`：正文图片顺序、源行号与锚点候选；
+- `creates_draft: false`、`publishes: false`。
 
-## 完整执行链路
+默认要求 Markdown 的首个有效内容是图片。用户明确接受无封面草稿时才加 `--no-cover`；该模式会把原封面候选按正文图片处理。
 
-1. 调用本 Skill 内置的 `scripts/parse_markdown.py` 完成 Markdown 解析。
-2. 确认文章首个有效内容是图片；若不是，默认直接中断，并建议用户先补封面。只有用户明确放弃封面且要求继续时，才用 `--allow-no-cover` 跳过封面环节。
-3. 位于文章最上方的第一张图即封面。一旦启用 `--allow-no-cover`，则不再上传封面，文中全部图片一律视为正文图。
-4. 每张正文图的插入锚点取它在原始 Markdown 中的上一行。遇到列表要格外小心：锚点要用真实的那一行，例如 `Git 变化。`，而不是把前面若干列表项拼接出来的更长 fallback。
-5. 新开一个干净的 Playwright Chromium context，注入 X cookies。
-6. 访问 `https://x.com/compose/articles`，点击 `create`，记下跳转后新生成的 `/compose/articles/edit/...` 地址。
-7. 经由封面区域的 file input 上传封面，随后必须点击 X 的 `应用`。漏掉这一步，X 会残留 media-edit mask 盖住编辑器，封面也不会真正保存下来。
-8. 写入标题，再把 rich HTML 正文粘贴进 `[data-testid="composer"]`。
-9. 正文图按从后往前的顺序插入，每张图固定走这套动作：
-   - 在当前编辑器里定位优先级最高的 anchor；
-   - 点击该段落的结尾处；
-   - 依次按下 `End`、`Enter`；
-   - 通过 clipboard paste event 把图片文件贴进去；
-   - 等到页面中检测到的 media count 确实增加，再处理下一张。
-10. 等待 X autosave 落盘，随后做整体校验：标题一致、正文开头/结尾完整、不存在 `MPH_MARKER`，且媒体总数等于 `封面数 + expected_image_count`。
+## 3. 创建并核验新草稿
 
-## 排障速查
+```bash
+python3 ~/.codex/skills/x-article-draft-uploader/scripts/upload_markdown_to_x_article.py \
+  "/absolute/path/to/article.md" \
+  --cookies /tmp/x-storage-state.json \
+  --output "/absolute/path/to/run-output" \
+  --apply
+```
 
-- 页面跳到 `/login`：登录态已失效，重新导出 cookies 即可。
-- 文章开头不是图片：默认不会继续上传，先提醒用户补封面；用户明确拒绝后，再带 `--allow-no-cover` 重跑。
-- 封面传完编辑器被一层遮罩盖住：说明 `应用` 没点，找到该按钮并点击。
-- 正文图片千万不要走隐藏的 file input 上传——那个 input 可能连着封面上传器，会把封面顶掉。
-- 媒体数量达标不代表万事大吉。紧跟在列表后面的图片尤其要核对 anchor 是否命中；结果 JSON 里的 `anchor_used` 与 `expected_anchor` 就是用来对账的。
-- 某次运行只成功了一半、图片位置又不对：另起一篇干净草稿重跑，别在失败的旧草稿上缝缝补补。
+脚本会新建草稿、上传封面、粘贴正文、倒序插入正文图片，并验证标题、正文首尾和每次媒体计数增长。成功输出目录包含：
 
-## 关于脚本的几个事实
+- `draft-url.txt`：新草稿地址；
+- `result.json`：验证结果与实际锚点；
+- `draft.png`：结束状态截图。
 
-- `upload_markdown_to_x_article.py --dry-run` 纯粹是预检，全程不会打开 X。
-- `--allow-no-cover` 的启用前提只有一个：用户明确说不要封面。它的行为是跳过封面上传，并把文章里所有图片都按正文图插入。
-- 上传脚本依赖 Python Playwright，以及一份有效的 X cookie JSON。
-- Markdown 解析器已经随本 Skill 自带，不再需要旧的 `x-article-publisher` Skill。
-- cookie 导出脚本只读取本机 Chrome 里的 cookies，并写入你指定的临时 Playwright cookie 文件；Skill 自身不留存任何 cookie。
+若省略 `--output`，脚本会在当前目录的 `x-article-runs/` 下生成唯一运行目录。需要后台浏览器时可加 `--headless`。
+
+## 停止条件
+
+遇到以下任一情况应停止并报告证据，不要在残缺草稿上继续补写：
+
+- 登录后仍跳到 `/login`；
+- 新建文章按钮或编辑器不可见；
+- 封面裁剪层无法确认；
+- 某张图片没有可靠锚点，或粘贴后媒体数量未增加；
+- 正文开头、结尾或标题最终校验失败。
+
+修正输入或登录态后，新建一篇干净草稿重试。完成后提醒用户妥善删除临时 storage-state 文件。
+
+## 依赖与边界
+
+需要 Python 3、Playwright、Chromium 和 `pycryptodome`。Chrome cookie 解密流程面向 macOS Keychain。X 页面结构可能变化；选择器失效时应先更新并测试脚本，而不是绕过验证。
+
+本目录不包含 X、Chrome、Playwright 的代码或真实账号数据；这些名称只用于说明互操作对象。

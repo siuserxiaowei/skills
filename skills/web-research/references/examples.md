@@ -1,19 +1,33 @@
-# 互联网研究｜案例与详细说明
-
-以下案例把触发条件、处理决策和验收证据连在一起。示例中的账号、路径、对象和内容均为占位描述，执行时必须替换为用户已确认的真实范围。
+# Web Research Router examples
 
 ## 正向案例
 
-- **用户请求：** “先跨平台找出近期十个候选，再核验其中三个并归档原文。”
-- **处理：** 把任务拆成发现、候选确认、读取核验和归档阶段；每阶段选择对应子 Skill，记录查询范围、时间、来源和排除理由。
-- **验收证据：** 候选集合、核验记录与归档文件一一对应；当前性结论有日期和权威来源；失败平台被明确列出。
+**用户请求：** “找出近六个月中国市场的五个同类产品，核对融资和定价，再把主要来源保存下来。”
+
+**处理：** Define the market and date boundary; discover candidates; verify product identity, financing source, and current pricing; ask the user to approve the final capture set if it expands beyond the original scope; archive those sources; synthesize with dated citations.
+
+**验收证据：** The candidate and verified sets are separate, every financing/price claim maps to a preserved source, and failed or stale candidates remain visible.
 
 ## 边界案例
 
-- **场景：** 如果用户只给一个已知 URL 要保存，直接交给内容归档 Skill，不启动整个研究流水线；需要登录的私人收藏也不当公开搜索处理。
-- **验收证据：** 未获授权的动作没有发生，结果明确标记适用范围与剩余选择。
+**场景：** “保存这篇公开文章。”
+
+**处理：** Use the known-URL archival specialist directly. Do not launch discovery, private bookmark export, or media transcription.
+
+**验收证据：** The saved artifact opens, its source URL and retrieval time are recorded, and no unrelated account data was accessed.
+
+### Private collection boundary
+
+**Request:** “研究我收藏里的内容”，without naming a platform or range.
+
+**Route:** Ask for the platform and bounded collection scope before accessing it. Explain that exporting links is distinct from opening or downloading their contents.
+
+**Evidence:** No private collection is read before authorization; later stages receive only the approved link set.
 
 ## 失败与恢复
 
-- **场景与处理：** 某平台限流时保存已取得的候选并换合法来源交叉核对；覆盖不足就降低结论强度，不能把部分结果写成全网完整排名。
-- **验收证据：** 失败状态、已完成范围和下一次安全重试条件均可复核。
+**场景：** One platform rate-limits the discovery query and only three of the requested ten candidates are verified.
+
+**处理：** Preserve the query/error, try a lawful public alternative, and deliver a partial result if coverage remains insufficient.
+
+**验收证据：** The report states 3/10 verified rather than claiming a complete ranking, and lists the smallest action that could close the gap.

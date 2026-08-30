@@ -1,56 +1,44 @@
-# 企微文档与智能文档
+# 文档操作
 
-## 命令与 URL 对照
+## 识别对象
 
-| URL | 类型 | 命令 |
-|---|---|---|
-| `/doc/*` | 普通文档 | `wecom-cli doc create_doc/get_doc_content/edit_doc_content` |
-| `/smartpage/*` | 智能文档 | `wecom-cli doc +smartpage_create/smartpage_export_task` |
-| `/sheet/*` | 在线表格 | `wecom-cli doc sheet_*` |
-| `/smartsheet/*` | 智能表格 | `wecom-cli doc smartsheet_*` |
-
-动手前先跑 `wecom-cli doc --help`，实际可用的工具以本次动态输出为准。
-
-## 由 Markdown 生成智能文档
-
-首选入口是 `scripts/create_smartpage.py`：默认 dry-run 预检，只有附加 `--execute` 才真正写入企微。
-
-### 纯文本 Markdown
-
-脚本内部直接调用：
+先从用户给出的链接或明确描述区分普通文档、智能文档、表格和智能表格。随后运行：
 
 ```bash
-wecom-cli doc +smartpage_create '{"title":"标题","pages":[{"page_title":"正文","content_type":1,"page_filepath":"/absolute/report.md"}]}'
+wecom-cli doc --help
 ```
 
-单个 Markdown 文件的大小上限为 10MB。
+只使用当前安装版本实际列出的子命令。不要因 URL 看起来相似就猜测类型或 ID。
 
-### 带本地图片的流程
+## Markdown 智能文档
 
-官方 `+smartpage_create` 只读取 Markdown 文本本身，相对路径的本地图片不会被上传，`data:` 内联图片也会被企微侧过滤。正确顺序固定为：
+统一通过 `scripts/create_smartpage.py` 执行。默认输出计划，`--apply` 才产生云端写入。
 
-1. 先建一个与最终文档同名的“图片资源”普通文档；
-2. 借助本机 `+doc_upload_image` helper 把本地图片逐一传到该文档；
-3. 把 Markdown 里的图片引用替换为返回的企微 `https://wdcdn.qpic.cn/...` 链接；
-4. 基于改写后的私密上传副本生成最终智能文档；
-5. 回执以 `0600` 权限落盘，最终文档与图片资源文档都要向用户披露。
+无本地图片时，脚本使用临时工作副本调用智能文档创建能力；源 Markdown 不会被改写。源文件必须可读且不超过 CLI 允许的大小。
 
-证据图片不允许公开托管，也不要回头再试 `data:` 方案。
+存在本地图片时，流程包含两个明确产物：
 
-## 覆写普通文档正文
+1. 建立仅供图片归属的普通文档；
+2. 用 `WECOM_UPLOAD_HELPER` 指向的外部 helper 上传每张图片；
+3. 在私密临时副本中把本地引用替换为返回的托管 URL；
+4. 从该副本创建最终智能文档；
+5. 以私密 JSON 记录两个对象及图片映射，便于用户追踪。
 
-`edit_doc_content` 属于整篇替换。执行前必须先 `get_doc_content` 回读现有内容并核实目标无误；回读都因权限失败时，覆写同样禁止。
+若 helper 不存在、图片找不到或任意上传失败，应在创建最终智能文档前停止。不要把证据图片转存到公共图床，也不要修改原文件。
 
-## 回读校验智能文档
+## 替换已有普通文档
 
-1. 用 `smartpage_export_task` 提交导出任务；
-2. 用 `smartpage_get_export_result` 轮询，直到 `task_done=true`；
-3. 只有回读跑通之后，才能宣称正文已验证。
+正文编辑接口通常是整篇替换。执行前必须完成：
 
-返回 `851008 partial no authorization` 说明机器人缺少“获取成员文档内容”的授权：按接口要求的帮助文字原样展示后停止回读，不要改用浏览器或客户端去补看。
+- 通过只读调用确认文档名称和现有内容；
+- 明确展示替换会覆盖全部正文；
+- 获得针对该文档的当次确认；
+- 保存足以恢复的本地输入与私密操作回执。
 
-## 隐私要点
+无法回读时，不执行整篇替换。
 
-- 文档 URL 可以当作本次交付链接给用户，但不许沉淀进共享记忆。
-- docid、图片 CDN 映射、上传副本只能落在私密本机目录。
-- 源 Markdown 保持原样不动；一切路径替换只作用于上传副本。
+## 创建后的核验
+
+智能文档可用导出任务做回读验证：先提交导出，再轮询结果直到完成或明确失败。租户可能允许创建却禁止读取成员内容，此时只能报告：对象已创建，但正文一致性没有被独立验证。不要借助浏览器或客户端越权查看。
+
+交付链接可以在本次回复中提供；内部 docid、图片映射和原始响应只保存在用户本机的受限文件中。

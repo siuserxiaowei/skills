@@ -1,55 +1,41 @@
-# Manual Gates
+# 需要人工完成或确认的步骤
 
-Consult this file ahead of any workflow involving login, credentials, proxy, certificates, or WeChat desktop.
+## 用户必须亲自完成
 
-## Only The User Can Do These
+- 扫描 exporter 的登录二维码，并选择正确的公众号或服务号主体；
+- 指定允许使用的 auth-key / 凭据文件；
+- 在需要刷新文章指标时，于自己的微信环境中打开相应页面；
+- 对受限内容、转载权或后续发布风险做最终判断。
 
-- Scan the exporter login QR code.
-- Pick the correct WeChat Official Account or service account at login time.
-- Approve the use of any auth-key or credentials file.
-- Open article/history pages in WeChat desktop whenever credential capture calls for it.
-- Scroll through the historical article list during a proxy/history fallback.
-- Eyeball downloaded content personally where copyright, restricted access, or publication risk is at stake.
+自动化不能替用户点击微信客户端，也不能根据昵称猜登录主体。
 
-## Always Ask First
+## 改变本机状态前确认
 
-- Installing mitmproxy or wxdown-service dependencies.
-- Trusting a mitmproxy root CA certificate.
-- Enabling, disabling, or tweaking macOS system proxy settings.
-- Launching a proxy that intercepts WeChat article HTTPS traffic.
-- Persisting credentials to a local file or to Keychain.
-- Driving the exporter UI with browser automation once logged in.
+以下动作会修改依赖、信任或网络环境，必须先说明精确影响并获得当次授权：
 
-## Off Limits Entirely
+- 安装 `mitmproxy`、`wxdown-service` 或项目依赖；
+- 信任本机代理 CA；
+- 改动 macOS HTTP/HTTPS 代理；
+- 启动会检查微信文章流量的本地代理；
+- 将临时凭据写入本机文件或 Keychain；
+- 在已登录 exporter 页面中运行浏览器自动化。
 
-- Never drive the user's WeChat UI.
-- Never publish, delete, mass-send, follow, unfollow, or message.
-- Never work around login, paywalls, deleted articles, private content, or permission checks.
-- Never borrow another person's account/session as some account pool.
-- Never expose cookies, auth-key, token, pass_ticket, key, uin, credential JSON, or QR login secrets.
-- Never walk away with the system proxy still aimed at a local interceptor.
+涉及代理时，先只读记录原配置；恢复失败要立即报告，不能把任务标成完成。
 
-## Failure Modes User Help Cannot Fix
+## 永远不做
 
-- WeChat alters endpoint behavior or page markup.
-- Commenting is disabled or hidden on the article.
-- Metrics hinge on fresh credentials that lapse fast.
-- Image or media URLs go stale.
-- Public exporter endpoints throttle or turn requests away.
-- A local proxy clashes with Clash or other system proxy configuration.
+- 不发送消息、不关注/取关、不群发、不发布或删除内容；
+- 不绕过登录、付费、私密、删除或访问控制；
+- 不使用他人账号或共享会话池；
+- 不打印 cookie、token、auth-key、`pass_ticket`、`uin`、二维码 secret 或凭据 JSON；
+- 不让系统代理在任务结束后继续指向本地拦截器。
 
-## Prompting The User Safely
+## 无法靠用户点击修复的失败
 
-Word the asks short and plain, e.g.:
+接口或页面结构变化、公众号关闭评论、会话材料过期、媒体 URL 失效、公共服务限流，以及本地代理与其他代理软件冲突，都需要作为真实失败记录。不要反复要求用户扫码来掩盖实现不兼容。
 
-```text
-这一步需要你扫码登录公众号后台，微信本身我不碰。扫码并选好对应公众号之后，回我一句“已登录”。
-```
+## 安全询问模板
 
-```text
-抓阅读量和评论得先启动本地 wxdown-service 并信任 mitmproxy 证书。你确认以后我只负责起本地服务，微信里的页面要你自己打开。
-```
+扫码场景可以明确说明：“这一步需要你在自己的设备上扫码并选择公众号；自动化不会控制微信。完成后告诉我已登录。”
 
-```text
-接下来需要把系统 HTTP/HTTPS 代理临时指向 127.0.0.1:<port>。当前设置我会先备份，用完恢复。可以吗？
-```
+代理场景应同时说明本地端口、证书影响、将读取的数据类型和恢复动作，再询问是否继续。用户只同意启动服务，不等于同意安装证书、改代理或保存凭据。

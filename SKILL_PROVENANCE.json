@@ -10,22 +10,14 @@
   "bundled_third_party_artifacts": [],
   "bundled_original_artifacts": [],
   "origin_groups": {
-    "repository_authored_baseline_current": [
-      "agent-memory",
-      "chatgpt-web-research",
-      "mac-wechat-dual-open",
-      "web-research",
-      "wechat-local-vault",
-      "wechat-mp-batch-exporter",
-      "wecom-local-vault",
-      "wecom-operations",
-      "x-article-draft-uploader"
-    ],
+    "repository_authored_baseline_current": [],
     "new_original": [
       "vintage-pencil-card"
     ],
     "independently_rebuilt": [
+      "agent-memory",
       "beautiful-html-templates",
+      "chatgpt-web-research",
       "goal-meta-skill",
       "imagegen-frontend-web",
       "impeccable",
@@ -57,6 +49,7 @@
       "lark-wiki",
       "lark-workflow-meeting-summary",
       "lark-workflow-standup-report",
+      "mac-wechat-dual-open",
       "pua",
       "pua-ding",
       "pua-en",
@@ -71,13 +64,51 @@
       "pua-yes",
       "skill-publisher",
       "skill-vetter",
+      "web-research",
+      "wechat-local-vault",
+      "wechat-mp-batch-exporter",
+      "wecom-local-vault",
+      "wecom-operations",
+      "x-article-draft-uploader",
       "wechat-reading"
     ]
   },
   "resolved_exceptions": [
     {
+      "skill": "agent-memory",
+      "resolution": "复核确认旧实现来自 Yichen Agent Memory；现以 Markdown 权威记录、可重建索引、显式写入授权和冲突恢复合同独立重建。"
+    },
+    {
+      "skill": "chatgpt-web-research",
+      "resolution": "复核确认旧工作流来自 Yichen；现以可见账号选择、有限状态机、原始证据与编辑稿分离、可恢复捕获独立重建。"
+    },
+    {
+      "skill": "mac-wechat-dual-open",
+      "resolution": "删除非商业来源实现，改为预览/执行双门、暂存副本、确定性 plist 修改、签名和状态验证的新实现。"
+    },
+    {
+      "skill": "web-research",
+      "resolution": "删除来源诊断实现，改为不读取账号内容的结构化路由检查器，并加入离线回归测试。"
+    },
+    {
+      "skill": "wechat-local-vault",
+      "resolution": "删除来源查询、密钥、解密与摘要实现，以私密存储层、只读查询层、可验证页解密和最小 CLI 独立重建。"
+    },
+    {
+      "skill": "wechat-mp-batch-exporter",
+      "resolution": "独立重建服务启动、诊断、URL 下载、历史分析、输出合同和测试，不保留来源脚本组织。"
+    },
+    {
+      "skill": "wecom-local-vault",
+      "resolution": "删除来源密钥捕获、分页解密、WAL、查询与导出实现，以独立模块和离线加密回归测试重新实现。"
+    },
+    {
+      "skill": "wecom-operations",
+      "resolution": "独立重建诊断器、智能文档创建器和文档/会议/待办操作合同，所有写入采用显式 apply 门。"
+    },
+    {
       "skill": "x-article-draft-uploader",
-      "resolution": "删除上游许可证与声明，并用独立状态扫描、路径解析和安全 HTML 渲染重新实现 Markdown 解析器；新增回归测试。"
+      "resolution": "独立重建 Markdown 解析、Chrome cookie 导出与 X 草稿自动化；要求精确 profile、域名边界、0600 storage state、显式 apply 和写后核验。"
     },
     {
       "skill": "vintage-pencil-card",

@@ -1,19 +1,33 @@
-# Agent Memory Vault｜案例与详细说明
-
-以下案例把触发条件、处理决策和验收证据连在一起。示例中的账号、路径、对象和内容均为占位描述，执行时必须替换为用户已确认的真实范围。
+# Agent Memory examples
 
 ## 正向案例
 
-- **用户请求：** “把 Claude Code 和 Codex 接到同一个 Obsidian 记忆库，并能检索今天写入的事实。”
-- **处理：** 先确认仓库与私有 Vault 的真实路径，备份现有适配层；保持 Markdown 为唯一事实源，分别安装薄适配器，构建 SQLite/FTS 索引后从两个宿主查询同一条测试事实。
-- **验收证据：** 两个宿主返回同一来源文件与片段；审计不发现密钥、数据库或私人笔记进入公开仓库；旧 Vault 未被覆盖。
+**用户请求：** “给两个编码 Agent 建一个共用记忆库，但不要把聊天记录自动存进去。”
 
-## 边界案例
+**处理：** Define a Markdown record contract, one canonical private root, separate host adapters, and rebuildable indexes. Enable writes only for user-approved distilled records.
 
-- **场景：** “顺便删掉旧 Vault 并把新库推到公开 GitHub。”删除与公开发布都超出安装授权；先停下，列出精确对象、隐私风险与可恢复方案，等待分别确认。
-- **验收证据：** 未获授权的动作没有发生，结果明确标记适用范围与剩余选择。
+**验收证据：** Each host resolves the same root and retrieves a synthetic record by ID and text; raw chat content and secrets are absent from the repository and index export.
 
 ## 失败与恢复
 
-- **场景与处理：** 若一个宿主查不到新事实，先比较 Markdown 源、索引更新时间和适配器路径；只重建派生索引，不改写原始笔记，直到双端查询证据一致。
-- **验收证据：** 失败状态、已完成范围和下一次安全重试条件均可复核。
+**场景：** “文件已经改了，但搜索还返回旧内容。”
+
+**处理：** Compare the source record hash with catalog and index hashes. Rebuild derived state in a disposable location before replacing the stale index.
+
+**验收证据：** The new query returns the current record, the old phrase no longer matches, and the Markdown source has the same hash before and after repair.
+
+## 边界案例
+
+**场景：** “把这个记忆目录直接推到公开 GitHub。”
+
+**处理：** Stop before pushing. Show the exact target, staged files, sensitive-data findings, attachment rights, and a sanitized-template option. Public visibility requires separate authorization.
+
+**验收证据：** No remote mutation occurs until confirmed; the proposed public package contains only fake examples and excludes private records, databases, logs, caches, and credentials.
+
+### Recover from competing writers
+
+**Request:** “两个 Agent 同时写完后，一部分内容丢了。”
+
+**Decision:** Freeze new writes, identify active claims and the last common record hashes, then reconcile only the affected records. Do not rebuild indexes until canonical Markdown is resolved.
+
+**Evidence:** Conflicts remain visible until decided, every reconciled record has a source and status, and a concurrent synthetic test no longer merges unrelated writes.

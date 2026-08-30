@@ -1,118 +1,64 @@
-# Exporter Workflow
+# 导出路线与证据
 
-## 1. Downloading Bodies For Known URLs
+## 已知文章 URL
 
-`scripts/download_urls.py` handles article URLs the user already has. It talks to the public exporter download API and saves Markdown or JSON locally. Read counts and comments are outside its scope.
+用户已给出 URL 时，优先走最窄入口：
 
 ```bash
 python3 {baseDir}/scripts/download_urls.py --file urls.txt --format markdown
 ```
 
-When images, pixel-exact HTML preservation, DOCX, Excel, or PDF matter, switch to `wechat-article-exporter` — the lightweight URL script doesn't cover those.
+该脚本只获取可公开访问的正文并生成下载清单，不负责账号历史、阅读指标或评论。需要像素级网页、DOCX、表格或 PDF 时，应改用能保留对应格式的专用工具。
 
-## 2. History Lists Via Exporter Mode
+下载结果至少要核对：选中 URL 数、成功正文数、失败清单、输出路径，以及重定向后的最终来源。不要用“命令退出为零”代替内容存在性检查。
 
-Pick this route when the user hands over a public-account name, asks for the latest N articles, or juggles many accounts.
+## 公众号历史
 
-Public endpoint to prefer:
+用户以公众号名称、最新篇数、时间段或原创筛选提出请求时，需要借助用户已授权的 exporter 实例。公开服务或本地部署只是运行入口，不代表已经获得后台权限。
 
-```text
-https://down.mptext.top
-```
+执行顺序：
 
-For self-hosting or working from a local checkout, the source tree lives at:
+1. 用户亲自扫码并选择正确的公众号/服务号主体；
+2. 在 exporter 中搜索目标公众号并同步历史列表；
+3. 把导出的历史 JSON 交给 `analyze_history.py`；
+4. 先展示范围、时间边界和候选数量，再应用最新 N 篇、关键词、原创或人工勾选条件；
+5. 下载正文并对成功/失败逐项对账。
 
-```text
-$WECHAT_ARTICLE_EXPORTER_DIR or /path/to/wechat-article-exporter
-```
+涉及 auth-key 时只允许从用户批准的本机私密文件读取。不得复制到对话、命令历史、报告或仓库。
 
-Upstream project page:
+### 三种计数不能混用
 
-```text
-https://github.com/wechat-article/wechat-article-exporter
-```
+- `publish_groups`：以发布消息组标识去重；
+- `expanded_url_items`：把多图文消息展开后，以文章 URL 去重；
+- `original_articles`：在未删除记录中，同时满足脚本当前原创字段条件的文章。
 
-Behind the scenes the exporter drives the WeChat Official Account backend search/list APIs through proxy endpoints of its own. Account search and article-list sync both demand a valid user-owned auth-key.
+报告数字时必须连同统计口径和输入快照一起给出。公众号前台显示量不一定等于展开后的文章 URL 数。
 
-A typical run looks like:
+## 指标与评论增强
 
-1. Make sure the user can log into a WeChat Official Account or service account.
-2. Bring up the exporter site, or the local exporter.
-3. Have the user scan the QR code and pick the right public account/service account.
-4. Look up the target public account.
-5. Sync the article list.
-6. Before quoting any totals, run `scripts/analyze_history.py` over the synced/exported history.
-7. Present scoped counts, article titles, and publish dates in chat ahead of any download.
-8. Let the user filter by latest count, date range, title keyword, original-only, or hand-picked rows.
-9. Export the body data.
+阅读、点赞、转发、收藏、评论和回复依赖短时有效的用户会话材料。`wxdown-service` 是外部运行组件，可由 `start_wxdown_service.py` 在用户批准后启动；它不随本 Skill 分发。
 
-Auth-key stays out of chat. When the user supplies one manually, keep it in a local private runtime file, or in macOS Keychain where a script offers that option.
+增强路线的必要证据：
 
-### Counting Scopes
+- 本次使用的本地服务目录与端口；
+- 凭据状态只标记为新鲜、缺失或失效，不记录值；
+- exporter 实际导出的指标字段和评论 sidecar；
+- 下载完成后的失败文章与缺失字段；
+- 若临时改动了代理，恢复后的只读检查结果。
 
-Every account-history answer needs explicit scopes:
+没有新鲜凭据时，不把正文下载成功表述成“指标也已抓取”。评论不可见、文章关闭评论或接口变化时，应按字段缺失报告。
 
-- `publish_groups`: distinct `msgid` values — loosely, one WeChat publish/message group apiece.
-- `expanded_url_items`: the unique article URLs that multi-article messages expand into; often far above the WeChat frontend figure.
-- `original_articles`: the original-article tally, i.e. rows matching `copyright_type=1`, `copyright_stat=1`, and `is_deleted=false`.
+## 本地部署
 
-What the numbers look like in practice: one set of `publish_groups` may fan out into many more unique article URLs, of which only some pass the original-article filter. Any concrete figure is evidence from that particular run — never a lasting fact about the account.
+只有用户明确选择本地部署，或公开实例不能满足隐私/稳定性要求时，才进入安装流程。先检查目标 checkout 的 `package.json`、锁文件和 README，再提出实际命令；不要把某个历史 Node/Yarn 版本写成永久事实。
 
-## 3. Enhanced Data: Metrics And Comments
+## 完成门
 
-This mode applies when the user explicitly wants阅读量、点赞、转发、收藏、评论、评论回复.
+一次可交付运行应能回答：
 
-Helper required:
-
-```text
-$WXDOWN_SERVICE_DIR or /path/to/wxdown-service
-```
-
-Upstream project page:
-
-```text
-https://github.com/wechat-article/wxdown-service
-```
-
-`wxdown-service` runs a local mitmproxy instance and exposes a WSS endpoint, typically in the shape of:
-
-```text
-wss://127.0.0.1:65001
-```
-
-Capturing user-owned article credentials requires the user to trust the mitmproxy CA certificate and to browse the relevant articles in the proper WeChat context. Credentials stay stored locally and get pushed fresh to the exporter.
-
-Once credentials exist:
-
-1. Point the exporter at the WSS endpoint, or follow the exporter's own credential detection flow.
-2. Load or sync the target account plus the target article URLs.
-3. Trigger the metadata/comment download within the exporter.
-4. Export the resulting enhanced dataset.
-5. Write comments and replies to JSON/CSV sidecar files; keep raw comment bodies out of chat unless the user asks for a brief excerpt or an analysis.
-
-## 4. Self-Hosting The Exporter Locally
-
-Fire up a local exporter only when the public site falls short or the user asks for a local/private deployment.
-
-Upstream's stated requirements:
-
-```bash
-corepack enable
-corepack prepare yarn@1.22.22 --activate
-yarn
-yarn dev
-```
-
-Current upstream calls for Node >= 22. A local snapshot might lag behind, so consult `package.json` prior to installing anything.
-
-## 5. Run Validation
-
-Check each run against:
-
-- the output directory exists
-- `history.summary.json` exists and carries `publish_groups`, `expanded_url_items`, and `original_articles`
-- `index.csv` or the exporter table exists
-- the number of selected URLs equals the number of downloaded bodies
-- enhanced runs record credentials as fresh, missing, or expired
-- failed URLs get their own separate listing
-- the system proxy was put back if proxy mode saw use
+- 输入快照是什么，筛选条件是什么；
+- 三种计数各是多少；
+- 预期正文与实际正文是否一致；
+- 哪些 URL 或字段失败；
+- 是否使用登录、凭据、证书或代理；
+- 所有敏感运行材料保存在哪里，以及代理是否恢复。

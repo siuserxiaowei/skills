@@ -1,75 +1,71 @@
 ---
 name: wecom-operations
-description: 本 Skill 借助官方 wecom-cli 操作企业微信云端资源：把本地 Markdown 发布为普通文档或智能文档（含本地图片时需用户自备上传 helper），读取或覆写企微文档，创建与管理待办，并在企业权限开放后预约、查询、更新或取消会议和日程。当用户提到“企微文档”“智能文档”“上传 Markdown”“预定会议”“企微会议”“企微日程”“企微待办”时触发；不负责消息发送，也不操控企业微信客户端。
+description: 通过用户已配置的官方 wecom-cli 管理企业微信文档、智能文档、待办、会议和日程。适合创建或查询这些云端对象、把本地 Markdown 转为智能文档，以及在明确确认后更新或取消对象；不发送消息、不控制桌面客户端。
 ---
 
-# 企业微信操作
+# 企业微信云端操作
 
-## 案例入口
+本 Skill 是官方 `wecom-cli` 的审慎操作层。它不读取本地聊天数据库；本地历史检索属于 `wecom-local-vault`。
 
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+先查看 [references/examples.md](references/examples.md)，只再加载与当前对象类型对应的参考页。
 
-本 Skill 通过本机安装的官方 `wecom-cli` 调用企微云端接口。只读本地数据库的需求交给 `$wecom-local-vault`，两者分开使用，不要混用。
+## 不可跨越的边界
 
-## 硬性红线
+- 不启动或驱动企业微信桌面端，也不调用任何消息发送能力。
+- 查询、帮助和 schema 检查可以直接进行；创建或修改必须来自用户当前请求。
+- 删除待办、取消会议或日程、整篇替换文档前，先只读取得对象当前状态，再让用户针对准确对象确认。
+- 不读取 `~/.config/wecom/` 中的密文内容；已存在配置时不得重新 `init`。
+- 内部 ID、secret、授权参数、成员标识和原始 API 回执不进入对话、共享记录或版本库。
+- category 不可用时停止该分支。不得换用客户端自动化、逆向协议或个人账号绕过企业授权。
 
-1. 不碰企业微信客户端：不启动、不点击、不退出、不控制，也不调用 `wecom-cli msg` 或任何形式的消息发送。
-2. 读类操作（查询、`--help`、schema 查看）随时可执行；写类操作（创建、覆写、更新、邀请、取消、删除）必须在用户当轮明确指示后才进行。
-3. 凡是取消会议／日程、删除待办、整体覆写既有文档，先以只读方式核实确切对象与当前状态，再由用户针对该具体对象确认后方可动手。
-4. `~/.config/wecom/` 内的加密凭证一律不读不输出；Bot ID、Secret、内部 userid、docid、meetingid、todo_id 以及带授权参数的 URL 均不得写入回复、日志、报告或记忆。
-5. 只要 `~/.config/wecom/{.encryption_key,bot.enc,mcp_config.enc}` 已经存在，就禁止再次运行 `wecom-cli init`，以免覆盖既有配置。
-6. 动手前先跑目标 category 的 `--help`。若接口答复“当前企业暂不支持授权”，该 category 立即停止，不允许改用客户端自动化或非官方协议绕行。
-7. 远端业务成功与否以 `errcode == 0` 判定；失败时最多低频重试一次。响应中带 `help_instruction` 时，按其要求将 `help_message` 原样逐字展示。
-8. 不擅自清理本地上传副本、回执，或失败后已经建出的企微资源；确实需要删除时，先向用户说明并征得明确同意。
-
-## 运行前自检
+## 先做只读诊断
 
 ```bash
-SKILL_ROOT="${WECOM_OPERATIONS_SKILL_ROOT:-$HOME/.agents/skills/wecom-operations}"
-python3 "$SKILL_ROOT/scripts/doctor.py"
-python3 "$SKILL_ROOT/scripts/doctor.py" --category doc
+OPS_ROOT="${WECOM_OPERATIONS_SKILL_ROOT:-$HOME/.agents/skills/wecom-operations}"
+python3 "$OPS_ROOT/scripts/doctor.py"
+python3 "$OPS_ROOT/scripts/doctor.py" --category doc
 ```
 
-`doctor.py` 是纯只读检查：核对 CLI 版本、加密配置文件权限与 category 可用性，不会触碰凭证内容本身。
+诊断只检查命令存在性、版本、配置文件元数据和 category 帮助，不解密凭据。将 `doc` 换成当前任务需要的 `todo`、`meeting` 或 `schedule`。
 
-## 按需取阅
+任何远端调用前，再读取本机 CLI 的当前 `--help` / `--schema`；不要假定仓库文档等同于运行时接口。
 
-- 涉及本地 Markdown、普通文档、智能文档或图片证据：打开 [references/documents.md](references/documents.md)。
-- 涉及会议预约／查询／取消，或企微日程：打开 [references/meetings.md](references/meetings.md)。
-- 涉及待办的创建、查询、更新或删除：打开 [references/todos.md](references/todos.md)。
+## 文档快捷流程
 
-与任务无关的参考文件不要提前全部读取。
-
-## 智能文档快速用法
-
-不带 `--execute` 时只做预检，对企微不产生任何写入：
+本地 Markdown 转智能文档时，先做零写入计划：
 
 ```bash
-SKILL_ROOT="${WECOM_OPERATIONS_SKILL_ROOT:-$HOME/.agents/skills/wecom-operations}"
-python3 "$SKILL_ROOT/scripts/create_smartpage.py" \
+python3 "$OPS_ROOT/scripts/create_smartpage.py" \
   --source "/absolute/path/report.md" \
   --title "报告标题"
 ```
 
-仅当用户当轮明确要求创建时才附加 `--execute`：
+计划中要核对源文件、标题、本地图片、外部 helper、回执目录和将创建的对象。只有用户确实要求创建时才执行：
 
 ```bash
-SKILL_ROOT="${WECOM_OPERATIONS_SKILL_ROOT:-$HOME/.agents/skills/wecom-operations}"
-python3 "$SKILL_ROOT/scripts/create_smartpage.py" \
+python3 "$OPS_ROOT/scripts/create_smartpage.py" \
   --source "/absolute/path/report.md" \
   --title "报告标题" \
-  --execute
+  --apply
 ```
 
-Markdown 不含本地图片时，直接产出最终智能文档；含本地图片时，会先另建一个命名清晰的“图片资源”普通文档，把图片传上去换取企微 CDN 链接，之后才生成最终智能文档。两类产物都要在结果里向用户交代。
+含本地图片时，需要用户自行提供支持 `doc +doc_upload_image` 的可执行文件，并设置 `WECOM_UPLOAD_HELPER`。该 helper 不是本仓库的一部分；缺失时不要创建一个图片残缺的文档。
 
-## 能力边界与依赖
+细节见 [文档操作](references/documents.md)。
 
-- 运行基础是企业微信官方 [`@wecom/cli`](https://github.com/WecomTeam/wecom-cli)；安装完成后由用户自行执行 `wecom-cli init` 配置自己的机器人。
-- 文档、待办、会议、日程与通讯录各类目能否使用，由企业侧与机器人配置共同决定，只能靠 `doctor.py` 加目标 category 的 `--help` 现场探测。
-- 官方 CLI 原生处理文本与已托管的远程图片；本地图片上传必须借助用户另行提供、具备 `doc +doc_upload_image` 能力的 helper，并通过 `WECOM_UPLOAD_HELPER` 指向其可执行文件。本仓库不附带该本地扩展。
-- 智能文档的回读可能因权限返回 `851008`；“创建成功”不等于“回读验证成功”，两者不可混为一谈。
+## 待办、会议与日程
 
-## 结果交付
+- 待办的参与人、截止时间、提醒和删除门见 [待办操作](references/todos.md)。
+- 会议和日程的时间、成员、更新及取消门见 [会议与日程](references/meetings.md)。
 
-对用户只展示可读名称、时间、状态与最终访问链接。内部 ID 只落盘到权限为 `0600` 的本机回执，不在对话中展开。
+成员标识只能来自用户给定值或获准的通讯录查询。全量替换型字段必须先读取现值并合并，不能凭局部输入覆盖。
+
+## 结果判断与交付
+
+接口业务成功以响应中的成功码为准，不以进程退出码或“已发送请求”代替。出现可展示的官方帮助说明时，完整保留含义并避免夹带敏感字段。自动重试最多一次，且只用于明确的瞬时失败。
+
+用户可见交付只包含对象名称、时间、状态和必要访问链接。脚本生成的含 ID 回执留在本机私密目录，权限应为 `0600`。创建成功但无回读权限时，必须分别陈述“创建结果”和“内容未能回读验证”。
+
+## 依据与许可
+
+运行依赖是外部的 [`@wecom/cli`](https://github.com/WecomTeam/wecom-cli)，其版本和许可由上游维护；本仓库不分发 CLI 源码或二进制。本目录的原创说明、测试与辅助脚本适用仓库顶层 MIT License。

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""Inspect WeCom CLI readiness without opening encrypted configuration files."""
+
+from __future__ import annotations
 
 import argparse
 import json
@@ -9,71 +12,57 @@ import subprocess
 from pathlib import Path
 
 
-CONFIG_DIR = Path.home() / ".config/wecom"
-CONFIG_FILES = [".encryption_key", "bot.enc", "mcp_config.enc"]
-UPLOAD_HELPER_VALUE = os.environ.get("WECOM_UPLOAD_HELPER")
-UPLOAD_HELPER = (
-    Path(UPLOAD_HELPER_VALUE).expanduser().resolve()
-    if UPLOAD_HELPER_VALUE
-    else None
-)
+EXPECTED_PRIVATE_FILES = (".encryption_key", "bot.enc", "mcp_config.enc")
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="只读检查企业微信 CLI 能力")
-    parser.add_argument(
-        "--category",
-        choices=["doc", "meeting", "schedule", "todo", "contact"],
-    )
-    args = parser.parse_args()
+def command_output(argv: list[str], timeout: float = 8) -> dict:
+    try:
+        result = subprocess.run(argv, check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
+        return {"exit": result.returncode, "output": " ".join(result.stdout.split())[:500]}
+    except (OSError, subprocess.SubprocessError) as exc:
+        return {"exit": None, "error": str(exc)}
 
-    cli = os.environ.get("WECOM_CLI") or shutil.which("wecom-cli")
-    result = {
-        "cli_found": bool(cli),
-        "version": None,
-        "config_ready": True,
-        "config_permissions_0600": True,
-        "upload_helper_configured": bool(UPLOAD_HELPER),
-        "upload_helper_ready": bool(
-            UPLOAD_HELPER
-            and UPLOAD_HELPER.is_file()
-            and os.access(UPLOAD_HELPER, os.X_OK)
-        ),
+
+def configuration_metadata(root: Path) -> list[dict]:
+    records = []
+    for name in EXPECTED_PRIVATE_FILES:
+        path = root / name
+        exists = path.is_file()
+        mode = stat.S_IMODE(path.stat().st_mode) if exists else None
+        records.append({"name": name, "path": str(path), "exists": exists, "mode": oct(mode) if mode is not None else None, "owner_only": mode == 0o600})
+    return records
+
+
+def helper_metadata(raw: str | None) -> dict:
+    path = Path(raw).expanduser().resolve(strict=False) if raw else None
+    return {
+        "configured": path is not None,
+        "path": str(path) if path else None,
+        "executable": bool(path and path.is_file() and os.access(path, os.X_OK)),
     }
 
-    if cli:
-        completed = subprocess.run(
-            [cli, "--version"], capture_output=True, text=True, check=False
-        )
-        result["version"] = completed.stdout.strip() or completed.stderr.strip()
-    else:
-        result["config_ready"] = False
 
-    for name in CONFIG_FILES:
-        path = CONFIG_DIR / name
-        if not path.is_file():
-            result["config_ready"] = False
-            continue
-        mode = stat.S_IMODE(path.stat().st_mode)
-        if mode != 0o600:
-            result["config_permissions_0600"] = False
-
-    if args.category and cli:
-        completed = subprocess.run(
-            [cli, args.category, "--help"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        output = (completed.stdout + completed.stderr).strip()
-        result["category"] = args.category
-        result["category_available"] = completed.returncode == 0
-        if completed.returncode != 0:
-            result["category_error"] = output[:500]
-
-    print(json.dumps(result, ensure_ascii=False, indent=2))
-    hard_failure = not cli or not result["config_ready"]
-    return 1 if hard_failure else 0
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--category", choices=("doc", "meeting", "schedule", "todo", "contact"))
+    parser.add_argument("--config-root", type=Path, default=Path("~/.config/wecom"))
+    args = parser.parse_args(argv)
+    executable = os.environ.get("WECOM_CLI") or shutil.which("wecom-cli")
+    files = configuration_metadata(args.config_root.expanduser())
+    report = {
+        "cli": {"path": executable, "available": bool(executable), "version": command_output([executable, "--version"]) if executable else None},
+        "configuration": files,
+        "configuration_ready": all(item["exists"] and item["owner_only"] for item in files),
+        "upload_helper": helper_metadata(os.environ.get("WECOM_UPLOAD_HELPER")),
+        "privacy": {"configuration_contents_read": False, "credentials_printed": False, "remote_calls_made": False},
+    }
+    if args.category:
+        report["category"] = {
+            "name": args.category,
+            "help": command_output([executable, args.category, "--help"]) if executable else None,
+        }
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 0 if executable and report["configuration_ready"] else 1
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
 interface:
   display_name: "ChatGPT Web Research"
-  short_description: "借助 ChatGPT 官网 Pro 账号做可核验的调研，支持可视化电脑操作兜底"
-  default_prompt: "Use $chatgpt-web-research to run product research on the official ChatGPT web page and produce a verified Markdown report."
+  short_description: "在用户指定的 ChatGPT 网页会话中完成并留存可核验调研"
+  default_prompt: "Use $chatgpt-web-research to conduct a traceable research run in my intended signed-in ChatGPT web session and save the verified result."

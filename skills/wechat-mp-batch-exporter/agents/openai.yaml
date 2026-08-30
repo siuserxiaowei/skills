@@ -1,7 +1,7 @@
 interface:
-  display_name: "WeChat MP Batch Exporter"
-  short_description: "批量下载公众号正文、区分原创与全量口径、抓阅读和评论数据"
-  default_prompt: "Use $wechat-mp-batch-exporter to export WeChat public-account history, keep publish groups, expanded URLs, and original articles apart, and download bodies, metrics, or comments."
+  display_name: "WeChat Official Account Archive"
+  short_description: "归档公众号文章并核对文章、群发与原创统计口径"
+  default_prompt: "Use $wechat-mp-batch-exporter to build a bounded private archive from known article URLs or an owner-authorized history export, with explicit count reconciliation."
 
 policy:
   allow_implicit_invocation: true

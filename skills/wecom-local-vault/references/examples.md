@@ -1,19 +1,29 @@
-# 企业微信本地私密 Vault｜案例与详细说明
-
-以下案例把触发条件、处理决策和验收证据连在一起。示例中的账号、路径、对象和内容均为占位描述，执行时必须替换为用户已确认的真实范围。
+# 验收案例
 
 ## 正向案例
 
-- **用户请求：** “读取我 Mac 上企业微信的本地数据库，导出某项目群一周消息。”
-- **处理：** 先只读识别版本、账号容器和已有快照；只有本轮明确授权时才用重签副本捕获 key，随后新建时间戳明文快照并按群/时间导出。
-- **验收证据：** 正版企业微信未改动；源库只读；快照、schema 探测和导出计数可核对；回复不暴露 raw key、内部 ID 或无关私聊。
+**用户请求：** Export one project room for a stated week.
+
+**处理：** Record the selected dataset label, create a new snapshot, resolve the room unambiguously, apply both time bounds, and export to a new private file.
+
+**验收证据：** The run has a manifest and message count, all outputs are owner-only, and source database metadata is unchanged.
 
 ## 边界案例
 
-- **场景：** 没有‘抓企微 key/继续完整解密’的当轮授权时，不 attach、不重签也不启动副本；更不能发送消息或把私密库移到项目目录。
-- **验收证据：** 未获授权的动作没有发生，结果明确标记适用范围与剩余选择。
+**场景：** The user asks whether local data is discoverable but has not authorized process attachment.
+
+**处理：** Run discovery, status, and doctor only. A capture command without its confirmation flag must stop before importing Frida or touching a process.
+
+**验收证据：** No process was attached, spawned, signed, or read; the report names the missing permission precisely.
+
+### Multiple accounts
+
+If discovery returns several opaque labels, ask the user to choose or provide an exact `--data-dir`. Do not guess based on contact contents. Capture and decrypt must bind the verified key record to the same dataset label.
 
 ## 失败与恢复
 
-- **场景与处理：** 数据库版本不兼容时停止解析，保存探测报告和只读副本，先更新 schema 适配与测试；不能猜字段后输出可能错配的人名和消息。
-- **验收证据：** 失败状态、已完成范围和下一次安全重试条件均可复核。
+**场景：** Headers, schema, or the known memory layout no longer match.
+
+**处理：** Preserve the read-only inspection result and stop. Update fixtures and compatibility logic before handling the live data; do not reinterpret unknown columns as people or message bodies.
+
+**验收证据：** The failure identifies the unsupported boundary, no plaintext claim is made, and a fixture-based compatibility test is required before retry.

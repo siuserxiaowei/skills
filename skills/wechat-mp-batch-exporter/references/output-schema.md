@@ -1,115 +1,57 @@
-# Output Schema
+# Archive records and reconciliation outputs
 
-## URL Download (Lightweight Path)
+## Public URL capture
 
-`scripts/download_urls.py` produces:
+Each run writes article bodies under `articles/`, plus:
 
-```text
-<output-dir>/
-|-- index.csv
-|-- errors.json
-`-- articles/
-    |-- 001-title.md
-    `-- 002-title.md
-```
+- `index.csv`: one row per requested URL;
+- `failures.json`: only unsuccessful rows.
 
-Columns of `index.csv`:
+`index.csv` fields are:
 
 ```text
-seq,title,source_url,format,path,status,error,downloaded_at
+position,source_url,status,title,relative_path,retrieved_at,error
 ```
 
-`errors.json` holds an array of the items that failed:
+Paths are relative to the run directory so the archive can be moved without rewriting the index.
 
-```json
-[
-  {
-    "seq": "002",
-    "source_url": "https://mp.weixin.qq.com/s/...",
-    "error": "..."
-  }
-]
-```
+## Normalized history
 
-## Enhanced Archive
+`analyze_history.py` writes the complete and platform-marked-original subsets as JSON, CSV, and URL lists. It also writes duplicate evidence and JSON/Markdown summaries.
 
-Merging bodies, metrics, and comments out of the exporter means one row per article:
+The summary fields are:
 
 ```text
-account_name
-fakeid
-title
-url
-publish_time
-author
-digest
-cover_url
-body_markdown_path
-html_path
-image_dir
-read_count
-like_count
-share_count
-favorite_count
-comment_count
-comments_path
-comment_replies_path
-fetch_mode
-credential_status
-exported_at
-error
-```
-
-Sidecar layout worth following:
-
-```text
-comments/<article-id>.json
-comment-replies/<article-id>.json
-raw-exporter/
-logs/
-```
-
-Raw cookies, auth-key, pass_ticket, key, token, uin, and credentials JSON stay out of the output archive — the sole exception is a private debugging bundle the user explicitly requests after acknowledging the risk.
-
-## History Count Breakdown
-
-Once a public-account history is synced or imported, run `scripts/analyze_history.py`. Its outputs:
-
-```text
-history.summary.json
-history.summary.md
-history.dedup.json
-history.dedup.csv
-urls.all.txt
-history.original.json
-history.original.csv
-urls.original.txt
-```
-
-The count fields to work with:
-
-```text
-raw_records
-expanded_url_items
-unique_urls
+input_objects
+expanded_articles
+unique_article_urls
 publish_groups
-headline_items
-original_articles
-not_deleted_items
-deleted_items
-duplicate_records_removed
-first_publish_time
-last_publish_time
-itemidx_counts
+headline_articles
+marked_original_articles
+active_articles
+deleted_articles
+duplicates_removed
+newest_published_at
+oldest_published_at
+item_position_counts
 copyright_type_counts
-copyright_stat_counts
 ```
 
-What they mean:
+These are reconciliation scopes, not interchangeable totals.
 
-- `expanded_url_items`: all unique article URLs that come out of expanding multi-article messages.
-- `publish_groups`: distinct `msgid` values — loosely one WeChat publish/message group each.
-- `headline_items`: the rows carrying `itemidx=1`.
-- `original_articles`: rows matching `copyright_type=1`, `copyright_stat=1`, and `is_deleted=false`.
+## Enhanced article record
 
-If the user puts WeChat frontend figures like “原创文章” next to these numbers, the right comparison target is `original_articles`, never `expanded_url_items`.
+When external tools provide metrics or comments, normalize them into one article record while keeping the unmodified upstream response in a separate private raw directory. Recommended groups:
+
+- identity: account, article ID, canonical URL, title;
+- publication: author, platform publication time, digest, cover URL;
+- local artifacts: body path, HTML path, image directory;
+- metrics: value, availability, retrieval time, and credential status for each field;
+- comments: comment file, reply file, visibility/availability state;
+- provenance: external tool/version, access route, exported time, and error.
+
+Unknown or unauthorized fields remain `null` with an explanation. Do not encode “not fetched” as zero.
+
+## Exclusions
+
+Credentials, cookies, QR payloads, authorization headers, signed query parameters, `pass_ticket`, `auth-key`, tokens, and private proxy/certificate material are never part of a normal archive.

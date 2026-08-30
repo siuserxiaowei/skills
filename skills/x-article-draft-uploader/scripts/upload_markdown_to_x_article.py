@@ -1,511 +1,352 @@
 #!/usr/bin/env python3
-"""Push a local Markdown file into X Articles, stopping at the draft stage.
-
-Only a draft is produced on purpose: the final publish button is never pressed.
-"""
+"""Create and verify an X Article draft from local Markdown; never publish it."""
 
 from __future__ import annotations
 
 import argparse
 import asyncio
 import base64
-import html as htmlmod
+import datetime as datetime_module
+import html
 import json
 import mimetypes
 import os
 import re
 import subprocess
 import sys
-import time
-import urllib.parse
+import uuid
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 
-DEFAULT_PARSE_SCRIPTS = [
-    Path(__file__).resolve().parent / "parse_markdown.py",
-]
+PARSER_DEFAULT = Path(__file__).with_name("parse_markdown.py")
+IMAGE_LINE = re.compile(r"^!\[[^\]]*\]\([^\n]+\)\s*$")
 
 
-def clean_anchor(text: str) -> str:
-    text = (text or "").strip()
-    text = re.sub(r"^#+\s*", "", text)
-    text = re.sub(r"^[-*+]\s+", "", text)
-    text = re.sub(r"^\d+[.)、]\s*", "", text)
-    return text.strip().strip("|").strip()
+class DraftError(RuntimeError):
+    pass
 
 
-def inspect_leading_cover(markdown_file: Path) -> dict:
-    """Tell whether the article's first non-empty content line is an image."""
-    lines = markdown_file.read_text().splitlines()
-    index = 0
-
-    while index < len(lines) and not lines[index].strip():
-        index += 1
-
-    if index < len(lines) and lines[index].strip() == "---":
-        index += 1
-        while index < len(lines) and lines[index].strip() != "---":
-            index += 1
-        if index < len(lines):
-            index += 1
-
-    while index < len(lines) and not lines[index].strip():
-        index += 1
-
-    first_line = lines[index].strip() if index < len(lines) else ""
-    starts_with_image = bool(re.match(r"^!\[[^\]]*\]\(.+\)", first_line))
-    return {
-        "starts_with_image": starts_with_image,
-        "first_content_line": index + 1 if first_line else None,
-        "first_content_preview": first_line[:160],
-    }
+@dataclass(frozen=True)
+class ImagePlan:
+    order: int
+    path: str
+    anchor_candidates: list[str]
+    source_line: int | None
 
 
-def parse_markdown(markdown_file: Path, parse_script: Path | None) -> dict:
-    script = parse_script
-    if script is None:
-        script = next((candidate for candidate in DEFAULT_PARSE_SCRIPTS if candidate.exists()), None)
-    if script is None or not script.exists():
-        raise FileNotFoundError("No parse_markdown.py found. Pass --parse-script explicitly.")
+def compact_text(value: str) -> str:
+    value = re.sub(r"^#{1,6}\s+", "", value.strip())
+    value = re.sub(r"^(?:[-+*]|\d+[.)、])\s+", "", value)
+    return re.sub(r"\s+", " ", value).strip(" |`")
 
-    env = os.environ.copy()
-    env["MARKDOWN_FILE"] = str(markdown_file)
-    result = subprocess.run(
+
+def leading_content(path: Path) -> dict:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    cursor = 0
+    while cursor < len(lines) and not lines[cursor].strip():
+        cursor += 1
+    if cursor < len(lines) and lines[cursor].strip() == "---":
+        cursor += 1
+        while cursor < len(lines) and lines[cursor].strip() != "---":
+            cursor += 1
+        cursor += cursor < len(lines)
+    while cursor < len(lines) and not lines[cursor].strip():
+        cursor += 1
+    value = lines[cursor].strip() if cursor < len(lines) else ""
+    return {"line": cursor + 1 if value else None, "preview": value[:160], "is_image": bool(IMAGE_LINE.match(value))}
+
+
+def run_parser(markdown: Path, script: Path) -> dict:
+    environment = dict(os.environ)
+    environment["MARKDOWN_FILE"] = str(markdown)
+    process = subprocess.run(
         [sys.executable, str(script)],
-        check=True,
-        capture_output=True,
+        check=False,
         text=True,
-        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=environment,
     )
-    data = json.loads(result.stdout)
-    required = ["title", "html", "cover_image", "content_images", "expected_image_count"]
-    missing = [key for key in required if key not in data]
+    if process.returncode:
+        raise DraftError(process.stderr.strip() or f"Markdown parser exited {process.returncode}")
+    try:
+        value = json.loads(process.stdout)
+    except json.JSONDecodeError as exc:
+        raise DraftError("Markdown parser did not return JSON") from exc
+    required = {"title", "html", "cover_image", "content_images", "expected_image_count"}
+    missing = sorted(required.difference(value))
     if missing:
-        raise ValueError(f"Parser output missing keys: {missing}")
-    return data
+        raise DraftError("Markdown parser omitted: " + ", ".join(missing))
+    return value
 
 
-def find_line_anchor(markdown_lines: list[str], image_path: str) -> tuple[str, int | None]:
-    base = Path(image_path).name
-    found = None
-    for idx, line in enumerate(markdown_lines):
-        if base in urllib.parse.unquote(line):
-            found = idx
-            break
-    if found is None:
-        return "", None
-    cursor = found - 1
-    while cursor >= 0:
-        stripped = markdown_lines[cursor].strip()
-        if stripped and not stripped.startswith("!["):
-            if stripped == "---":
-                cursor -= 1
-                continue
-            return clean_anchor(stripped), found + 1
-        cursor -= 1
-    return "", found + 1
+def html_to_text(value: str) -> str:
+    separated = re.sub(r"<(?:br\s*/?|/(?:p|div|h[1-6]|li|blockquote))>", "\n", value, flags=re.IGNORECASE)
+    without_tags = re.sub(r"<[^>]+>", "", separated)
+    return re.sub(r"\n{3,}", "\n\n", html.unescape(without_tags)).strip()
 
 
-def build_content_images(data: dict, markdown_file: Path, include_cover_as_body: bool = False) -> list[dict]:
-    lines = markdown_file.read_text().splitlines()
-    images = list(data["content_images"])
-    if include_cover_as_body and data.get("cover_image"):
-        images.insert(
-            0,
-            {
-                "path": data["cover_image"],
-                "original_path": data["cover_image"],
-                "exists": Path(data["cover_image"]).exists(),
-                "alt": "",
-                "block_index": 0,
-                "after_text": "",
-                "text_before": "",
-                "text_after": "",
-                "block_type": "paragraph",
-            },
-        )
-
-    items = []
-    for index, image in enumerate(images, 1):
-        primary, line = find_line_anchor(lines, image["path"])
-        candidates = []
-        if primary:
-            candidates.append(primary)
-        for key in ("text_before", "after_text"):
-            for part in (image.get(key) or "").split("\n"):
-                candidate = clean_anchor(part)
-                if candidate and candidate != "-" and candidate not in candidates:
-                    candidates.append(candidate)
-        items.append(
-            {
-                **image,
-                "index": index,
-                "line": line,
-                "expected_anchor": primary or (candidates[0] if candidates else ""),
-                "candidates": candidates,
-            }
-        )
-    return items
-
-
-def plain_text_from_html(rich_html: str) -> str:
-    text = re.sub(r"<br\s*/?>", "\n", rich_html)
-    text = re.sub(r"</(p|div|h[1-6]|li|tr)>", "\n", text)
-    text = htmlmod.unescape(re.sub(r"<[^>]+>", "", text))
-    return re.sub(r"\n{3,}", "\n\n", text).strip()
-
-
-def text_checkpoints(value: str, width: int = 64) -> tuple[str, str]:
-    """Return stable beginning/end snippets for browser-side paste checks."""
+def text_edges(value: str, length: int = 56) -> tuple[str, str]:
     normalized = re.sub(r"\s+", " ", value).strip()
-    if not normalized:
-        return "", ""
-    return normalized[:width], normalized[-width:]
+    return normalized[:length], normalized[-length:] if normalized else ""
 
 
-def load_cookies(path: Path) -> list[dict]:
-    raw = json.loads(path.read_text())
-    return raw["cookies"] if isinstance(raw, dict) and "cookies" in raw else raw
+def line_for_image(lines: list[str], path: str) -> int | None:
+    name = Path(path).name
+    return next((number for number, line in enumerate(lines, start=1) if name in line), None)
 
 
-async def run_upload(args: argparse.Namespace, data: dict, content_images: list[dict]) -> dict:
-    from playwright.async_api import async_playwright
+def previous_prose(lines: list[str], line_number: int | None) -> list[str]:
+    if line_number is None:
+        return []
+    candidates: list[str] = []
+    for cursor in range(line_number - 2, -1, -1):
+        value = compact_text(lines[cursor])
+        if value and value != "---" and not IMAGE_LINE.match(lines[cursor].strip()):
+            candidates.append(value)
+            break
+    return candidates
 
-    rich_html = data["html"]
-    plain = plain_text_from_html(rich_html)
-    expected_start, expected_end = text_checkpoints(plain)
-    cookies = load_cookies(Path(args.cookies_json))
-    upload_cover = bool(data.get("cover_image")) and not args.allow_no_cover
 
-    async def count_media(page):
-        return await page.evaluate(
-            r"""() => [...document.images]
-              .map(img=>({src:img.src,x:img.getBoundingClientRect().x,y:img.getBoundingClientRect().y,w:img.getBoundingClientRect().width,h:img.getBoundingClientRect().height}))
-              .filter(i=>i.x>700 && i.w>80 && !i.src.includes('profile_images') && !i.src.includes('/emoji/')).length"""
-        )
+def image_plan(parsed: dict, markdown: Path, cover_in_body: bool) -> list[ImagePlan]:
+    images = list(parsed["content_images"])
+    if cover_in_body and parsed.get("cover_image"):
+        images.insert(0, {"path": parsed["cover_image"], "text_before": "", "after_text": ""})
+    lines = markdown.read_text(encoding="utf-8").splitlines()
+    plans: list[ImagePlan] = []
+    for order, item in enumerate(images, start=1):
+        line = line_for_image(lines, item["path"])
+        candidates = previous_prose(lines, line)
+        for key in ("text_before", "after_text", "text_after"):
+            for part in str(item.get(key) or "").splitlines():
+                cleaned = compact_text(part)
+                if cleaned and cleaned not in candidates:
+                    candidates.append(cleaned)
+        plans.append(ImagePlan(order, str(item["path"]), candidates, line))
+    return plans
 
-    async def media_items(page):
-        return await page.evaluate(
-            r"""() => [...document.images]
-              .map(img=>({src:img.src,x:img.getBoundingClientRect().x,y:img.getBoundingClientRect().y,w:img.getBoundingClientRect().width,h:img.getBoundingClientRect().height}))
-              .filter(i=>i.x>700 && i.w>80 && !i.src.includes('profile_images') && !i.src.includes('/emoji/'))"""
-        )
 
-    async def click_apply_if_present(page, timeout_s=25):
-        deadline = time.time() + timeout_s
-        while time.time() < deadline:
-            locator = page.locator('[data-testid="applyButton"]')
+def load_storage_state(path: Path) -> list[dict]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(value, dict):
+        value = value.get("cookies")
+    if not isinstance(value, list):
+        raise DraftError("cookie file must be a Playwright storage-state object or cookie array")
+    return value
+
+
+async def optional_apply(page, seconds: float = 12) -> bool:
+    deadline = asyncio.get_running_loop().time() + seconds
+    button = page.locator('[data-testid="applyButton"]')
+    while asyncio.get_running_loop().time() < deadline:
+        if await button.count():
             try:
-                if await locator.count():
-                    await locator.last.click(timeout=2500)
-                    await page.wait_for_timeout(4500)
-                    return True
+                await button.last.click(timeout=1500)
+                return True
             except Exception:
                 pass
-            await page.wait_for_timeout(700)
-        return False
+        await page.wait_for_timeout(400)
+    return False
 
-    async def find_target(page, candidates):
-        return await page.evaluate(
-            r"""({candidates}) => {
-              function norm(s){
-                return (s||'')
-                  .replace(/\u00a0/g,' ')
-                  .replace(/^#+\s*/,'')
-                  .replace(/^[-*+]\s+/,'')
-                  .replace(/^\d+[.)、]\s*/,'')
-                  .replace(/\s+/g,' ')
-                  .split('|').join('')
-                  .split('`').join('')
-                  .trim();
-              }
-              const ordered=[];
-              for (const raw of candidates || []) {
-                const parts=String(raw).split(/\n+/).map(x=>norm(x)).filter(x=>x.length>1 && x !== '-');
-                const full=norm(raw);
-                const all=[];
-                if (full) all.push(full);
-                for (const p of parts) all.push(p);
-                for (const p of all) if (p && !ordered.includes(p)) ordered.push(p);
-              }
-              const blocks=[...document.querySelectorAll('[data-testid="composer"] .public-DraftStyleDefault-block')];
-              let chosen=null;
-              for (const c of ordered) {
-                let best=null;
-                for (const [bi,b] of blocks.entries()) {
-                  const bt=norm(b.innerText);
-                  if (!bt) continue;
-                  let score=0;
-                  if (bt === c) score=10000;
-                  else if (c.length >= 8 && bt.includes(c)) score=8000;
-                  else if (bt.length >= 8 && c.includes(bt)) score=5000;
-                  else if (c.length >= 16 && bt.includes(c.slice(0, Math.min(42,c.length)))) score=3000;
-                  if (score && (!best || score>best.score || (score===best.score && bt.length>best.blockText.length))) {
-                    best={node:b, score, bi, blockText:bt, candidate:c};
-                  }
-                }
-                if (best) { chosen=best; break; }
-              }
-              if (!chosen) return null;
-              const n=chosen.node;
-              n.scrollIntoView({block:'center'});
-              function lastTextNode(node){
-                const walker=document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
-                let cur,last=null;
-                while(cur=walker.nextNode()) if(cur.nodeValue && cur.nodeValue.trim()) last=cur;
-                return last;
-              }
-              const t=lastTextNode(n);
-              let x,y;
-              if (t && t.nodeValue.length) {
-                const range=document.createRange();
-                range.setStart(t, Math.max(0,t.nodeValue.length-1));
-                range.setEnd(t, t.nodeValue.length);
-                const r=range.getBoundingClientRect();
-                x=Math.min(Math.max(r.right+3, 720), 1360);
-                y=Math.min(Math.max(r.top+r.height/2, 115), 1040);
-              } else {
-                const r=n.getBoundingClientRect();
-                x=Math.min(r.right-8,1360);
-                y=Math.min(Math.max(r.top+r.height/2,115),1040);
-              }
-              return {x,y,blockText:chosen.blockText,candidate:chosen.candidate,score:chosen.score,blockIndex:chosen.bi};
-            }""",
-            {"candidates": candidates},
-        )
 
-    async def paste_image_at_current_selection(page, image_path):
-        path = Path(image_path)
-        mime = mimetypes.guess_type(str(path))[0] or "image/png"
-        if mime == "image/jpg":
-            mime = "image/jpeg"
-        encoded = base64.b64encode(path.read_bytes()).decode()
-        return await page.evaluate(
-            r"""async ({encoded,mime,name}) => {
-              const editor=document.querySelector('[data-testid="composer"]');
-              editor?.focus();
-              const bytes=Uint8Array.from(atob(encoded), c=>c.charCodeAt(0));
-              const file=new File([bytes], name, {type:mime});
-              const dt=new DataTransfer();
-              dt.items.add(file);
-              editor.dispatchEvent(new ClipboardEvent('paste', {bubbles:true, cancelable:true, clipboardData:dt}));
-              await new Promise(r=>setTimeout(r,3000));
-              return {allImages:document.images.length};
-            }""",
-            {"encoded": encoded, "mime": mime, "name": path.name},
-        )
+async def paste_html(page, rich: str, plain: str, start: str, end: str) -> dict:
+    return await page.evaluate(
+        """async ({rich,plain,start,end}) => {
+          const editor=document.querySelector('[data-testid="composer"]');
+          if(!editor) return {ok:false,error:'composer missing'};
+          editor.focus();
+          const transfer=new DataTransfer();
+          transfer.setData('text/html',rich); transfer.setData('text/plain',plain);
+          editor.dispatchEvent(new ClipboardEvent('paste',{bubbles:true,cancelable:true,clipboardData:transfer}));
+          await new Promise(resolve=>setTimeout(resolve,2500));
+          const normalized=(editor.innerText||'').replace(/\s+/g,' ').trim();
+          return {ok:true,length:normalized.length,start:!start||normalized.includes(start),end:!end||normalized.includes(end),marker:normalized.includes('MPH_MARKER')};
+        }""",
+        {"rich": rich, "plain": plain, "start": start, "end": end},
+    )
 
-    async def wait_media_increment(page, before, timeout_s=75):
-        deadline = time.time() + timeout_s
-        last = before
-        while time.time() < deadline:
-            await page.wait_for_timeout(2500)
-            last = await count_media(page)
-            if last >= before + 1:
-                return last
-        return last
 
-    async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=not args.headed)
-        context = await browser.new_context(viewport={"width": 1440, "height": 1200}, locale="zh-CN")
+async def find_anchor_block(page, candidates: list[str]):
+    blocks = page.locator('[data-testid="composer"] .public-DraftStyleDefault-block')
+    count = await blocks.count()
+    normalized_candidates = [compact_text(value) for value in candidates if compact_text(value)]
+    best = None
+    for index in range(count):
+        block = blocks.nth(index)
+        text = compact_text(await block.inner_text())
+        if not text:
+            continue
+        for candidate in normalized_candidates:
+            score = 3 if text == candidate else 2 if len(candidate) >= 8 and candidate in text else 1 if len(text) >= 8 and text in candidate else 0
+            if score and (best is None or score > best[0]):
+                best = (score, block, candidate, text)
+    return best
+
+
+async def paste_image(page, path: Path) -> None:
+    mime = mimetypes.guess_type(path.name)[0] or "image/png"
+    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+    result = await page.evaluate(
+        """async ({encoded,mime,name}) => {
+          const editor=document.querySelector('[data-testid="composer"]');
+          if(!editor) return false;
+          const bytes=Uint8Array.from(atob(encoded), value=>value.charCodeAt(0));
+          const transfer=new DataTransfer(); transfer.items.add(new File([bytes],name,{type:mime}));
+          editor.dispatchEvent(new ClipboardEvent('paste',{bubbles:true,cancelable:true,clipboardData:transfer}));
+          await new Promise(resolve=>setTimeout(resolve,2000)); return true;
+        }""",
+        {"encoded": encoded, "mime": mime, "name": path.name},
+    )
+    if not result:
+        raise DraftError(f"could not paste image: {path}")
+
+
+async def visible_media_count(page) -> int:
+    return await page.evaluate(
+        """() => [...document.images].filter(image => {
+          const box=image.getBoundingClientRect();
+          return box.width>=80 && box.height>=40 && !image.src.includes('profile_images') && !image.src.includes('/emoji/');
+        }).length"""
+    )
+
+
+async def wait_media_growth(page, before: int, timeout_seconds: float = 60) -> int:
+    deadline = asyncio.get_running_loop().time() + timeout_seconds
+    current = before
+    while asyncio.get_running_loop().time() < deadline:
+        await page.wait_for_timeout(1500)
+        current = await visible_media_count(page)
+        if current > before:
+            return current
+    return current
+
+
+async def create_draft(args: argparse.Namespace, parsed: dict, plans: list[ImagePlan], output: Path) -> dict:
+    from playwright.async_api import async_playwright
+
+    plain = html_to_text(parsed["html"])
+    beginning, ending = text_edges(plain)
+    cookies = load_storage_state(args.cookies)
+    output.mkdir(parents=True, exist_ok=False)
+    async with async_playwright() as engine:
+        browser = await engine.chromium.launch(headless=args.headless)
+        context = await browser.new_context(viewport={"width": 1440, "height": 1100}, locale="zh-CN")
         await context.add_cookies(cookies)
         page = await context.new_page()
-        page.set_default_timeout(70000)
-
-        print("[1/5] create fresh draft")
-        await page.goto("https://x.com/compose/articles", wait_until="domcontentloaded", timeout=90000)
-        await page.wait_for_timeout(6000)
-        if "/login" in page.url:
-            raise RuntimeError("X login is stale; export cookies again.")
-        await page.locator('button[aria-label="create"]').first.click()
-        for _ in range(15):
-            await page.wait_for_timeout(2500)
-            if "/compose/articles/edit/" in page.url:
-                break
-        if "/compose/articles/edit/" not in page.url:
-            raise RuntimeError(f"Did not enter edit page: {page.url}")
+        page.set_default_timeout(60_000)
+        await page.goto("https://x.com/compose/articles", wait_until="domcontentloaded")
+        await page.wait_for_timeout(3500)
+        if "login" in page.url:
+            raise DraftError("X session is not authenticated")
+        create_button = page.locator('button[aria-label="create"]')
+        if not await create_button.count():
+            raise DraftError("create-article control was not found")
+        await create_button.first.click()
+        await page.wait_for_url(re.compile(r"/compose/articles/edit/"), timeout=45_000)
         draft_url = page.url
-        Path(args.url_output).write_text(draft_url)
-        print("draft_url=" + draft_url)
-
-        print("[2/5] upload cover")
-        await page.wait_for_selector('textarea[placeholder="添加标题"]', timeout=70000)
-        if upload_cover:
-            await page.locator('input[type="file"][accept*="image"]').first.set_input_files(data["cover_image"])
-            await page.wait_for_timeout(3000)
-            await click_apply_if_present(page, timeout_s=35)
-            await page.wait_for_timeout(8000)
-            if await count_media(page) < 1:
-                raise RuntimeError("Cover upload was not detected.")
-        else:
-            print("cover=skipped (--allow-no-cover)")
-
-        print("[3/5] fill title and body")
-        await page.locator('textarea[placeholder="添加标题"]').first.fill(args.title or data["title"])
-        body_state = await page.evaluate(
-            r"""async ({richHtml, plain, expectedStart, expectedEnd}) => {
-              const editor=document.querySelector('[data-testid="composer"]');
-              editor.focus();
-              const dt=new DataTransfer();
-              dt.setData('text/html', richHtml);
-              dt.setData('text/plain', plain);
-              editor.dispatchEvent(new ClipboardEvent('paste',{bubbles:true,cancelable:true,clipboardData:dt}));
-              await new Promise(r=>setTimeout(r,5000));
-              const text=editor.innerText || '';
-              const normalized=text.replace(/\s+/g,' ').trim();
-              return {
-                len:text.length,
-                startMatched:!expectedStart || normalized.includes(expectedStart),
-                endMatched:!expectedEnd || normalized.includes(expectedEnd),
-                marker:text.includes('MPH_MARKER')
-              };
-            }""",
-            {
-                "richHtml": rich_html,
-                "plain": plain,
-                "expectedStart": expected_start,
-                "expectedEnd": expected_end,
-            },
-        )
-        print("body=" + json.dumps(body_state, ensure_ascii=False))
-        if not body_state["startMatched"] or not body_state["endMatched"] or body_state["marker"]:
-            raise RuntimeError("Body paste verification failed.")
-        await page.wait_for_timeout(8000)
-
-        print("[4/5] insert body images")
+        (output / "draft-url.txt").write_text(draft_url + "\n", encoding="utf-8")
+        title_box = page.locator('textarea[placeholder="添加标题"]')
+        await title_box.wait_for()
+        cover_uploaded = False
+        if parsed.get("cover_image") and not args.no_cover:
+            file_inputs = page.locator('input[type="file"][accept*="image"]')
+            await file_inputs.first.set_input_files(parsed["cover_image"])
+            await optional_apply(page)
+            await page.wait_for_timeout(2500)
+            cover_uploaded = True
+        await title_box.fill(args.title or parsed["title"])
+        body = await paste_html(page, parsed["html"], plain, beginning, ending)
+        if not body.get("ok") or not body.get("start") or not body.get("end") or body.get("marker"):
+            raise DraftError("body paste did not pass beginning/end verification")
         inserted = []
-        for item in sorted(content_images, key=lambda value: value["index"], reverse=True):
-            before = await count_media(page)
-            target = await find_target(page, item["candidates"])
-            if not target:
-                raise RuntimeError(f"Image {item['index']} anchor not found: {item['candidates'][:3]}")
-            print(f"image {item['index']:02d}/{len(content_images)} anchor={target['candidate'][:60]} media={before}")
-            await page.mouse.click(target["x"], target["y"])
+        for plan in reversed(plans):
+            if not Path(plan.path).is_file():
+                raise DraftError(f"image is missing: {plan.path}")
+            anchor = await find_anchor_block(page, plan.anchor_candidates)
+            if anchor is None:
+                raise DraftError(f"no editor anchor for image {plan.order}: {Path(plan.path).name}")
+            _, block, candidate, visible = anchor
+            box = await block.bounding_box()
+            if box is None:
+                raise DraftError(f"editor anchor became unavailable for image {plan.order}: {Path(plan.path).name}")
+            await block.click(position={"x": max(1, box["width"] - 3), "y": max(1, box["height"] / 2)})
             await page.keyboard.press("End")
             await page.keyboard.press("Enter")
-            await page.wait_for_timeout(600)
-            await paste_image_at_current_selection(page, item["path"])
-            await click_apply_if_present(page, timeout_s=3)
-            after = await wait_media_increment(page, before, timeout_s=75)
-            if after < before + 1:
-                raise RuntimeError(f"Image {item['index']} failed: media {before}->{after}")
-            inserted.append(
-                {
-                    "index": item["index"],
-                    "file": Path(item["path"]).name,
-                    "anchor_used": target["candidate"],
-                    "expected_anchor": item["expected_anchor"],
-                    "count_after": after,
-                }
-            )
-            await page.wait_for_timeout(2500)
-
-        print("[5/5] verify autosave")
-        await page.wait_for_timeout(35000)
-        final_media = await media_items(page)
+            before = await visible_media_count(page)
+            await paste_image(page, Path(plan.path))
+            await optional_apply(page, 3)
+            after = await wait_media_growth(page, before)
+            if after <= before:
+                raise DraftError(f"image insertion was not observed: {Path(plan.path).name}")
+            inserted.append({"order": plan.order, "file": Path(plan.path).name, "candidate": candidate, "visible_block": visible})
+        await page.wait_for_timeout(12_000)
         final = await page.evaluate(
-            r"""({expectedStart, expectedEnd}) => {
+            """({beginning,ending}) => {
               const editor=document.querySelector('[data-testid="composer"]');
-              const text=editor?.innerText||'';
-              const normalized=text.replace(/\s+/g,' ').trim();
-              return {
-                title:document.querySelector('textarea[placeholder="添加标题"]')?.value||'',
-                textLength:text.length,
-                startMatched:!expectedStart || normalized.includes(expectedStart),
-                endMatched:!expectedEnd || normalized.includes(expectedEnd),
-                marker:text.includes('MPH_MARKER'),
-                saveText:document.body.innerText.includes('刚刚最后保存')?'刚刚最后保存':(document.body.innerText.match(/上一次保存[^\n]*/)?.[0]||'')
-              };
+              const title=document.querySelector('textarea[placeholder="添加标题"]')?.value||'';
+              const value=(editor?.innerText||'').replace(/\s+/g,' ').trim();
+              return {title,text_length:value.length,beginning:!beginning||value.includes(beginning),ending:!ending||value.includes(ending),marker:value.includes('MPH_MARKER'),page_text:document.body.innerText.slice(-600)};
             }""",
-            {"expectedStart": expected_start, "expectedEnd": expected_end},
+            {"beginning": beginning, "ending": ending},
         )
-        final.update(
-            {
-                "draft_url": draft_url,
-                "media_count": len(final_media),
-                "expected_total_media": (1 if upload_cover else 0) + data["expected_image_count"],
-                "cover_uploaded": upload_cover,
-                "inserted": inserted,
-            }
-        )
-        Path(args.result_json).write_text(json.dumps(final, ensure_ascii=False, indent=2))
-        await page.screenshot(path=args.screenshot, full_page=True)
-        ok = (
-            final["title"] == (args.title or data["title"])
-            and final["startMatched"]
-            and final["endMatched"]
-            and not final["marker"]
-            and final["media_count"] >= final["expected_total_media"]
-        )
-        print("final=" + json.dumps(final, ensure_ascii=False))
-        print("RESULT_OK", ok)
+        final.update({"draft_url": draft_url, "cover_uploaded": cover_uploaded, "inserted": inserted, "media_count": await visible_media_count(page), "published": False})
+        await page.screenshot(path=str(output / "draft.png"), full_page=True)
+        (output / "result.json").write_text(json.dumps(final, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         await browser.close()
-        if not ok:
-            raise RuntimeError("Final verification failed.")
-        return final
+    expected_title = args.title or parsed["title"]
+    if final["title"] != expected_title or not final["beginning"] or not final["ending"] or final["marker"]:
+        raise DraftError("final draft verification failed")
+    return final
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("markdown_file")
-    parser.add_argument("--cookies-json", default="/tmp/x_current_cookies.json")
-    parser.add_argument("--parse-script")
+def default_output() -> Path:
+    label = datetime_module.datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
+    return Path.cwd() / "x-article-runs" / label
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("markdown", type=Path)
+    parser.add_argument("--cookies", type=Path, required=True)
+    parser.add_argument("--parser", type=Path, default=PARSER_DEFAULT)
     parser.add_argument("--title")
-    parser.add_argument(
-        "--allow-no-cover",
-        action="store_true",
-        help="Continue when the article does not start with an image. Skips cover upload and treats all images as body images.",
-    )
-    parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--headed", action="store_true")
-    parser.add_argument("--result-json", default="/tmp/x_article_upload_result.json")
-    parser.add_argument("--url-output", default="/tmp/x_article_upload_url.txt")
-    parser.add_argument("--screenshot", default="/tmp/x_article_final_uploaded.png")
-    args = parser.parse_args()
-
-    markdown_file = Path(args.markdown_file).expanduser()
-    cover_policy = inspect_leading_cover(markdown_file)
-    data = parse_markdown(markdown_file, Path(args.parse_script).expanduser() if args.parse_script else None)
-    if args.title:
-        data["title"] = args.title
-
-    if not cover_policy["starts_with_image"] and not args.allow_no_cover:
-        message = (
-            "文章第一个有效内容不是图片。建议先在文章最开头加一张封面图，再上传到 X Articles。\n"
-            f"当前第一个有效内容在第 {cover_policy['first_content_line']} 行："
-            f"{cover_policy['first_content_preview']!r}\n"
-            "如果用户明确拒绝添加封面图，并希望继续上传无封面草稿，请重新运行并加上 --allow-no-cover。"
-        )
-        print(message, file=sys.stderr)
-        raise SystemExit(2)
-
-    include_cover_as_body = args.allow_no_cover and bool(data.get("cover_image"))
-    content_images = build_content_images(data, markdown_file, include_cover_as_body=include_cover_as_body)
-    if args.allow_no_cover:
-        data["cover_image"] = None
-        data["expected_image_count"] = len(content_images)
-
-    print(
-        json.dumps(
-            {
-                "title": data["title"],
-                "cover_image": data["cover_image"],
-                "cover_policy": cover_policy,
-                "cover_upload": bool(data.get("cover_image")) and not args.allow_no_cover,
-                "expected_body_images": data["expected_image_count"],
-                "anchors": [
-                    {"index": item["index"], "file": Path(item["path"]).name, "anchor": item["expected_anchor"]}
-                    for item in content_images
-                ],
-            },
-            ensure_ascii=False,
-            indent=2,
-        )
-    )
-    if args.dry_run:
-        return
-    asyncio.run(run_upload(args, data, content_images))
+    parser.add_argument("--no-cover", action="store_true", help="continue only when the user explicitly accepts no cover")
+    parser.add_argument("--headless", action="store_true")
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--apply", action="store_true")
+    args = parser.parse_args(argv)
+    markdown = args.markdown.expanduser().resolve(strict=False)
+    if not markdown.is_file():
+        parser.error(f"Markdown file is missing: {markdown}")
+    first = leading_content(markdown)
+    parsed = run_parser(markdown, args.parser.expanduser().resolve(strict=False))
+    if not first["is_image"] and not args.no_cover:
+        raise DraftError(f"first content line is not an image (line {first['line']}): {first['preview']!r}; use --no-cover only after user approval")
+    cover_in_body = args.no_cover and bool(parsed.get("cover_image"))
+    plans = image_plan(parsed, markdown, cover_in_body)
+    if args.no_cover:
+        parsed["cover_image"] = None
+    preview = {
+        "title": args.title or parsed["title"],
+        "first_content": first,
+        "cover": parsed.get("cover_image"),
+        "body_images": [asdict(plan) for plan in plans],
+        "creates_draft": args.apply,
+        "publishes": False,
+    }
+    print(json.dumps(preview, ensure_ascii=False, indent=2))
+    if not args.apply:
+        return 0
+    output = (args.output or default_output()).expanduser().resolve(strict=False)
+    result = asyncio.run(create_draft(args, parsed, plans, output))
+    print(json.dumps({"draft_url": result["draft_url"], "output": str(output), "published": False}, ensure_ascii=False, indent=2))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        raise SystemExit(main())
+    except DraftError as exc:
+        print(json.dumps({"status": "error", "message": str(exc)}, ensure_ascii=False, indent=2), file=sys.stderr)
+        raise SystemExit(2)

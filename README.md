@@ -45,8 +45,8 @@ cp -R skills/<skill-name> ~/.agents/skills/
 
 | Skill | 用途 |
 |---|---|
-| `web-research` | 互联网研究总入口 |
-| `chatgpt-web-research` | Drive the user's already logged-in ChatGPT 官网 / ChatGPT 网页版 account — … |
+| `web-research` | 按来源可访问性、授权范围和证据要求路由公开网页、已知 URL、私有收藏与媒体研究 |
+| `chatgpt-web-research` | 在用户指定且已登录的可见 ChatGPT 网页会话中执行研究，并保存可核验原始证据与编辑稿 |
 | `wechat-reading` | 通过微信读书官方只读 Gateway 查询与分析书籍、书架、进度、笔记、划线、点评、推荐和阅读统计，不泄露账号 Key |
 | `skill-vetter` | 安装、执行、发布或信任 Agent Skill 前，审计来源、许可证、指令、代码、依赖、权限、隐私与供应链风险 |
 
@@ -54,11 +54,11 @@ cp -R skills/<skill-name> ~/.agents/skills/
 
 | Skill | 用途 |
 |---|---|
-| `wechat-local-vault` | 在本机把微信 Mac 4.x 的数据库解密成可长期复用的数字资产库，并提供本地查询分析能力 |
-| `wecom-local-vault` | Decrypt and read local WeCom/企业微信 5.x desktop databases on macOS into … |
-| `wecom-operations` | 本 Skill 借助官方 wecom-cli 操作企业微信云端资源：把本地 Markdown 发布为普通文档或智能文档（含本地图片时需用户自… |
-| `wechat-mp-batch-exporter` | 批量下载微信公众号文章正文、历史文章列表、原创文章筛选、历史计数口径、阅读量、点赞/转发等指标、评论和评论回复 |
-| `mac-wechat-dual-open` | Build, check, fix, and refine a second WeChat app on macOS. Duplicate … |
+| `wechat-local-vault` | 把用户授权的 macOS 微信数据库只读快照解密到私密 Vault，再按会话和时间窗查询或导出 |
+| `wecom-local-vault` | 发现、解密并只读查询用户授权的 macOS 企业微信本地数据库快照，敏感产物留在私密目录 |
+| `wecom-operations` | 通过官方 wecom-cli 管理企业微信文档、待办、会议和日程，写操作带明确授权与回读门 |
+| `wechat-mp-batch-exporter` | 以预览/执行门批量下载微信公众号文章和授权历史数据，并输出可复核清单、失败项与统计 |
+| `mac-wechat-dual-open` | 在 macOS 上预览、构建和核验独立微信副本，不修改原应用或用户容器 |
 
 ### 飞书（Lark）系列（27 个）
 
@@ -111,7 +111,7 @@ cp -R skills/<skill-name> ~/.agents/skills/
 
 | Skill | 用途 |
 |---|---|
-| `agent-memory` | Install, upgrade, inspect, and maintain the public Agent Memory Vault … |
+| `agent-memory` | 设计、检查、迁移和维护 Markdown-first 私密 Agent 记忆库，区分权威记录与可重建索引 |
 | `skill-publisher` | 发布或更新 Agent Skill：先固化仓库、许可证、秘密、提交与远端边界，再验证 GitHub 发布和隔离安装结果 |
 | `goal-meta-skill` | 把长期 Codex 请求变成保持完整范围、可用权威证据验收、权限边界真实的持久 Goal |
 
@@ -136,7 +136,7 @@ cp -R skills/<skill-name> ~/.agents/skills/
 
 | Skill | 用途 |
 |---|---|
-| `x-article-draft-uploader` | 将 Obsidian 或本地 Markdown 文章上传为 X/Twitter Articles 草稿：自动以第一张图作为封面，正文图片全部… |
+| `x-article-draft-uploader` | 把本地 Markdown 转为经核验的 X Articles 新草稿，保留封面与正文图片位置且不公开发布 |
 
 
 ## 许可说明

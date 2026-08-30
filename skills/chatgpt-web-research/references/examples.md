@@ -1,19 +1,33 @@
-# ChatGPT 官网调研｜案例与详细说明
-
-以下案例把触发条件、处理决策和验收证据连在一起。示例中的账号、路径、对象和内容均为占位描述，执行时必须替换为用户已确认的真实范围。
+# ChatGPT Web Research examples
 
 ## 正向案例
 
-- **用户请求：** “用我已登录的 ChatGPT Pro 做五家竞品对比，并保存完整结果。”
-- **处理：** 只接管用户指定 Chrome 资料中的真实 ChatGPT 页面，提交带范围、日期和输出格式的研究提示；等页面生成完成后抽取全文并写入 Markdown。
-- **验收证据：** 保存文件可打开，包含五家候选、比较维度、来源提示和生成完成状态；页面上的标题/结尾与落盘内容抽样一致。
+**用户请求：** “用我工作 Chrome 里的 ChatGPT 网页版比较三款团队知识库，报告保存下来。”
+
+**处理：** Match the named visible profile and existing ChatGPT tab, submit a dated comparison packet with a unique run token, wait for a terminal page state, and preserve raw and edited Markdown separately.
+
+**验收证据：** The captured answer contains all three products and the token; `run.json` records the route and conversation URL; the saved report is read back and checked against the requested criteria.
 
 ## 边界案例
 
-- **场景：** 若看不到用户指定的已登录账号，就停止并请用户切换页面；不能改用 API、普通网页搜索或另一个免费账号冒充官网结果。
-- **验收证据：** 未获授权的动作没有发生，结果明确标记适用范围与剩余选择。
+**场景：** “一定用我的付费账号”，但 only an unverified or free account is visible.
+
+**处理：** Stop before entering the prompt and ask the user to expose the intended account. Do not inspect cookies or continue in another profile.
+
+**验收证据：** No research message is submitted under the wrong account, and the missing visible condition is stated precisely.
 
 ## 失败与恢复
 
-- **场景与处理：** 页面中断或 UI 改版时，先检查当前可见状态并保留已完成内容；未看见最终完成标志前，只能报告部分结果，不能标为完成。
-- **验收证据：** 失败状态、已完成范围和下一次安全重试条件均可复核。
+**场景：** The page shows a long completed response, but the copy action returns only the first section.
+
+**处理：** Keep the incomplete copy as diagnostic evidence, extract the assistant message through the accessible page structure, and compare its beginning, end, and run token with the visible page.
+
+**验收证据：** The final raw file contains the token and all visible sections; the report records the alternate capture method.
+
+### Terminal interruption
+
+**Situation:** The user closes the selected browser window during generation.
+
+**Decision:** Mark the run interrupted and preserve any confirmed partial response. Do not move to a different account or pretend that an unrelated answer completed the run.
+
+**Evidence:** The delivery distinguishes partial material from a finished report and states the minimum step needed to resume.

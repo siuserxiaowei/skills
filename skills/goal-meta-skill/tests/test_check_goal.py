@@ -21,18 +21,18 @@ class GoalCheckerTests(unittest.TestCase):
 
     def test_strong_chinese_goal_has_no_findings(self):
         text = (
-            "/goal 修复结账优惠券重复计算问题，并保持固定金额优惠和礼品卡行为不变。"
-            "用先失败后通过的回归测试、相关测试套件和运行日志作为验证证据。"
-            "只允许修改结账定价逻辑及其测试；涉及生产支付凭证或规则不明确时暂停并请求用户确认。"
+            "/goal 修复静态站点导航中的重复页面标识，并保持合法嵌套页面的排序和输出字段不变。"
+            "用先失败后通过的回归测试、导航测试套件和构建日志作为验证证据。"
+            "只允许修改导航生成器及其测试；涉及公开数据结构或现有内容标识时暂停并请求用户确认。"
             "仅当所有命名行为都被证明、检查全部通过且无剩余要求时完成。"
         )
         self.assertEqual([], MODULE.analyze(text))
 
     def test_strong_english_goal_has_no_findings(self):
         text = (
-            "/goal Fix coupon calculation while preserving the public API. Verify with a failing-then-passing "
-            "regression test, the checkout test suite, and runtime logs. Only write checkout code and tests; "
-            "pause for approval before production or credential use. Finish only when all required behavior is "
+            "/goal Reject duplicate page identifiers while preserving nested navigation order and the public schema. "
+            "Verify with a failing-then-passing regression fixture, the navigation suite, and build logs. Only write "
+            "the navigation builder and tests; pause for approval before changing existing content identifiers. Finish only when all required behavior is "
             "proved and no required work remains."
         )
         self.assertEqual([], MODULE.analyze(text))

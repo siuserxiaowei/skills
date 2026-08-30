@@ -1,52 +1,45 @@
-# WeCom Operations
+# wecom-operations
 
-Work with owner-authorized WeCom documents, todos, meetings, and schedules via the official [`@wecom/cli`](https://github.com/WecomTeam/wecom-cli). The WeCom desktop app is never automated, and no messages are ever sent.
+通过用户已配置的官方 `wecom-cli` 查询或管理企业微信文档、待办、会议和日程。这个 Skill 不发送消息、不控制企业微信桌面端，也不读取本地聊天数据库。
 
-## What it can do
-
-- Turn local Markdown into normal documents or smart documents.
-- Read back or fully overwrite a document, but only after target and permission checks pass.
-- Create, inspect, update, and remove todos behind confirmation gates.
-- Book, query, modify, or cancel meetings and schedules where the tenant has opened those categories.
-- Dry-run every write first; destructive or replacing actions ask for an explicit go-ahead.
-- Keep internal IDs and receipts inside private local state only.
-
-## Setup
-
-Get the official CLI installed and configured before anything else:
+## 先检查运行环境
 
 ```bash
-npm install -g @wecom/cli
-wecom-cli init
+python3 scripts/doctor.py
+python3 scripts/doctor.py --category doc
 ```
 
-`wecom-cli init` is for first-time setup only. When `~/.config/wecom/` already holds the encrypted configuration files, leave the existing configuration untouched instead of overwriting it.
+诊断器只检查 CLI、配置文件元数据和 category 帮助。它不会解密 `~/.config/wecom/` 的内容。已经存在配置时不要重复执行 `wecom-cli init`。
 
-After that, probe the runtime:
+所有实际调用都应以本机版本的 `--help` / `--schema` 为准。租户没有开放某一 category 时，就停止该分支，不改用客户端自动化或非官方协议。
+
+## Markdown 智能文档
+
+默认命令只生成计划：
 
 ```bash
-python3 "$HOME/.agents/skills/wecom-operations/scripts/doctor.py"
-python3 "$HOME/.agents/skills/wecom-operations/scripts/doctor.py" --category doc
+python3 scripts/create_smartpage.py \
+  --source "/absolute/path/report.md" \
+  --title "报告标题"
 ```
 
-## Working with local images
-
-Out of the box, the official CLI writes text documents and embeds images that are already hosted. The bundled `create_smartpage.py` rewrites local Markdown image paths too, yet actually pushing those files up to WeCom requires a separately supplied executable offering `doc +doc_upload_image`:
+用户明确要求创建且计划无误后再加 `--apply`：
 
 ```bash
-export WECOM_UPLOAD_HELPER=/absolute/path/to/wecom-cli-with-doc-upload-image
+python3 scripts/create_smartpage.py \
+  --source "/absolute/path/report.md" \
+  --title "报告标题" \
+  --apply
 ```
 
-This helper is an external local extension and does not ship with this repository. If it is missing, stick to Markdown without local images, or swap in authorized remote image URLs ahead of execution.
+本地图片需要用户另行提供支持 `doc +doc_upload_image` 的 helper，并通过 `WECOM_UPLOAD_HELPER` 指定。仓库不附带该扩展；缺少 helper 时不要生成图片残缺的文档。
 
-## Privacy and safety rules
+## 安全边界
 
-- The WeCom desktop UI is never driven, and the message category is never invoked.
-- Encrypted credential contents under `~/.config/wecom/` are never read or printed.
-- Every write needs a user instruction from the current task; cancellation, deletion, and whole-document overwrite additionally require reconfirmation of the exact target.
-- Bot IDs, secrets, user IDs, document/meeting/todo IDs, authorization URLs, receipts, source documents, and customer data must not be committed anywhere.
-- Which categories are usable depends on the tenant, so availability is always probed dynamically.
+- 创建和修改必须对应用户当前请求；删除、取消和整篇覆盖需要针对精确对象再次确认。
+- 成员、文档、会议、日程和待办 ID 只用于本机调用，不出现在共享日志或版本库。
+- 全量替换语义的字段要先读取现值并合并。
+- 远端响应成功后仍应回读；创建成功但无读取权限时，要把这两个事实分开报告。
+- 私密操作回执使用 owner-only 权限保存；不自动删除用户数据或失败后已创建的云端对象。
 
-## Runtime and license
-
-The original files in this directory use the repository-level [MIT License](../../LICENSE). The [`WeComTeam/wecom-cli`](https://github.com/WecomTeam/wecom-cli) runtime is an external dependency maintained by WeComTeam under its own license; no CLI source or binary is vendored here.
+详细决策规则见 [SKILL.md](SKILL.md)，对象级说明在 `references/` 下。本目录的自有文件适用仓库顶层 MIT License；外部 `@wecom/cli` 仍按其自身许可与服务条款运行。
