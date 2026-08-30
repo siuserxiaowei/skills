@@ -1,0 +1,4 @@
+interface:
+  display_name: "Beautiful HTML Templates"
+  short_description: "Build original, accessible, self-contained HTML slide decks"
+  default_prompt: "Create or adapt an original HTML deck from the supplied evidence, then verify story, accessibility, responsiveness, offline behavior, and browser rendering."

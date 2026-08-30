@@ -155,6 +155,14 @@ def plain_text_from_html(rich_html: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", text).strip()
 
 
+def text_checkpoints(value: str, width: int = 64) -> tuple[str, str]:
+    """Return stable beginning/end snippets for browser-side paste checks."""
+    normalized = re.sub(r"\s+", " ", value).strip()
+    if not normalized:
+        return "", ""
+    return normalized[:width], normalized[-width:]
+
+
 def load_cookies(path: Path) -> list[dict]:
     raw = json.loads(path.read_text())
     return raw["cookies"] if isinstance(raw, dict) and "cookies" in raw else raw
@@ -165,6 +173,7 @@ async def run_upload(args: argparse.Namespace, data: dict, content_images: list[
 
     rich_html = data["html"]
     plain = plain_text_from_html(rich_html)
+    expected_start, expected_end = text_checkpoints(plain)
     cookies = load_cookies(Path(args.cookies_json))
     upload_cover = bool(data.get("cover_image")) and not args.allow_no_cover
 
@@ -334,7 +343,7 @@ async def run_upload(args: argparse.Namespace, data: dict, content_images: list[
         print("[3/5] fill title and body")
         await page.locator('textarea[placeholder="添加标题"]').first.fill(args.title or data["title"])
         body_state = await page.evaluate(
-            r"""async ({richHtml, plain}) => {
+            r"""async ({richHtml, plain, expectedStart, expectedEnd}) => {
               const editor=document.querySelector('[data-testid="composer"]');
               editor.focus();
               const dt=new DataTransfer();
@@ -343,12 +352,23 @@ async def run_upload(args: argparse.Namespace, data: dict, content_images: list[
               editor.dispatchEvent(new ClipboardEvent('paste',{bubbles:true,cancelable:true,clipboardData:dt}));
               await new Promise(r=>setTimeout(r,5000));
               const text=editor.innerText || '';
-              return {len:text.length, hasEnd:text.includes('最后，祝你使用的愉快'), marker:text.includes('MPH_MARKER')};
+              const normalized=text.replace(/\s+/g,' ').trim();
+              return {
+                len:text.length,
+                startMatched:!expectedStart || normalized.includes(expectedStart),
+                endMatched:!expectedEnd || normalized.includes(expectedEnd),
+                marker:text.includes('MPH_MARKER')
+              };
             }""",
-            {"richHtml": rich_html, "plain": plain},
+            {
+                "richHtml": rich_html,
+                "plain": plain,
+                "expectedStart": expected_start,
+                "expectedEnd": expected_end,
+            },
         )
         print("body=" + json.dumps(body_state, ensure_ascii=False))
-        if body_state["len"] < 1000 or body_state["marker"]:
+        if not body_state["startMatched"] or not body_state["endMatched"] or body_state["marker"]:
             raise RuntimeError("Body paste verification failed.")
         await page.wait_for_timeout(8000)
 
@@ -384,18 +404,20 @@ async def run_upload(args: argparse.Namespace, data: dict, content_images: list[
         await page.wait_for_timeout(35000)
         final_media = await media_items(page)
         final = await page.evaluate(
-            r"""() => {
+            r"""({expectedStart, expectedEnd}) => {
               const editor=document.querySelector('[data-testid="composer"]');
               const text=editor?.innerText||'';
+              const normalized=text.replace(/\s+/g,' ').trim();
               return {
                 title:document.querySelector('textarea[placeholder="添加标题"]')?.value||'',
                 textLength:text.length,
-                hasStart:text.length > 1000,
-                hasEnd:text.includes('最后，祝你使用的愉快'),
+                startMatched:!expectedStart || normalized.includes(expectedStart),
+                endMatched:!expectedEnd || normalized.includes(expectedEnd),
                 marker:text.includes('MPH_MARKER'),
                 saveText:document.body.innerText.includes('刚刚最后保存')?'刚刚最后保存':(document.body.innerText.match(/上一次保存[^\n]*/)?.[0]||'')
               };
-            }"""
+            }""",
+            {"expectedStart": expected_start, "expectedEnd": expected_end},
         )
         final.update(
             {
@@ -410,8 +432,8 @@ async def run_upload(args: argparse.Namespace, data: dict, content_images: list[
         await page.screenshot(path=args.screenshot, full_page=True)
         ok = (
             final["title"] == (args.title or data["title"])
-            and final["hasStart"]
-            and final["hasEnd"]
+            and final["startMatched"]
+            and final["endMatched"]
             and not final["marker"]
             and final["media_count"] >= final["expected_total_media"]
         )

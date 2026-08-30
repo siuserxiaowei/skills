@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Skill Maker"
+  short_description: "Author narrow lark-cli Skills from runtime evidence"
+  default_prompt: "Use $lark-skill-maker to design a focused lark-cli Skill from current help, schema, official docs, safety boundaries, and executable tests."

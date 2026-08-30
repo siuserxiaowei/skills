@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Wiki"
+  short_description: "Manage Wiki nodes with token and permission checks"
+  default_prompt: "Use $lark-wiki to inspect or manage the requested Wiki space or node with canonical token routing, member checks, and structural readback."

@@ -5,6 +5,10 @@ description: Decrypt and read local WeCom/企业微信 5.x desktop databases on 
 
 # wecom-local-vault：Mac 企业微信本地数据私密 Vault
 
+## 案例入口
+
+先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+
 本 Skill 面向 macOS 上的企业微信 5.x：从本地加密数据库产出一份全新的私密明文快照，之后对联系人、会话和消息的一切查询都针对快照进行。它与个人微信的 `wechat-local-vault` 相互独立，两边在容器路径、加密方式和表结构上都不通用，切勿混用。
 
 ## 不可逾越的边界

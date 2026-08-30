@@ -5,6 +5,10 @@ description: "Transform one or more reference photos into composition-faithful v
 
 # Vintage Pencil Card
 
+## 案例入口
+
+先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+
 Turn a supplied photo into a quiet, tactile colored-pencil card without losing the identity or scene structure that makes the source recognizable.
 
 ## Start with the input contract

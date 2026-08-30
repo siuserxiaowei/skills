@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Tasks"
+  short_description: "Manage tasks with assignee and deadline safeguards"
+  default_prompt: "Use $lark-task to inspect or update the requested tasks with verified assignees, lists, status, deadline timezone, and readback."

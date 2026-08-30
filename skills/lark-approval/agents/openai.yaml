@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Approval"
+  short_description: "Safely inspect and act on Lark approvals"
+  default_prompt: "Use $lark-approval to inspect or act on the requested approval with verified definitions, fields, targets, and status readback."

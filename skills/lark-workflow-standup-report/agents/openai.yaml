@@ -1,0 +1,4 @@
+interface:
+  display_name: "Standup Report Workflow"
+  short_description: "Combine calendar and tasks with date-safe evidence"
+  default_prompt: "Use $lark-workflow-standup-report to build the requested standup report from calendar and task evidence with an explicit local date, deduplication, and no implicit publication."

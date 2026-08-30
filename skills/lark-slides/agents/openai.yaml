@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Slides"
+  short_description: "Build editable Slides with visual verification"
+  default_prompt: "Use $lark-slides to create or edit the requested Lark presentation with semantic planning, editable elements, safe media, and screenshot verification."

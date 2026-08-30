@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shutil
 import sqlite3
 import subprocess
@@ -62,6 +63,13 @@ def same_site(value: int) -> str:
     return {0: "None", 1: "Lax", 2: "Strict", -1: "Lax"}.get(value, "Lax")
 
 
+def host_matches_domain(host: str, domain: str) -> bool:
+    """Match a cookie host to an exact domain boundary, never a substring."""
+    host = host.lstrip(".").lower()
+    domain = domain.lstrip(".").lower()
+    return host == domain or host.endswith("." + domain)
+
+
 def export_cookies(profile: Path, output: Path, domains: list[str]) -> list[dict]:
     cookie_db = profile / "Cookies"
     if not cookie_db.exists():
@@ -85,7 +93,7 @@ def export_cookies(profile: Path, output: Path, domains: list[str]) -> list[dict
     cookies = []
     for row in rows:
         host = row["host_key"]
-        if not any(domain in host for domain in domains):
+        if not any(host_matches_domain(host, domain) for domain in domains):
             continue
         value = row["value"] or decrypt_cookie(host, row["encrypted_value"], password)
         if not value:
@@ -105,6 +113,7 @@ def export_cookies(profile: Path, output: Path, domains: list[str]) -> list[dict
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(cookies, ensure_ascii=False, indent=2))
+    os.chmod(output, 0o600)
     return cookies
 
 

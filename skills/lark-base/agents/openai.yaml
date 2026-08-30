@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Base"
+  short_description: "Operate Base data with schema and rollback evidence"
+  default_prompt: "Use $lark-base to inspect or change the requested Base with typed fields, bounded batches, rollback evidence, and readback verification."

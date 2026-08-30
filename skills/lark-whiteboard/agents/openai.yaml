@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Whiteboard"
+  short_description: "Edit whiteboards with graph and visual validation"
+  default_prompt: "Use $lark-whiteboard to inspect or edit the requested whiteboard with verified host document, graph invariants, bounded changes, and visual readback."

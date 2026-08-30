@@ -5,6 +5,10 @@ description: 将 Obsidian 或本地 Markdown 文章上传为 X/Twitter Articles 
 
 # X Article Draft Uploader
 
+## 案例入口
+
+先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+
 ## 两条不可违反的原则
 
 - 本 Skill 的产物只有草稿。在没有得到用户明确同意公开发布之前，绝不能替用户点下 X 上最终的 `发布` 按钮。

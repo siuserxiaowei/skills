@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meeting Summary Workflow"
+  short_description: "Build cited summaries from bounded meeting evidence"
+  default_prompt: "Use $lark-workflow-meeting-summary to compile the requested meeting summary from a bounded time range with source coverage, transcript citations, and assigned action-item evidence."

@@ -1,41 +1,34 @@
-# Usage examples
+# Vintage Pencil Card｜案例与详细说明
 
-These examples show what a user can say. The Skill expands each request with source-specific preservation facts after inspecting the image.
+仓库不捆绑演示照片。以下请求可用用户自己的照片或已确认有权使用的素材复现；每次都要先查看实际图片，再把可见事实写进保真清单。
 
-## Portrait
+## 正向案例
 
-> 把这张人像做成横向复古彩铅卡片。必须还是同一个人，保留脸型、五官、发型、年龄、神态和前倾坐姿；背景换成米白手工纸，外围加少量低饱和蜡笔色块，不要文字。
+### 人像身份保真
 
-Expected routing: `person` + `paper portrait` + horizontal crop. Identity and pose outrank the decorative crayon marks.
+- **用户请求：** “把这张人像做成横向复古彩铅卡片；必须还是同一个人，保留脸型、五官、发型、年龄、神态和前倾坐姿，不要文字。”
+- **处理：** 路由为 `person + paper portrait`；图 1 负责身份与姿势，米白纸张、低饱和彩铅和外围蜡笔只负责材质，不得覆盖人物特征。
+- **验收证据：** 对照源图逐项检查眼距、脸型、发型轮廓、年龄、视线、肩臂和服装；任何一项漂移都只做单点修正。
 
-## Pet
+### 风景空间保真
 
-> 把这只猫画成米白纸张上的复古彩铅卡片，保留耳朵形状、脸部花纹、白色前爪和蜷卧姿势，不要画成通用萌猫。
+- **用户请求：** “把山湖照片转成横向莫兰迪彩铅卡，保留湖湾、右侧道路、前景树林和雾层，不增加房屋、船或太阳。”
+- **处理：** 路由为 `landscape + whole-scene card`；锁定地平线、岸线、道路、前中后景和光线方向，再叠加纸张与彩铅材质。
+- **验收证据：** 湖岸拓扑、道路位置、遮挡关系与光线方向和源图一致；没有新增物体、文字、Logo 或水印。
 
-Expected routing: `pet` + `paper portrait`. Coat patches and anatomy are invariants.
+### 严格 50/50
 
-## Mountain lake
+- **用户请求：** “竖版上下对半：上半原始照片，下半彩铅轮廓，两部分严格各占 50%。”
+- **处理：** 只生成下半插画，再用确定性工具把未经修改的上半原图与下半拼接；不靠一次生成式编辑承诺像素不变。
+- **验收证据：** 两区高度各占画布 50%；上半与源图目标裁切逐像素一致；分界线、尺寸和色彩空间可复核。
 
-> 把这张山湖照片转成横向莫兰迪彩铅风景卡，保留湖湾形状、右侧道路、前景深色树林和远处雾层，不增加房屋、船或太阳。
+## 边界案例
 
-Expected routing: `landscape` + `whole-scene card`. The scene is redrawn, not removed.
+- **场景：** 用户只给一张低清、严重遮挡的人像，却要求身份证级五官一致。
+- **处理：** 明确生成模型与输入信息的上限，请用户补清晰近景；若用户仍要继续，只承诺风格化近似，不宣称身份精确复制。
+- **验收证据：** 输出说明真实记录输入限制、可保证项和不可保证项。
 
-## Architecture
+## 失败与恢复
 
-> 把这栋老房子转换成复古彩铅卡片，锁定拍摄视角、屋顶轮廓、楼层数和门窗位置，只简化墙面纹理。
-
-Expected routing: `architecture` + `whole-scene card`. Geometry outranks texture.
-
-## Strict 50/50 split
-
-> 做成竖版上下对半卡片：上半必须保留原始实拍照片，下半是米白手工纸和彩铅轮廓，两部分严格各占 50%。
-
-Expected routing: `50/50 split card`. Generate the lower panel and composite it with the untouched source crop when pixel fidelity matters.
-
-## Iteration language
-
-When a result is close, correct one failure at a time:
-
-> 保持其他内容完全不变，只修正人物眼距和下颌弧度，使其匹配图1；不要改变发型、姿势、服装、纸张和配色。
-
-> 保持其他内容完全不变，只把湖岸恢复成图1的 S 形走向，并让右侧道路回到山坡中部；不要增加新景物。
+- **场景与处理：** 首稿很漂亮但像另一个人，保留纸张、配色、构图和姿势，只用“保持其他内容不变，修正眼距、下颌弧度和发际线以匹配图 1”做一次目标迭代。
+- **验收证据：** 新旧结果只在指定特征上发生可见变化；其余已通过项没有回退。

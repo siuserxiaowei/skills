@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Publisher"
+  short_description: "Validate and publish a reviewed Agent Skill release"
+  default_prompt: "Use $skill-publisher to preflight this Skill repository, resolve the exact GitHub release boundary, and publish only the reviewed state."

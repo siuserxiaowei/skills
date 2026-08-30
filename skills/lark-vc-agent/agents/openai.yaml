@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Meeting Agent"
+  short_description: "Control live meetings with explicit consent boundaries"
+  default_prompt: "Use $lark-vc-agent to assist in the live meeting only after verifying the active meeting, bot identity, participant impact, bounded event access, and leave cleanup."

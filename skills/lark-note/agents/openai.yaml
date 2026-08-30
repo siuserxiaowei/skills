@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Note"
+  short_description: "Read meeting notes with source and token checks"
+  default_prompt: "Use $lark-note to read the requested meeting note by verified note_id and distinguish transcript, linked documents, and derived artifacts."

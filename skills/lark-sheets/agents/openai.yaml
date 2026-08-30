@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Sheets"
+  short_description: "Edit Sheets with typed ranges and formula checks"
+  default_prompt: "Use $lark-sheets to inspect or edit the requested spreadsheet with canonical ranges, typed values, atomic batches, formula checks, and revision readback."

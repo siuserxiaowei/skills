@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "title": "From source material to a decision",
+  "language": "en-US",
+  "meta": {
+    "audience": "Project leadership",
+    "occasion": "Decision briefing",
+    "outcome": "Choose the smallest experiment that resolves the main uncertainty"
+  },
+  "theme": {
+    "font_pair": "editorial",
+    "background": "#f4f1ea",
+    "panel": "#ffffff",
+    "text": "#1b2028",
+    "muted": "#505b68",
+    "accent": "#164e86",
+    "line": "#bcc5ce"
+  },
+  "slides": [
+    {
+      "layout": "cover",
+      "eyebrow": "Decision briefing",
+      "title": "From source material to a decision",
+      "subtitle": "A five-slide example built from an explicit content model",
+      "byline": "Prepared 2026-08-30"
+    },
+    {
+      "layout": "bullets",
+      "eyebrow": "The evidence",
+      "title": "Three things are already known",
+      "items": [
+        "The audience needs a decision, not a catalog of activity.",
+        "The main uncertainty can be tested independently.",
+        "The current evidence does not justify a full rollout."
+      ]
+    },
+    {
+      "layout": "metrics",
+      "title": "The experiment stays deliberately small",
+      "metrics": [
+        {"value": "2", "label": "user segments", "detail": "chosen for contrast"},
+        {"value": "14 days", "label": "observation window", "detail": "fixed before launch"},
+        {"value": "1", "label": "primary decision", "detail": "expand or stop"}
+      ]
+    },
+    {
+      "layout": "two-column",
+      "title": "Separate what changes from what stays fixed",
+      "columns": [
+        {"heading": "Change", "items": ["One intervention", "One segment at a time"]},
+        {"heading": "Preserve", "items": ["Measurement definition", "Stopping rule", "Existing safeguards"]}
+      ]
+    },
+    {
+      "layout": "closing",
+      "eyebrow": "Decision",
+      "title": "Approve the bounded experiment",
+      "body": "Review the evidence after 14 days and expand only if the predefined threshold is met.",
+      "action": "Owner: project lead · next review: 2026-09-13"
+    }
+  ]
+}

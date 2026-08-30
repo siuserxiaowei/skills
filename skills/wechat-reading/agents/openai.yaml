@@ -1,0 +1,4 @@
+interface:
+  display_name: "WeChat Reading"
+  short_description: "Read and analyze WeRead data without exposing credentials"
+  default_prompt: "Use $wechat-reading to answer this WeRead question through the official read-only gateway while minimizing personal data."

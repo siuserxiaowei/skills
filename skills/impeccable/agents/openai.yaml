@@ -1,0 +1,4 @@
+interface:
+  display_name: "Impeccable"
+  short_description: "Design and verify accessible, responsive frontend interfaces"
+  default_prompt: "Use $impeccable to resolve whether this is critique, audit, shaping, implementation, refinement, or extraction; ground the work in the actual project and verify the resulting interface in proportion to risk."

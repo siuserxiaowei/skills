@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Attendance"
+  short_description: "Query attendance with timezone and privacy controls"
+  default_prompt: "Use $lark-attendance to query the authorized user's attendance records with explicit dates, timezone, pagination, and privacy limits."

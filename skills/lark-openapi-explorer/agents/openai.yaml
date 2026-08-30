@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark OpenAPI Explorer"
+  short_description: "Discover unsupported OpenAPI calls from primary sources"
+  default_prompt: "Use $lark-openapi-explorer to find and validate the narrowest unsupported Lark OpenAPI call from current schema and official documentation before any execution."

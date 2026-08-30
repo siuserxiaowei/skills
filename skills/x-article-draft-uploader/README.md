@@ -162,20 +162,18 @@ X 编辑器的内容是动态重排的：先插前面的图会让后面内容的
 x-article-draft-uploader/
 ├── SKILL.md
 ├── README.md
-├── LICENSE
-├── THIRD_PARTY_NOTICES.md
 ├── agents/
 │   └── openai.yaml
-├── licenses/
-│   └── wshuyi-x-article-publisher-skill-LICENSE.txt
-└── scripts/
-    ├── export_x_cookies_from_chrome.py
-    ├── parse_markdown.py
-    └── upload_markdown_to_x_article.py
+├── references/
+│   └── examples.md
+├── scripts/
+│   ├── export_x_cookies_from_chrome.py
+│   ├── parse_markdown.py
+│   └── upload_markdown_to_x_article.py
+└── tests/
+    └── test_x_article_tools.py
 ```
 
-## License
+## License 与归属
 
-Personal Learning and Non-Commercial Use License，详见本目录的 `LICENSE`。
-
-另外，部分 Markdown 解析流程参考并迁移自 `wshuyi/x-article-publisher-skill`，归属说明见本目录的 `THIRD_PARTY_NOTICES.md`。
+本目录的说明、脚本、测试和案例均为本仓库独立实现，使用仓库顶层 MIT License。X、Chrome、Playwright 与 Python 依赖是外部产品或运行环境，不属于本仓库原创内容，也不随本 Skill 分发。

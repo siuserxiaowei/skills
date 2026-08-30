@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark OKR"
+  short_description: "Manage OKRs with cycle and alignment safeguards"
+  default_prompt: "Use $lark-okr to inspect or update the requested OKRs with verified cycle, owner, hierarchy, alignment, weights, and progress readback."

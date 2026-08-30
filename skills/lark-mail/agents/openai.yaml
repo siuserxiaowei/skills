@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Mail"
+  short_description: "Draft and send Lark mail with audience checks"
+  default_prompt: "Use $lark-mail to read, draft, or send the requested email with verified recipients, thread context, attachment checks, and explicit send authorization."

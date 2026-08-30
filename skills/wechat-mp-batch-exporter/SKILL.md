@@ -5,6 +5,10 @@ description: 批量下载微信公众号文章正文、历史文章列表、原�
 
 # WeChat MP Batch Exporter Skill
 
+## 案例入口
+
+先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+
 ## Hard Rules
 
 Hands off the user's WeChat client entirely. Publishing, deleting, mass-sending, following, unfollowing, messaging, or any clicking inside WeChat is off limits. Whenever a workflow depends on WeChat desktop, spell out the exact steps for the user and pause until they confirm.

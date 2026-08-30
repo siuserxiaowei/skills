@@ -12,6 +12,10 @@ description: |
 
 # Running Two WeChat Instances on macOS
 
+## 案例入口
+
+先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+
 Run two WeChat accounts side by side on macOS by giving the system a second,
 separately identified copy of the app.
 

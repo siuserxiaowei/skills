@@ -1,0 +1,4 @@
+interface:
+  display_name: "Goal Designer"
+  short_description: "Turn durable work into a verifiable Codex Goal"
+  default_prompt: "Use $goal-meta-skill to turn this request into one durable Codex Goal with evidence-based completion and real permission boundaries."

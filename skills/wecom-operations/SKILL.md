@@ -5,6 +5,10 @@ description: 本 Skill 借助官方 wecom-cli 操作企业微信云端资源：�
 
 # 企业微信操作
 
+## 案例入口
+
+先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+
 本 Skill 通过本机安装的官方 `wecom-cli` 调用企微云端接口。只读本地数据库的需求交给 `$wecom-local-vault`，两者分开使用，不要混用。
 
 ## 硬性红线

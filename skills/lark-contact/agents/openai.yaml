@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Contact"
+  short_description: "Resolve Lark identities with minimal disclosure"
+  default_prompt: "Use $lark-contact to resolve the requested Lark person or ID with tenant-aware disambiguation and minimal personal-data disclosure."

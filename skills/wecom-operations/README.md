@@ -47,6 +47,6 @@ This helper is an external local extension and does not ship with this repositor
 - Bot IDs, secrets, user IDs, document/meeting/todo IDs, authorization URLs, receipts, source documents, and customer data must not be committed anywhere.
 - Which categories are usable depends on the tenant, so availability is always probed dynamically.
 
-## Upstream runtime and license
+## Runtime and license
 
-Original files in this directory are covered by the repository's [Personal Learning and Non-Commercial Use License](LICENSE). The [`WeComTeam/wecom-cli`](https://github.com/WecomTeam/wecom-cli) runtime itself is external, maintained by WeComTeam under its own MIT License — no upstream CLI source or binary is vendored into this repository.
+The original files in this directory use the repository-level [MIT License](../../LICENSE). The [`WeComTeam/wecom-cli`](https://github.com/WecomTeam/wecom-cli) runtime is an external dependency maintained by WeComTeam under its own license; no CLI source or binary is vendored here.

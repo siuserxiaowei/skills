@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Apps"
+  short_description: "Build and operate Miaoda apps with guardrails"
+  default_prompt: "Use $lark-apps to develop or operate the requested Miaoda app with environment, secret, deployment, database, and verification boundaries."

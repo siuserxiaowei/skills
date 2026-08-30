@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Drive"
+  short_description: "Manage Drive files with permission and recovery checks"
+  default_prompt: "Use $lark-drive to inspect or manage the requested Drive resource with canonical tokens, safe local paths, permission boundaries, and recovery evidence."

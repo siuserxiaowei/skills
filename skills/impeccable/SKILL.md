@@ -1,86 +1,125 @@
 ---
 name: impeccable
-description: Use when the user wants to design, redesign, shape, critique, audit, polish, clarify, distill, harden, optimize, adapt, animate, colorize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Handles UX review, visual hierarchy, information architecture, cognitive load, accessibility, performance, responsive behavior, theming, anti-patterns, typography, fonts, spacing, layout, alignment, color, motion, micro-interactions, UX copy, error states, edge cases, i18n, and reusable design systems or tokens. Also use for bland designs that need to become bolder or more delightful, loud designs that should become quieter, live browser iteration on UI elements, or ambitious visual effects that should feel technically extraordinary. Not for backend-only or non-UI tasks.
-version: 4.0.4
-user-invocable: true
-argument-hint: "[shape · audit|critique · animate|bolder|colorize|delight|layout|overdrive|quieter|typeset · adapt|clarify|distill · harden|onboard|optimize|polish · init|document|extract|live] [target]"
-license: Apache 2.0
-allowed-tools:
-  - Bash(npx impeccable *)
-  - Bash(node .claude/skills/impeccable/scripts/*)
+description: Design, critique, audit, implement, or refine browser-based user interfaces using the project's real content, design system, interaction requirements, accessibility needs, responsive behavior, and performance evidence. Use for websites, landing pages, dashboards, app shells, forms, onboarding, empty states, component systems, UX copy, visual hierarchy, motion, and frontend quality reviews; do not use for backend-only work or silently modify code when the user asked only for diagnosis.
 ---
 
-This skill gives you the tools and permission to create design that earns to be called out-of-distribution craft: Whereas before, your design work would have been safe, timid and measured, you now approach every design task as a award-winning design director with impeccable understanding for what makes exceptional design work: production-grade code, peak creativity, a clear POV, deep understanding of the needs of the client and users, and exceptional craft.
+# Impeccable
 
-Core principles:
-- Go all out. No hedging, no shortcuts. The deliverable must be complete (except assets the user must provide).
-- Dream big and bold. Distinct, beautiful, outstanding and highly inspiring work.
-- Verify in bounded passes, not a loop, and the ceiling covers the whole cycle: screenshots, defect scans, micro-edits, and rebuilds alike. Build fully, inspect once with a batched round (desktop and mobile together), fix everything it shows in one batch, confirm with at most one more round, and stop polishing. Open-ended self-QA burns the user's money doing worse what the finish handoffs do better.
+## 案例入口
 
-## Setup
+先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
 
-1. Run `node .claude/skills/impeccable/scripts/context.mjs` once per session (if the runtime shows this skill's loaded base directory, run `node <skill-base-dir>/scripts/context.mjs`; keep cwd at the user's project). Pass a named source file or route as `--target <path>`. It loads PRODUCT.md, DESIGN.md, the matching surface brief, and native-platform guidance when applicable; follow its directives and do not rerun it.
-2. Before acting, load the one playbook that owns the request: the Commands table's reference for an explicit or clearly implied sub-command, or [reference/new-work.md](reference/new-work.md) for a new surface or replacement visual world. Then inspect the target and at least one representative source of incumbent visual truth (tokens, theme, CSS, component, or asset) before editing.
-3. After analysis and direction are resolved, load [reference/craft-floor.md](reference/craft-floor.md) immediately before editing UI. It carries the quality floor, the absolute bans, and the reflexes no detector catches. Do not load it for planning-only work.
+Produce frontend work whose visual character, usability, accessibility, resilience, and delivery quality can all be explained and verified.
 
-## How to design
+## Resolve the Requested Action
 
-- **The brief wins.** Honor pinned aesthetics, eras, materials, fonts, and palettes even when they conflict with a saturated-pattern warning. Redirecting a clear brief toward your taste is failure.
-- **Refinement preserves; redesign replaces.** Refinement keeps the incumbent identity, behavior, copy, and everything outside scope. Ask before replacing factual copy or adding claims. Redesign keeps product truth, content, function, native affordances, and constraints, but treats the old look as evidence and anti-reference; choose a replacement world in new-work and replace DESIGN.md. Never split the difference into polish on the discarded look.
-- **Visual authority is evidence, not a filename.** Missing DESIGN.md alone does not make a project greenfield; new-work decides whether to preserve, expand, or replace the incumbent world.
+Choose one action before touching files:
 
-## Modes
+- **Critique:** explain UX, hierarchy, content, interaction, and visual-system issues. Read-only unless the user also asks for fixes.
+- **Technical audit:** inspect semantics, keyboard behavior, accessibility, responsive behavior, states, and performance. Read-only unless fixes are requested.
+- **Shape:** turn a product need into a frontend brief, information architecture, states, and acceptance checks. Stop before implementation unless asked to build.
+- **Build or redesign:** create a new surface or replace an existing visual direction while preserving product truth and required behavior.
+- **Refine:** improve a bounded existing surface without changing its identity, copy, information architecture, or behavior outside scope.
+- **Extract:** identify reusable tokens and components, then migrate only when the user authorizes code changes.
 
-The mode names what the visitor's success looks like on this surface.
+A request to review, critique, or diagnose is not authorization to edit. A request to improve, fix, redesign, or build normally includes implementation and proportionate verification.
 
-- **Persuade:** the visitor decides and acts; design is the product. Landing pages, marketing, campaigns, pricing. Earn attention and action. Ship real imagery when the brief needs it; follow the committed world, not category habit.
-- **Operate:** the visitor completes a task. App UI, dashboards, editors, admin, settings, tools. Scanability, consistency, native expectations, and the real usage scene outrank expression. Brand lives in precise details.
-- **Read:** the visitor understands something. Docs, articles, guides, help, changelogs. Structure for comprehension, then make the reading experience worth staying in.
-- **Experience:** the visitor is inside the work itself. Portfolios, galleries, showcases. Let the artifact lead from the first viewport; the interface recedes.
+## Establish the Evidence
 
-Choose the mode from the requested surface, not the product, and persist it only in that surface brief. A tool's landing page is still Persuade; a fashion house's documentation is still Read; a docs index is Read, not Persuade. See [new-work.md](reference/new-work.md) for new surfaces and [operate.md](reference/operate.md) for deeper Operate/Read guidance.
+Inspect the smallest complete set of sources that defines the surface:
 
-## Commands
+1. Project instructions, target route or component, framework, build and test commands.
+2. Real copy, data shape, user roles, permissions, primary tasks, and required states.
+3. Existing tokens, theme, shared components, layout primitives, fonts, icons, and media.
+4. Current browser rendering at representative wide and narrow viewports when it can be run.
+5. Product or brand documentation and earlier decisions, while checking them against the current implementation.
+6. Accessibility, browser, device, localization, and performance targets.
 
-| Command | Category | Description | Reference |
-|---|---|---|---|
-| `craft [feature]` | Build | Deprecated alias for an ordinary new-work request | [reference/craft.md](reference/craft.md) |
-| `shape [feature]` | Build | Plan UX/UI before writing code | [reference/shape.md](reference/shape.md) |
-| `init` | Build | Capture durable product context in PRODUCT.md | [reference/init.md](reference/init.md) |
-| `document` | Build | Generate DESIGN.md from existing project code | [reference/document.md](reference/document.md) |
-| `extract [target]` | Build | Pull reusable tokens and components into design system | [reference/extract.md](reference/extract.md) |
-| `critique [target]` | Evaluate | UX design review with heuristic scoring | [reference/critique.md](reference/critique.md) |
-| `audit [target]` | Evaluate | Technical quality checks (a11y, perf, responsive) | [reference/audit.md](reference/audit.md) · native: [reference/audit.native.md](reference/audit.native.md) |
-| `polish [target]` | Refine | Final quality pass before shipping | [reference/polish.md](reference/polish.md) |
-| `bolder [target]` | Refine | Amplify safe or bland designs | [reference/bolder.md](reference/bolder.md) |
-| `quieter [target]` | Refine | Tone down aggressive or overstimulating designs | [reference/quieter.md](reference/quieter.md) |
-| `distill [target]` | Refine | Strip to essence, remove complexity | [reference/distill.md](reference/distill.md) |
-| `harden [target]` | Refine | Production-ready: errors, i18n, edge cases | [reference/harden.md](reference/harden.md) |
-| `onboard [target]` | Refine | Design first-run flows, empty states, activation | [reference/onboard.md](reference/onboard.md) |
-| `animate [target]` | Enhance | Add purposeful animations and motion | [reference/animate.md](reference/animate.md) |
-| `colorize [target]` | Enhance | Add strategic color to monochromatic UIs | [reference/colorize.md](reference/colorize.md) |
-| `typeset [target]` | Enhance | Improve typography hierarchy and fonts | [reference/typeset.md](reference/typeset.md) |
-| `layout [target]` | Enhance | Fix spacing, rhythm, and visual hierarchy | [reference/layout.md](reference/layout.md) |
-| `delight [target]` | Enhance | Add personality and memorable touches | [reference/delight.md](reference/delight.md) |
-| `overdrive [target]` | Enhance | Push past conventional limits | [reference/overdrive.md](reference/overdrive.md) |
-| `clarify [target]` | Fix | Improve UX copy, labels, and error messages | [reference/clarify.md](reference/clarify.md) |
-| `adapt [target]` | Fix | Adapt for different devices and screen sizes | [reference/adapt.md](reference/adapt.md) · native: [reference/adapt.native.md](reference/adapt.native.md) |
-| `optimize [target]` | Fix | Diagnose and fix UI performance | [reference/optimize.md](reference/optimize.md) |
-| `live` | Iterate | Visual variant mode: pick elements in the browser, generate alternatives | [reference/live.md](reference/live.md) |
+Do not infer that a project is greenfield because a design document is missing. Existing code and rendered behavior are evidence. Preserve user changes and distinguish source files from generated output before editing.
 
-Routing:
+For a new direction or broad redesign, read [references/design-decisions.md](references/design-decisions.md). For critique and audit, read [references/review-playbook.md](references/review-playbook.md). For implementation and refinement, read [references/implementation-playbook.md](references/implementation-playbook.md).
 
-- **No argument:** read [routing.md](reference/routing.md) and present its context-aware menu; never auto-run a command.
-- **Explicit or clearly implied command:** load its reference (native variant on native platforms) and follow it. Ask once if two commands fit.
-- **Otherwise:** treat the request as general design work. Missing PRODUCT.md routes a new surface or replacement world through init, then new-work; a narrow refinement of existing code proceeds on the incumbent implementation as context.mjs directs, offering init afterward rather than blocking on it.
-- `teach` aliases `init`. `craft` is a deprecated alias for ordinary new-work and adds nothing. `shape` owns task discovery, then enters new-work only for visual-world and surface-concept decisions.
+## Define the Surface Contract
 
-After init writes PRODUCT.md, resume without rerunning `context.mjs`; init loads the native platform reference itself when the platform it recorded is `ios`, `android`, or `adaptive`.
+Write a compact working brief containing:
 
-**Pin / Unpin:** `node .claude/skills/impeccable/scripts/pin.mjs <pin|unpin> <command>` creates or removes a standalone `/<command>` shortcut. Report the script's result concisely; relay stderr verbatim on error.
+- the user's job and the surface's primary outcome;
+- real content hierarchy and primary/secondary actions;
+- entry, success, failure, empty, loading, disabled, permission, offline, and recovery states that are relevant;
+- what must remain invariant and what may change;
+- design-system anchors and intentional exceptions;
+- target viewports, input methods, languages, themes, and reduced-motion behavior;
+- accessibility and performance acceptance checks;
+- unknowns that must remain placeholders or be resolved with the user.
 
-**Hooks:** `/impeccable hooks <on|off|status|ignore-rule|ignore-file|ignore-value|reset>` manages the design detector hook for this project (auto-runs the detector after UI file edits and surfaces findings). Load [reference/hooks.md](reference/hooks.md) when the user invokes it with any argument.
+The surface may help someone choose, complete a task, understand information, or explore work. Optimize for that actual job. Do not force every marketing surface into a loud campaign, every product surface into a dense dashboard, or every redesign into the current visual trend.
 
-**Doctor:** `/impeccable doctor` reports and repairs drift between this project's Impeccable artifacts (PRODUCT.md, DESIGN.md and its sidecar, config, surface briefs, the hook) and what this version reads. Load [reference/doctor.md](reference/doctor.md) when the user invokes it, or when they ask what is out of date, stale, or needs refreshing. A `CONTEXT_STALE` directive in Setup's output is the cheap subset of the same report; act on it there per its own instructions rather than running doctor unasked.
+## Make Design Decisions
 
-**Never repair drift as a side effect of a design task.** A `CONTEXT_STALE` finding is reported, not acted on, unless the user asks. The one exception is a finding marked `auto`, which the next write to that file performs anyway.
+Work from content and interaction outward:
+
+1. **Structure:** reading order, landmarks, headings, grouping, disclosure, navigation, and task sequence.
+2. **Hierarchy:** what must be noticed first, what supports it, and what can remain quiet.
+3. **System:** color roles, typography roles, spacing, grid, shape, elevation, icon and media treatment, and state vocabulary.
+4. **Behavior:** keyboard/pointer/touch interaction, focus movement, validation, async feedback, interruption, undo, and recovery.
+5. **Adaptation:** narrow/wide layouts, content growth, zoom, localization, right-to-left direction, coarse pointers, and reduced motion.
+6. **Character:** distinctive choices grounded in the product, audience, content, and brand evidence.
+
+Avoid universal aesthetic bans. A font, gradient, card, border, animation, or asymmetric layout is good or bad only in context. Reject a choice when it harms hierarchy, comprehension, interaction, consistency, accessibility, performance, or the stated direction—not because it appears on a fashionable anti-pattern list.
+
+Prefer native HTML behavior before custom ARIA widgets. When a custom composite is necessary, follow the applicable WAI-ARIA Authoring Practices keyboard and state pattern, then test the actual component.
+
+## Use the Static Audit as a Lead Generator
+
+The bundled auditor is read-only, uses only the Python standard library, never executes project code, and does not follow symlinks:
+
+```bash
+python3 scripts/audit_frontend.py path/to/project
+python3 scripts/audit_frontend.py path/to/project --format json --fail-on high
+```
+
+It scans source HTML, JSX/TSX, Vue, Svelte, Astro, and CSS-family files for bounded signals such as missing document metadata, image alternatives/dimensions, unnamed controls, unlabeled literal form controls, positive `tabindex`, clickable non-controls, duplicate IDs, removed focus outlines, unbounded motion, `transition: all`, suspicious fixed widths, and token drift.
+
+Every finding includes evidence, line, severity, confidence, and a verification step. Treat it as a triage list, not proof of accessibility, usability, visual quality, or performance. Review false positives and inspect runtime behavior before changing code.
+
+## Implement Within the Existing System
+
+- Reuse existing primitives and dependencies when they meet the contract.
+- Preserve framework conventions, data flow, routes, analytics hooks, form names, legal copy, and external behavior unless the requested change requires otherwise.
+- Use semantic elements and real controls. Keep DOM order meaningful; do not rely on CSS reordering to repair reading order.
+- Keep content real. Do not invent customer logos, testimonials, metrics, prices, certifications, product states, or claims.
+- Make state differences perceivable without relying on color alone.
+- Define visible focus and predictable keyboard behavior.
+- Reserve media dimensions, load critical media intentionally, and avoid shipping desktop-sized assets to narrow screens.
+- Make motion explain change or provide feedback; give users a reduced-motion path and avoid blocking interaction on animation.
+- Handle text expansion, long names, error messages, empty collections, slow responses, and unavailable permissions.
+- Scope visual novelty to places where it improves the surface's job. Productive UI may need quiet precision; an expressive surface still needs a clear path and robust controls.
+
+Do not install persistent hooks, start background services, forward credentials, spawn another Agent with bypassed permissions, or write global state as part of this Skill. Use the tools already available in the user's environment and keep every mutation inside the authorized project scope.
+
+## Verify in Layers
+
+Match evidence to the claim:
+
+1. **Static:** lint, typecheck, unit/component tests, bundled audit, and changed-file review.
+2. **Rendered:** wide and narrow screenshots, overflow, hierarchy, wrapping, media crop, theme, and state visibility.
+3. **Interaction:** keyboard path, focus visibility/order/restoration, pointer/touch behavior, validation, async and recovery states.
+4. **Accessibility:** semantic and accessible-name inspection plus the project's automated accessibility checks; manual screen-reader testing when the risk or target requires it.
+5. **Performance:** real build output and lab evidence; field data for claims about Core Web Vitals. Lighthouse cannot directly measure field INP.
+6. **Regression:** compare the target path and any shared components or tokens affected by the change.
+
+Use at least one wide and one narrow viewport for responsive surfaces, plus any explicitly targeted breakpoint. A screenshot alone does not prove keyboard behavior, accessibility-tree correctness, localization resilience, or performance.
+
+## Completion Evidence
+
+Lead with the outcome and report:
+
+- action performed and exact scope;
+- preserved constraints and material design decisions;
+- files or components changed, if any;
+- static, rendered, interaction, accessibility, performance, and regression checks actually run;
+- findings fixed, intentionally retained, or unverified;
+- screenshots or artifact paths when created;
+- remaining risks and the smallest next verification step.
+
+Read [references/research-basis.md](references/research-basis.md) before changing accessibility, design-token, internationalization, or performance assumptions.

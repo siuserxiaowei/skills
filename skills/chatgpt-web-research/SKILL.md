@@ -5,6 +5,10 @@ description: Drive the user's already logged-in ChatGPT 官网 / ChatGPT 网页�
 
 # ChatGPT 官网调研 (Web Research)
 
+## 案例入口
+
+先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+
 ## The One Rule That Matters
 
 Everything must go through the official ChatGPT web page open in the Chrome account/profile where the user is already logged in — that page is the single source of truth.

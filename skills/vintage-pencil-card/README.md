@@ -2,12 +2,6 @@
 
 把人物、宠物、风景、建筑或静物照片转换成**构图保真**的复古彩铅卡片：先锁定“必须像”的内容，再叠加米白手工纸、莫兰迪彩铅、蜡笔和 Risograph 颗粒。
 
-<p align="center">
-  <img src="assets/examples/outputs/portrait-vintage-pencil-card.jpg" width="32%" alt="Portrait converted to a vintage colored-pencil card">
-  <img src="assets/examples/outputs/mountain-lake-vintage-pencil-card.jpg" width="32%" alt="Mountain lake converted to a vintage colored-pencil card">
-  <img src="assets/examples/outputs/coastal-sunset-vintage-pencil-card.jpg" width="32%" alt="Coastal sunset converted to a vintage colored-pencil card">
-</p>
-
 ## 它解决什么问题
 
 普通的“改成彩铅风”很容易得到漂亮但不相像的人、另一处风景或变形的建筑。这个 Skill 会先判断照片类型，再选择不同的保真规则：
@@ -68,31 +62,9 @@ cp -R skills/skills/vintage-pencil-card ~/.codex/skills/
 
 当上半照片必须像素级不变时，Skill 会建议单独生成下半部分，再做确定性拼接；单次生成式改图无法保证原照片每个像素不变。
 
-## 案例：原图与结果
+## 案例与验收
 
-### 人像身份保真
-
-| 原图 | 复古彩铅卡片 |
-|---|---|
-| <img src="assets/examples/sources/portrait-wisnu-phaewchimplee.jpg" width="420" alt="Source portrait"> | <img src="assets/examples/outputs/portrait-vintage-pencil-card.jpg" width="560" alt="Portrait result"> |
-
-保留点：脸型与五官比例、中分长发、直接视线、前倾坐姿、深色无袖上衣、手表和手臂位置。
-
-### 山湖空间保真
-
-| 原图 | 复古彩铅卡片 |
-|---|---|
-| <img src="assets/examples/sources/mountain-lake-yunus-tug.jpg" width="420" alt="Source mountain lake"> | <img src="assets/examples/outputs/mountain-lake-vintage-pencil-card.jpg" width="560" alt="Mountain lake result"> |
-
-保留点：曲折湖湾、两侧森林坡面、右侧盘山路、深色前景和上部雾层。
-
-### 海岸线保真
-
-| 原图 | 复古彩铅卡片 |
-|---|---|
-| <img src="assets/examples/sources/coastal-sunset-zak-mogel.jpg" width="420" alt="Source coast"> | <img src="assets/examples/outputs/coastal-sunset-vintage-pencil-card.jpg" width="560" alt="Coast result"> |
-
-保留点：高位地平线、中景礁石带、斜向岸线、右侧浪带、前景圆石和暖金色光线。
+仓库不再捆绑第三方照片或由其生成的衍生图。可复现的人像、风景、建筑与严格 50/50 案例见 [references/examples.md](references/examples.md)：每个案例都列出用户请求、处理决策、保留项和验收标准。运行案例时使用用户自己的图片或已确认可使用的素材。
 
 ## 需要什么
 
@@ -117,8 +89,6 @@ cp -R skills/skills/vintage-pencil-card ~/.codex/skills/
 - 低清、严重遮挡或极端透视的人像，最好补充细节参考图。
 - 严格 50/50 和“上半照片完全不改”应使用确定性合成工具完成最后拼接。
 - 不要使用无权公开或无权改编的照片制作公开案例。
-
-示例照片来自 Pexels，作者与许可链接见 [assets/examples/SOURCES.md](assets/examples/SOURCES.md)。
 
 ---
 

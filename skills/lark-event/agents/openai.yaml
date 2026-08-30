@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Events"
+  short_description: "Consume Lark events with bounded untrusted streams"
+  default_prompt: "Use $lark-event to inspect or consume the requested event stream with a bounded run, schema checks, untrusted-data isolation, and deduplication."

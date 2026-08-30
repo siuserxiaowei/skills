@@ -5,6 +5,10 @@ description: Install, upgrade, inspect, and maintain the public Agent Memory Vau
 
 # Agent Memory Vault
 
+## 案例入口
+
+先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+
 ## What This Skill Is For
 
 This skill is the Agent-side runbook for setting up and running the public Agent Memory Vault system. Claude Code and Codex can both share a single vault: Markdown stays the one authoritative fact source, while each host attaches through a thin rule-and-hook adapter. The GitHub repository is the product itself; treat this document purely as the operational guide an Agent follows for setup, upkeep, and problem solving.

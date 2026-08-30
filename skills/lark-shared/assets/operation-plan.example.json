@@ -1,0 +1,37 @@
+{
+  "skill": "lark-calendar",
+  "argv": [
+    "lark-cli",
+    "calendar",
+    "+agenda",
+    "--profile",
+    "work",
+    "--as",
+    "user"
+  ],
+  "profile": "work",
+  "identity": "user",
+  "risk": "read",
+  "target": {
+    "summary": "the authorized user's primary calendar",
+    "verified": true
+  },
+  "authorization": {
+    "basis": "read-only calendar request",
+    "explicit": false
+  },
+  "time_sensitive": true,
+  "time_zone": "Asia/Shanghai",
+  "time_has_offset": true,
+  "complete_result": false,
+  "pagination": {
+    "strategy": "bounded",
+    "limit": 3
+  },
+  "untrusted_input": false,
+  "treat_as_data": true,
+  "verification": {
+    "mode": "response",
+    "expected": "structured agenda rows for the requested date"
+  }
+}

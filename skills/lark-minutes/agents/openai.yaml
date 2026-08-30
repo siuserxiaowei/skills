@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Minutes"
+  short_description: "Manage Minutes artifacts with transcript integrity"
+  default_prompt: "Use $lark-minutes to inspect or change the requested Minutes artifact with permission, provenance, speaker, and transcript verification."

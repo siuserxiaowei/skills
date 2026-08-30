@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark IM"
+  short_description: "Send and inspect Lark messages with target checks"
+  default_prompt: "Use $lark-im to read or send the requested Lark message with verified recipients, content preview, idempotency, and server readback."

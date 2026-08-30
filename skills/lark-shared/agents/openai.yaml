@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Safety Core"
+  short_description: "Plan and verify safe lark-cli operations"
+  default_prompt: "Use $lark-shared to discover the current CLI contract, choose identity and permissions, and verify the requested operation."

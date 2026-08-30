@@ -1,23 +1,7 @@
 # Third-Party Notices
 
-本合集收录的第三方 Skill 来源与许可证如下。各 Skill 的完整许可证文本保留在其目录内的 `LICENSE`（部分含 `NOTICE.md`）文件中，按许可证要求保留本归因说明。
+当前仓库不随 57 个 Skill 分发第三方文案、代码、字体、图片、音视频、模板或其他需要单独归属声明的第三方制品；因此目前没有随包第三方材料需要在本文件列名。
 
-| Skill | 来源 | 许可证 |
-|---|---|---|
-| `lark-` 系列（27 个） | github.com/larksuite/cli | MIT（Copyright Lark Technologies Pte. Ltd.） |
-| `imagegen-frontend-web` | github.com/Leonxlnx/taste-skill | MIT |
-| `impeccable` | github.com/pbakaus/impeccable | Apache-2.0（含 NOTICE.md） |
-| `kami` | github.com/tw93/Kami | MIT（Copyright Tw93） |
-| `pua` 系列（12 个） | github.com/tanweai/pua | 源仓库无 LICENSE 文件（frontmatter 自述 MIT） |
-| `wechat-reading` | github.com/Tencent/WeChatReading | Apache-2.0（Copyright Tencent） |
-| `beautiful-html-templates` | github.com/zarazhangrui/beautiful-html-templates | MIT（Copyright Zara Zhang） |
-| `skill-publisher` | github.com/joeseesun/qiaomu-skill-publisher | MIT |
-| `goal-meta-skill` | github.com/joeseesun/qiaomu-goal-meta-skill | MIT |
-| `skill-vetter` | clawhub.ai 公开页面 | 未标注许可证 |
-| `vintage-pencil-card` 示例照片 | Pexels：Wisnu Phaewchimplee、Yunus Tuğ、Zak Mogel（详见 Skill 内 `assets/examples/SOURCES.md`） | Pexels License |
+这不表示所有相关产品和依赖均由本仓库创造。各 Skill 会按任务调用或讨论外部产品、官方 API、协议、命令行工具与 Python/Node 依赖；`references/research-basis.md` 等研究记录也会引用一手规范和上游项目。这些属于外部运行依赖或研究依据，不是复制进仓库的实现内容，仍分别受其自身条款约束。
 
-补充说明：
-
-- `kami` 运行时需从 jsDelivr CDN 下载中日韩字体，属功能性依赖。
-- `x-article-draft-uploader` 目录内另含上游 `wshuyi/x-article-publisher-skill` 的许可证文本与声明（MIT）。
-- `web-research`、`agent-memory`、`wechat-local-vault`、`wecom-local-vault`、`wecom-operations`、`wechat-mp-batch-exporter`、`chatgpt-web-research`、`x-article-draft-uploader`、`mac-wechat-dual-open`、`vintage-pencil-card` 为本仓库按功能需求重新撰写的原创实现，不适用上表中的 Skill 许可；`vintage-pencil-card` 的示例源照片仍遵循 Pexels License。原创 Skill 代码与文档以顶层 `LICENSE`（MIT）为准。
+仓库自有的 Skill 入口、参考说明、自有脚本、测试和自有案例以顶层 [LICENSE](LICENSE)（MIT）为准。用户在运行 Skill 时提供的照片、文档、聊天记录、网页内容和其他输入仍归原权利人所有，不会因为进入工作流而变成本仓库原创材料。

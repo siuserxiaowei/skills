@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Markdown"
+  short_description: "Patch Drive Markdown with conflict-aware diffs"
+  default_prompt: "Use $lark-markdown to read or edit the requested Drive Markdown file with canonical token, local diff, conflict checks, and content readback."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Imagegen Frontend Web"
+  short_description: "Create verifiable web visual references and production assets"
+  default_prompt: "Use $imagegen-frontend-web to create the smallest useful set of web visual references or assets, then hand them off with responsive, accessible, implementation-verifiable specifications."

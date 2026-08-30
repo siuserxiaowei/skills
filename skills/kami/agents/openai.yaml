@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kami"
+  short_description: "Create and verify polished documents and static publication surfaces"
+  default_prompt: "Create or refine the requested publication artifact, preserve source truth, and verify the promised formats and rendered evidence."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Calendar"
+  short_description: "Schedule events with timezone and attendee checks"
+  default_prompt: "Use $lark-calendar to read or schedule the requested event with explicit timezone, identities, attendees, rooms, recurrence, and conflict verification."

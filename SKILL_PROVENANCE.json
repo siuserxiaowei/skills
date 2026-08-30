@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-08-30",
+  "claim_scope": "当前仓库内 57 个 Skill 的入口说明、参考资料、自有脚本、测试和随包自有案例。",
+  "not_claimed": [
+    "外部产品、API、协议、命令行工具和软件依赖",
+    "研究记录引用的一手规范或上游项目",
+    "用户在运行时提供的照片、文档、账号数据和其他输入"
+  ],
+  "bundled_third_party_artifacts": [],
+  "bundled_original_artifacts": [],
+  "origin_groups": {
+    "repository_authored_baseline_current": [
+      "agent-memory",
+      "chatgpt-web-research",
+      "mac-wechat-dual-open",
+      "web-research",
+      "wechat-local-vault",
+      "wechat-mp-batch-exporter",
+      "wecom-local-vault",
+      "wecom-operations",
+      "x-article-draft-uploader"
+    ],
+    "new_original": [
+      "vintage-pencil-card"
+    ],
+    "independently_rebuilt": [
+      "beautiful-html-templates",
+      "goal-meta-skill",
+      "imagegen-frontend-web",
+      "impeccable",
+      "kami",
+      "lark-approval",
+      "lark-apps",
+      "lark-attendance",
+      "lark-base",
+      "lark-calendar",
+      "lark-contact",
+      "lark-doc",
+      "lark-drive",
+      "lark-event",
+      "lark-im",
+      "lark-mail",
+      "lark-markdown",
+      "lark-minutes",
+      "lark-note",
+      "lark-okr",
+      "lark-openapi-explorer",
+      "lark-shared",
+      "lark-sheets",
+      "lark-skill-maker",
+      "lark-slides",
+      "lark-task",
+      "lark-vc",
+      "lark-vc-agent",
+      "lark-whiteboard",
+      "lark-wiki",
+      "lark-workflow-meeting-summary",
+      "lark-workflow-standup-report",
+      "pua",
+      "pua-ding",
+      "pua-en",
+      "pua-ja",
+      "pua-loop",
+      "pua-mama",
+      "pua-p10",
+      "pua-p7",
+      "pua-p9",
+      "pua-pro",
+      "pua-shot",
+      "pua-yes",
+      "skill-publisher",
+      "skill-vetter",
+      "wechat-reading"
+    ]
+  },
+  "resolved_exceptions": [
+    {
+      "skill": "x-article-draft-uploader",
+      "resolution": "删除上游许可证与声明，并用独立状态扫描、路径解析和安全 HTML 渲染重新实现 Markdown 解析器；新增回归测试。"
+    },
+    {
+      "skill": "vintage-pencil-card",
+      "resolution": "删除三张 Pexels 原图及由其生成的三张衍生示例，改为不捆绑图片的可复现文字案例。"
+    }
+  ]
+}

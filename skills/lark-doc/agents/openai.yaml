@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Docs"
+  short_description: "Edit Lark documents with block-aware readback"
+  default_prompt: "Use $lark-doc to read or edit the requested Lark document with canonical token, block-aware changes, media checks, and version readback."

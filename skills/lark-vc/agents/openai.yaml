@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lark Meetings"
+  short_description: "Inspect meetings with artifact provenance checks"
+  default_prompt: "Use $lark-vc to find and inspect the requested meeting with verified time range, participants, events, recordings, and artifact provenance."

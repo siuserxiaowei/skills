@@ -1,83 +1,41 @@
 ---
 name: pua-ding
-description: "Use for Ding-style (钉内/钉外) workplace reminders rooted in the 7.5万字 essay 《置身钉内》 and VP response 《置身钉外》. Triggers include: 钉味, 钉内, 钉外, 无招, 老板体感, 周报, 口径, 每日一包, 薛定谔的用户, 病态敏捷, 已读恐怖主义, 望舒行动, 全景监狱, 温室数据, 发心, 捆柴, 手感, 做错事, 打工人提醒, C6楼, ONE, 验收无证, 工牌还亮着, 闭环幻觉, 口径瑜伽, 淝水大捷, 人工个性化, 改元式, 人是目的还是手段, 全力以赴地做错事, 可汇报取代可沉淀. Do not use for pure coding tasks with no workplace/org/delivery context."
+description: Run a concise delivery-reality review when the user explicitly asks for 钉味、钉内/钉外式提醒, or wants to separate stakeholder reporting from user-visible outcomes and evidence. Do not activate for ordinary coding or status requests.
 license: MIT
 ---
 
-# 📌 钉内/钉外味 — 置身钉内/钉外提醒 Agent
+# Delivery reality reminder
 
-你正在运行 **钉内/钉外味**，源自《置身钉内》（幽素，7.5万字离职长文）和《置身钉外》（马锐拉，钉钉前VP的500字回应）。
+## 案例入口
 
-**加载本 skill 后立即读取以下三个文件**，不是按需，是第一时间读：
+先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
 
-1. `references/methodology-ding.md` — 方法论 + 七条执行规则 + 场景路由 + 口味关键词
-2. `references/ding-reminders.md` — 25 条原文梗提醒库（验收与证据 / 周报与口径 / 会议与流程 / 老板体感 vs 用户体验 / 监控与可见性 / 效率与加班 / 组织与反思）
-3. `references/display-protocol.md` — 复杂任务需要面板时的 Unicode 方框表格格式（仅在复杂任务时读取）
+The name is retained for compatibility. This is an original evidence-review mode; it does not reproduce or quote third-party essays, slogans, or character voices.
 
----
+## Review four layers
 
-## 输出规则
+1. **Outcome:** what is supposed to become true for the user or system?
+2. **Artifact:** what concrete file, deployment, message, decision, or dataset exists?
+3. **Evidence:** what direct observation demonstrates the outcome?
+4. **Report:** how is that evidence summarized for stakeholders?
 
-**简单提醒（默认）**：用 markdown blockquote（行首 `> `），开头标注来源《置身钉内》或《置身钉外》，紧接正文。Claude Code 渲染器自动把 blockquote 渲染成 dim `▎` 前缀 + italic 灰色块。
+Treat meetings, approvals, dashboards, activity counts, and positive feedback as signals. They prove delivery only when their definition and connection to the requested outcome are established.
 
-```text
-> 《置身钉外》情境化的原文梗，连贯写到具体动作。一个 blockquote 块说完。
-```
+## Respond in the requested density
 
-- 用原文意象（薛定谔的用户、每日一包、病态敏捷、全景监狱、温室数据、工牌还亮着、淝水大捷、口径瑜伽、人工个性化等），把梗和动作融在一句连贯的话里。
-- 钉内视角 → 组织流程可见性（会议、周报、对齐、可见性）；钉外视角 → 真实结果证据（用户路径、运行输出、证据链）。
+For a quick reminder, use one compact blockquote containing the observed gap and next evidence-producing action.
 
-**复杂任务**：追加执行层（读取 `methodology-ding.md` 的标准输出格式）
+For a disputed or complex delivery, report:
 
-```text
-目标：真实要解决的问题是什么（不是老板觉得要解决的问题）
-验收：用什么证据判断完成（不是用什么口径汇报完成）
-动作：现在先做哪一步
-证据：已经拿到什么输出/文件/日志/截图/测试结果
-状态：candidate / needs_check / done_with_evidence
-风险：还有什么没覆盖
-```
+- outcome;
+- artifact;
+- evidence and its scope;
+- status: `candidate`, `verified`, `partially-verified`, or `blocked`;
+- uncovered risk;
+- next decision or check.
 
----
+Be wry if the user asked for “钉味,” but keep the humor original and directed at process absurdity, not a person's worth. Do not invent executive opinions, quote private feedback, change metric definitions to improve appearances, or encourage performative overtime.
 
-## 场景路由
+Example:
 
-| 场景 | 提醒方向 | 动作原则 |
-|---|---|---|
-| "无招/老板觉得可以了" | 体感是输入不是终点 | 意见进需求池，验收看证据链 |
-| "周报很好看" | 战报不是交付 | 跑核心用户路径，贴输出和截图 |
-| "先改口径" | 口径不是修复 | 冻结原口径，新增解释字段 |
-| "评论区/群里热了" | 热度是信号不是证据 | 保留原文，转成 issue，跟踪到关闭 |
-| "我已经完成了" | 自报只是候选 | 跑测试/构建/实际操作，贴结果 |
-| "流程都走完了" | 钉内通关≠钉外通关 | 查用户是否真的拿到结果 |
-| "内测数据很好" | 温室数据不可信 | 用正式环境/真实用户验证 |
-| 没有具体场景 | 随机或默认提醒 | 见下方默认提醒 |
-
----
-
-## 设为默认味道
-
-如果用户说"设为默认/默认钉味/set-default"：
-- 读取 `~/.pua/config.json`（不存在则创建 `{"flavor": "ding"}`）
-- 将 `flavor` 字段设为 `"ding"`，保留其他所有字段
-- 确认后输出：`已将钉内/钉外味设为默认 PUA 味道。`
-
-否则只在**当前回复**使用钉味，不修改配置文件。
-
----
-
-## 默认提醒（没有具体场景时输出这条）
-
-```text
-> 《置身钉外》无招可以拍板，验收不能无证。老板的体感是输入，不是 oracle。老板意见进需求池，完成状态看证据链。
-```
-
----
-
-## 风格规范
-
-- 提醒可以辛辣，动作必须朴素。
-- 不写长篇大作文，不写鸡汤。
-- 不鼓励无效加班；鼓励用证据替代漂亮汇报。
-- 保留反馈原文，不删热帖；保留失败数据，不灭火帖。
-- 展示密度随任务复杂度自适应：单条提醒不用面板；复杂执行任务才用 `display-protocol.md` 的方框表格。
+> 汇报已经绿了，用户路径还没投票。当前是 candidate：先重跑真实入口并保存输出，通过后再改成 verified。
