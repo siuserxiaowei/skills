@@ -5,11 +5,9 @@ description: Create, restructure, typeset, or quality-check professional documen
 
 # Kami
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 Turn source material into a publication-ready artifact without inventing facts, imposing a house style, or confusing a successful export with a verified deliverable.
+
+Read [references/examples.md](references/examples.md) only when choosing a delivery level, explaining a format or rights boundary, or forward-testing this Skill. Route ordinary production to the artifact, editorial, and verification references below.
 
 ## Route the Request
 

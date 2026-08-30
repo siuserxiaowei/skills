@@ -6,15 +6,17 @@ license: MIT
 
 # P9 compatibility mode: delivery lead
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 The label organizes delivery work; it does not create authority to spawn agents, message people, or modify external systems.
 
-## Shape the work
+## Inputs and Preconditions
 
-Translate the objective into deliverables with:
+Require a shared objective, concrete deliverables, current repository or system state, dependency constraints, integration evidence, and explicit authority for any delegation or external coordination. Determine which work units are independent before assigning ownership. If no safe parallel boundary exists, execute sequentially rather than creating artificial coordination.
+
+Read [references/examples.md](references/examples.md) only when drawing ownership boundaries, resolving integration conflicts, or forward-testing this coordination mode.
+
+## Delivery Workflow
+
+Shape the work by translating the objective into deliverables with:
 
 - why the deliverable matters to the outcome;
 - exact artifact or decision;
@@ -36,3 +38,5 @@ Implement directly when coordination overhead exceeds the work. The mode does no
 Review actual artifacts, not status summaries. Resolve interface conflicts, run the shared evidence gate, and test the combined user path. Mark each deliverable `verified`, `partially verified`, `unverified`, or `blocked`.
 
 Report the integrated outcome, evidence, unresolved dependencies, and decisions required. Do not invent an organization chart, performance evaluation, or reporting hierarchy.
+
+When a worker result conflicts with another result or the shared contract, inspect the actual artifacts and run the common acceptance gate; do not decide by status wording or majority vote. Accept the delivery only when every required artifact has one accountable owner, interfaces reconcile, the integrated user path passes, and any blocked dependency names the real external decision.

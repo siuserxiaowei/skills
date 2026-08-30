@@ -1,19 +1,56 @@
 # Lark Apps｜案例与详细说明
 
-以下案例以当前 lark-cli 的运行时发现结果为准；命令、schema、profile、identity 和租户都必须在执行当次重新确认。
+命令结构按本机 `lark-cli 1.0.71` 验证；每次运行先查看当前 `apps --help` 与具体命令帮助。示例不包含真实密钥，`app_id` 和路径必须由本次任务确认。
+
+## 使用说明
+
+- **何时使用：** 需要发布 HTML、核对 release，或区分应用发布与数据库/配置动作时读取。
+- **准备/输入：** 确认 app ID/type、local/dev/online 环境、工作区构建目录、当前 release 和敏感文件扫描结果。
+- **执行方式：** 先 get 与 dry-run；发布只执行一次，返回 release ID 后仅轮询该 release。
+- **验收/边界：** 用真实 URL/release 终态和页面打开结果验收；发布授权不包含数据库迁移、密钥或 access scope 变化。
 
 ## 正向案例
 
-- **用户请求：** “创建一个测试妙搭应用并部署到 dev，先不要上线。”
-- **处理：** 先确认租户、应用名、运行环境和现有同名项，生成/检查本地实现，dry-run 部署计划后只写入 dev 环境。
-- **验收证据：** 应用 ID、dev 版本、构建日志和回读状态一致；online 环境没有变化，密钥未进入日志。
+### 发布一个已构建的 HTML 应用
+
+- **用户请求：** “把工作区里的 `site/` 发布到‘活动报名页’应用，先检查内容和预览请求，再正式发布。”
+- **准备信息/输入：** `work` profile 的 user 身份可见该应用；`site/` 已本地打开验收；目录不含 `.env`、凭证、私钥或未授权素材；应用名称已消歧为一个 `app_id`。
+- **处理：**
+
+```bash
+lark-cli apps +list --profile work --as user --keyword '活动报名页' --ownership mine --format json
+lark-cli apps +get --profile work --as user --app-id <app_id> --format json
+lark-cli apps +html-publish --profile work --as user --app-id <app_id> --path site --dry-run --format json
+```
+
+核对应用类型、将要上传的目录、敏感文件扫描结果和当前发布状态后，按用户已有的明确发布授权执行一次：
+
+```bash
+lark-cli apps +html-publish --profile work --as user --app-id <app_id> --path site --format json
+```
+
+若响应返回 `release_id`，只轮询该 release，不重新发布：
+
+```bash
+lark-cli apps +release-get --profile work --as user --app-id <app_id> --release-id <release_id> --format json
+```
+
+- **预期输出：** HTML 类型返回可访问 URL，需发布类型返回可追踪的 release 及终态。
+- **验收证据：** `app_id`、应用类型、构建目录、release/URL 与服务端状态对应；真实页面能打开；Git diff 和输出日志中没有 secret。
 
 ## 边界案例
 
-- **场景：** 生产发布、域名、数据库迁移和权限扩张分别属于高影响动作，不能由“帮我做个应用”一并推定授权。
-- **验收证据：** 任何额外写入、外部发送、权限或高风险动作均未越过用户本轮授权。
+### 发布不授权数据库和生产配置变化
+
+- **用户请求：** “把这个应用上线，顺便把数据库和环境变量配好。”
+- **边界判断：** 发布代码、迁移 online 数据库、写环境变量和扩大访问范围属于四个独立控制面，发布授权不能自动覆盖后三项。
+- **处理：** 把 HTML/应用发布、online 数据库迁移、环境变量写入、权限开放拆成不同计划；先只读 `+get`、`+db-env-diff`、`+env-list`，分别展示影响。任何 production、密钥、不可逆 migration 都需要单独对象级确认。
+- **验收证据：** 用户只确认发布时，release 可以变化，但数据库 schema、环境变量、角色、access scope 和自动化启用状态均保持基线值。
 
 ## 失败与恢复
 
-- **场景与处理：** 构建成功但 dev 健康检查失败时保留日志与版本，修复后重新部署 dev；不把失败版本提升到 online。
-- **验收证据：** 保留结构化错误、实际远端状态和下一步条件；没有把未知状态伪装成成功。
+### 发布响应丢失
+
+- **场景：** 上传完成后连接中断，客户端没有拿到明确终态。
+- **处理与恢复：** 按已返回的 `release_id` 用 `+release-get` 查询；没有 ID 时用 `+get`/`+release-list --help` 先定位同一时间窗候选，不再次运行 `+html-publish`。
+- **验收证据：** 找到 release 时报告其真实状态与日志；无法确定时交付“状态未知”、请求时间、`app_id` 和核查路径，绝不制造第二个发布。

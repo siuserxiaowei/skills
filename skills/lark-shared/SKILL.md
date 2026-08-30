@@ -31,6 +31,8 @@ python3 scripts/check_plan.py operation-plan.json
 
 这个脚本只检查计划，不调用飞书、不读取凭证。字段说明见 [操作合同](references/operation-contract.md)。
 
+必要输入至少包括：用户指定或可安全消歧的 profile、目标租户、`user`/`bot` identity、业务对象与期望后置状态。涉及日期时还要取得 IANA 时区；需要全集时要约定分页/数量上限；涉及本地文件时要确认工作目录内的安全相对路径。任何一项会改变对象或受众的缺失输入都不能靠默认值补齐。
+
 ## 从运行时取得事实
 
 每次新环境、版本变更或命令失败后都重新发现，不凭记忆补 flag：

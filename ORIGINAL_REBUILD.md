@@ -30,17 +30,17 @@ python3 skills/skill-vetter/scripts/audit_originality.py . --fail-on unreviewed
 - 能自动化验证的行为必须有测试；不能验证的部分明确写出残余风险和最小补验方法。
 - 任何功能缩减必须有证据说明旧能力不安全、不可维护或不再成立，不能为了容易重写而悄悄删除。
 
-初始基线检查（2026-08-30）：仓库 57 个 Skill 中有 29 个未通过当前 `quick_validate.py`，主要原因是第三方 frontmatter 使用了当前不支持的 `version`、`argument-hint`、`user-invocable` 等字段。首轮重建后 57/57 通过结构检查；50-Agent 归属复核、第二轮修复与原创门禁补强完成后，全仓库 20 组、173 个离线单元测试通过。各项仍需真实外部凭证或真实视觉任务的前向验证，才从 `original-v1` 升级为完整功能意义上的 `original-verified`。
+初始基线检查（2026-08-30）：仓库 57 个 Skill 中有 29 个未通过当前 `quick_validate.py`，主要原因是第三方 frontmatter 使用了当前不支持的 `version`、`argument-hint`、`user-invocable` 等字段。首轮重建后 57/57 通过结构检查；50-Agent 归属复核、第二轮修复、逐 Skill 使用文档补验与原创门禁补强完成后，全仓库 21 组、180 个离线单元测试通过。各项仍需真实外部凭证或真实视觉任务的前向验证，才从 `original-v1` 升级为完整功能意义上的 `original-verified`。
 
-## 当前全量归属与案例补验（2026-08-30）
+## 当前全量归属与案例补验（2026-08-31）
 
 - 当前原创声明覆盖仓库内 57 个 Skill 的入口说明、参考资料、自有脚本、测试和随包自有案例；不把外部产品、API、协议、命令行工具、软件依赖、研究引用或用户输入说成本仓库原创。
 - 50 个独立 Agent 对 57 个 Skill 的固定提交、旧基线、Git 历史、已知上游、许可证、资产、长行和 12/16-token 窗口进行交叉复核，完整范围和方法见 [`ORIGINALITY_AUDIT_50_AGENT.md`](ORIGINALITY_AUDIT_50_AGENT.md)。
 - 更严格复核推翻了“9 个 Skill 是仓库原始基线”的旧分类：`agent-memory`、`chatgpt-web-research`、`mac-wechat-dual-open`、`web-research`、`wechat-local-vault`、`wechat-mp-batch-exporter`、`wecom-local-vault`、`wecom-operations`、`x-article-draft-uploader` 均能追溯到 Yichen Skills 的旧内容，且来源许可证与当前公开 MIT 分发存在冲突。九项现已连同入口、参考、核心脚本和测试一起独立重建；机器清单不再保留 `repository_authored_baseline_current` 成员。
 - `x-article-draft-uploader` 现以独立的 Markdown 解析、精确 Chrome profile/cookie 域边界、`0600` 原子 storage state、显式 `--apply` 和只创建草稿的写后核验实现，并有 7 个离线回归测试。
 - `vintage-pencil-card` 曾捆绑三张 Pexels 照片及三张衍生示例。六张图片与来源文件均已移除，改为使用用户自有/已授权素材即可复现的文字案例。
-- 57/57 个 Skill 现在都直接链接 `references/examples.md`；每份均含正向案例、边界案例、失败恢复和验收证据。`skills/skill-vetter/scripts/audit_collection.py` 会对数量、归属、案例、详细度、链接和随包第三方残留做全量检查；机器可读分组见 `SKILL_PROVENANCE.json`。
-- `skills/skill-vetter/scripts/audit_originality.py` 会从固定 Git 基线只读比较 56 个独立重建 Skill；当前 262 个文件对 980 个历史文件为 0 个 `material`、4 个已绑定文件哈希复核的必要接口/数据枚举/语言样板相似、0 个未复核项和 0 个失效记录。`vintage-pencil-card` 另以首次加入 commit 和锚点文件验证 `new_original` 沿革。
+- 57/57 个 Skill 现在都直接链接 `references/examples.md`；每份均含独立使用说明、正向案例、边界案例、失败恢复和任务特有的验收证据。`USAGE_GUIDE.md` 提供统一入口，`audit_usage_docs.py` 对输入、流程、边界、恢复、输出和证据做逐项门禁；`audit_collection.py` 继续检查数量、归属、链接和随包第三方残留。
+- `skills/skill-vetter/scripts/audit_originality.py` 会从固定 Git 基线只读比较 56 个独立重建 Skill；当前 264 个文件对 980 个历史文件为 0 个 `material`、4 个已绑定文件哈希复核的必要接口/数据枚举/语言样板相似、0 个未复核项和 0 个失效记录。`vintage-pencil-card` 另以首次加入 commit 和锚点文件验证 `new_original` 沿革。
 
 ## 重建台账
 

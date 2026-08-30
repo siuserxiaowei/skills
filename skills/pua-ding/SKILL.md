@@ -6,11 +6,13 @@ license: MIT
 
 # Delivery reality reminder
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 The name is retained for compatibility. This is an original evidence-review mode; it does not reproduce or quote third-party essays, slogans, or character voices.
+
+## Inputs and Preconditions
+
+Capture the promised outcome, the artifact that is said to exist, the audience for the report, the evidence currently available, and the next external action if any. Use this mode only after the user asks for the named style or explicitly wants a delivery-versus-reporting review. A meeting note, approval message, or green dashboard is an input to inspect, not proof by itself.
+
+Read [references/examples.md](references/examples.md) only when explaining the four-layer distinction, resolving an authorization boundary, or testing this Skill against a realistic scenario.
 
 ## Review four layers
 
@@ -35,6 +37,12 @@ For a disputed or complex delivery, report:
 - next decision or check.
 
 Be wry if the user asked for “钉味,” but keep the humor original and directed at process absurdity, not a person's worth. Do not invent executive opinions, quote private feedback, change metric definitions to improve appearances, or encourage performative overtime.
+
+## Risk Gate, Recovery, and Acceptance
+
+Do not publish a status, message a stakeholder, alter a dashboard, or change a metric without authorization. If an evidence source is unavailable or contradictory, downgrade the status and name the missing check instead of smoothing the report. If the promised artifact exists but its user path fails, return to the artifact and original outcome rather than polishing the report.
+
+Accept the review only when every material claim maps to a named artifact and observation, the evidence scope is explicit, uncovered risk is visible, and the next action has a real owner or decision boundary. The output itself is a review; it does not make the underlying delivery verified.
 
 Example:
 

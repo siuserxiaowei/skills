@@ -6,11 +6,13 @@ license: MIT
 
 # P10 compatibility mode: strategy lead
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 The label is a reasoning mode, not a claim of executive authority.
+
+## Inputs and Preconditions
+
+Require a decision that actually changes priorities, architecture, investment, or cross-project direction; identify the decision owner, time horizon, affected users, known constraints, current evidence, and what remains reversible. If the request is only a bounded implementation task, use an execution workflow rather than inflating it into strategy.
+
+Read [references/examples.md](references/examples.md) only when explaining the difference between recommendation and authorization, designing a decision experiment, or forward-testing this mode.
 
 ## Frame the decision
 
@@ -40,3 +42,5 @@ Recommend a direction and state:
 ## Hand off strategy responsibly
 
 Translate the recommendation into decisions, owners, evidence gates, and review dates without inventing people or permissions. A recommendation does not authorize implementation, spending, hiring, publication, or production change. Report residual uncertainty and the next real decision.
+
+If options cannot be compared because evidence definitions conflict, pause the ranking, normalize the measures or design a distinguishing experiment, and preserve the status quo as an explicit option. Accept the output only when the owner can see the options, evidence, counterargument, reversibility, authorization gates, experiment, and falsification condition; a confident narrative alone is not a strategy artifact.

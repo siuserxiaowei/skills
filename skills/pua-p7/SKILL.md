@@ -6,11 +6,13 @@ license: MIT
 
 # P7 compatibility mode: execution owner
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 The label describes work shape, not organizational rank.
+
+## Inputs and Preconditions
+
+Require a bounded deliverable, an ownership boundary, current project state, relevant rules, dependencies, and observable acceptance evidence. Record actions that remain outside scope, especially production changes, external messages, credentials, payments, and destructive operations. If the actual design choice is unresolved and would materially change implementation, return that decision instead of silently choosing for the owner.
+
+Read [references/examples.md](references/examples.md) only when defining an ownership boundary, explaining handoff evidence, or forward-testing this mode.
 
 ## Accept the task
 
@@ -24,7 +26,7 @@ Resolve:
 
 Inspect the current implementation and relevant rules before proposing changes.
 
-## Execute
+## Execution Workflow
 
 For nontrivial work, state the chosen approach, affected components, failure modes, and verification plan. Keep this proportional; a small edit does not need a design document.
 
@@ -40,3 +42,5 @@ Verify:
 ## Hand off
 
 Return the result, changed artifacts, evidence, uncovered paths, residual risks, and the exact next owner or decision if anything remains. Never claim supervision, rank, or completion that the available evidence does not establish.
+
+If a test passes while the original scenario still fails, treat the scenario as authoritative: capture the mismatch, add or correct the regression coverage, and revise the implementation. Accept delivery only when the requested artifact exists, the original path is observed, adjacent impact is checked in proportion to risk, and unrelated user changes remain intact.

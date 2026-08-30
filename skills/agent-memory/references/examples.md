@@ -1,33 +1,37 @@
-# Agent Memory examples
+# Agent Memory｜使用说明与案例
+
+## 使用说明
+
+先确定权威记忆根目录、哪些 Agent 会读写、记录格式、索引位置、版本控制/备份方式和本次操作类型。Markdown 记录是事实源；目录清单、全文索引、向量库和缓存都必须可重建，不能反向静默改写记录。没有用户明确范围时，不自动保存聊天、终端日志、秘密或整个项目目录。
+
+写入前读取当前记录和哈希，生成唯一 record ID，区分用户陈述、已验证事实、推断和待办；使用临时文件与原子替换，并在并发场景使用 claim/版本检查。检索结果必须返回记录 ID 和来源路径；修复索引时先在临时位置重建，验证后再切换。
 
 ## 正向案例
 
-**用户请求：** “给两个编码 Agent 建一个共用记忆库，但不要把聊天记录自动存进去。”
+**用户请求：** “给 Codex 和另一个编码 Agent 建一个共用的私密记忆库，但不要自动保存聊天记录。”
 
-**处理：** Define a Markdown record contract, one canonical private root, separate host adapters, and rebuildable indexes. Enable writes only for user-approved distilled records.
+**准备信息：** 用户指定权威根目录 `/absolute/private/agent-memory`，允许两个 host 读取、只在用户确认后写入蒸馏记录；确认不做远端同步，不保存原始对话和凭据。记录需要 ID、标题、状态、来源、创建/更新时间与正文。
 
-**验收证据：** Each host resolves the same root and retrieves a synthetic record by ID and text; raw chat content and secrets are absent from the repository and index export.
+**处理：** 建立 Markdown record contract、确定性 catalog 和可重建全文索引，为两个 host 配置指向同一根目录的 adapter。先写入不含真实隐私的合成记录，重建索引；分别从两个 host 按 ID 和关键词查询。模拟一次经用户批准的更新，检查旧哈希、原子替换和索引刷新。
 
-## 失败与恢复
+**预期输出：** 目录中只有权威 Markdown、必要 catalog/配置和可识别的派生索引；两个 Agent 看到同一记录版本，写入权限和禁止自动采集规则可读。
 
-**场景：** “文件已经改了，但搜索还返回旧内容。”
-
-**处理：** Compare the source record hash with catalog and index hashes. Rebuild derived state in a disposable location before replacing the stale index.
-
-**验收证据：** The new query returns the current record, the old phrase no longer matches, and the Markdown source has the same hash before and after repair.
+**验收证据：** 两个 host 都能按 ID 与文本找到合成记录，返回同一来源路径和哈希；索引删除后可由 Markdown 完整重建。敏感扫描确认没有原始聊天、环境变量、Cookie、日志或真实秘密。
 
 ## 边界案例
 
-**场景：** “把这个记忆目录直接推到公开 GitHub。”
+**场景：** 用户说“把这个记忆目录直接推到公开 GitHub，让大家复用”，目录里含真实项目决策、附件和本地索引数据库。
 
-**处理：** Stop before pushing. Show the exact target, staged files, sensitive-data findings, attachment rights, and a sanitized-template option. Public visibility requires separate authorization.
+**边界判断：** 公开发布是新的外部动作，不能由“共用记忆库”的授权推导；索引也可能保留已删除文本，附件的再分发权利需要单独确认。
 
-**验收证据：** No remote mutation occurs until confirmed; the proposed public package contains only fake examples and excludes private records, databases, logs, caches, and credentials.
+**处理：** 停止在只读清单与风险报告，展示精确目标、拟暂存文件、敏感命中、附件权利和公开可见性。提供一个只含 schema、合成示例和重建脚本的 sanitized template；用户确认前不执行 commit、push 或分享。
 
-### Recover from competing writers
+**验收证据：** 远端无变化；公开候选集合排除真实记录、数据库、日志、缓存、凭据和未授权附件，且每个保留文件都有明确用途。
 
-**Request:** “两个 Agent 同时写完后，一部分内容丢了。”
+## 失败与恢复
 
-**Decision:** Freeze new writes, identify active claims and the last common record hashes, then reconcile only the affected records. Do not rebuild indexes until canonical Markdown is resolved.
+**失败场景：** Markdown 已更新但搜索仍返回旧内容；同时两个 Agent 曾并发写同一记录，不能确定哪份是权威版本。
 
-**Evidence:** Conflicts remain visible until decided, every reconciled record has a source and status, and a concurrent synthetic test no longer merges unrelated writes.
+**处理与恢复：** 先冻结新写入，比较源记录、catalog、索引哈希和活动 claim，找出最后共同版本。把冲突内容保留为两个候选并让用户或明确规则裁决，不能用索引结果覆盖 Markdown。权威记录解决后，在临时目录重建派生状态，验证查询再原子切换。
+
+**验收证据：** 冲突在裁决前保持可见，每个合并字段有来源；修复后新短语能命中、旧短语不再命中，权威 Markdown 在索引重建前后哈希不变。并发合成测试不再丢失或混并无关写入。

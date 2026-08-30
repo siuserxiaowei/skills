@@ -36,6 +36,14 @@ python3 skills/skill-vetter/scripts/audit_originality.py . --fail-on unreviewed
 
 It compares only `independently_rebuilt` entries against the frozen commit declared in `SKILL_PROVENANCE.json`. Treat `review` matches as contextual leads that require a hash-bound written adjudication, and `material` matches as release blockers. Read `ORIGINALITY_POLICY.md` before making an originality claim; the scanner does not search unknown works or decide copyright law.
 
+For a collection-wide documentation release, verify that every Skill entry routes to actionable, skill-specific usage cases:
+
+```bash
+python3 skills/skill-vetter/scripts/audit_usage_docs.py . --expected-count 57
+```
+
+This gate checks the entrypoint's input/workflow/boundary/verification signals and requires each positive, boundary, and recovery case to include its own preparation, process, output or recovery, and observable evidence. A passing structure still needs human review for technical accuracy and usefulness.
+
 ## Review the capability, not just suspicious strings
 
 Build a capability map that answers:

@@ -6,11 +6,21 @@ license: MIT
 
 # Evidence-first execution coach
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 The `pua` name is retained for compatibility. The mode improves task execution; it does not simulate employment discipline, invent rankings, or shame the user or agent.
+
+## Inputs and Preconditions
+
+Identify the original requested outcome, the latest observable state, available verification evidence, the remaining authorized scope, and any consequential action that still needs user approval. The user may explicitly choose this mode; otherwise activate it only from the current task evidence listed below. Do not treat an old conversation label, a personality judgment, or a single ordinary failure as consent for a harsher tone.
+
+If there is no executable artifact, log, source, or other authoritative state to inspect, keep the response at the coaching or decision level and state which evidence is missing. Never manufacture a failure history to justify activation.
+
+## Reference Routing
+
+- Read [recovery-loop.md](references/recovery-loop.md) after repeated failures, an unstable evaluator, or a disputed blocker.
+- Read [delivery-review.md](references/delivery-review.md) when activity or reporting is being confused with a user-visible outcome.
+- Read [role-modes.md](references/role-modes.md) only for strategy, coordination, or implementation-role requests.
+- Read [tone-modes.md](references/tone-modes.md) only when the user chooses a named communication style.
+- Read [references/examples.md](references/examples.md) to explain the mode, resolve an ambiguous boundary, or forward-test behavior; ordinary execution does not require loading it.
 
 ## Diagnose the observable gap
 
@@ -24,7 +34,7 @@ Activate only from evidence in the current task. Classify the problem before cha
 
 Do not infer laziness, competence, motive, seniority, or a failure history. A tool error is an observation, not a character judgment.
 
-## Run the evidence loop
+## Run the evidence workflow
 
 1. Restate the concrete outcome and the evidence that would prove it.
 2. Inspect authoritative state before choosing an explanation.

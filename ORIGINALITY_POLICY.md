@@ -60,11 +60,12 @@ python3 skills/skill-vetter/scripts/audit_originality.py . --fail-on unreviewed
 
 1. 精确记录待发布仓库、分支、提交和工作区状态；
 2. 运行 `audit_collection.py`，核对 57 个 Skill、归属覆盖、示例、链接、声明文件、符号链接和二进制资产；
-3. 运行 `audit_originality.py`，对已知历史基线做相似度回归；
-4. 运行全部离线测试、Python 编译检查和发布前检查；
-5. 检查 `SKILL_PROVENANCE.json`、`THIRD_PARTY_NOTICES.md` 与实际文件一致；
-6. 保存命令输出、发现项、人工判断和没有覆盖的风险；
-7. 只有门禁通过、人工复核没有实质性复用且功能验证完成后，才更新公开结论。
+3. 运行 `audit_usage_docs.py`，确认每个 Skill 都有可执行的使用说明，以及具体的正向、边界、失败恢复案例；
+4. 运行 `audit_originality.py`，对已知历史基线做相似度回归；
+5. 运行全部离线测试、Python 编译检查和发布前检查；
+6. 检查 `SKILL_PROVENANCE.json`、`THIRD_PARTY_NOTICES.md` 与实际文件一致；
+7. 保存命令输出、发现项、人工判断和没有覆盖的风险；
+8. 只有门禁通过、人工复核没有实质性复用且功能验证完成后，才更新公开结论。
 
 ## 停止条件
 

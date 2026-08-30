@@ -5,11 +5,9 @@ description: "Transform one or more reference photos into composition-faithful v
 
 # Vintage Pencil Card
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 Turn a supplied photo into a quiet, tactile colored-pencil card without losing the identity or scene structure that makes the source recognizable.
+
+Read [references/examples.md](references/examples.md) only when selecting a layout, explaining fidelity limits, or forward-testing a new subject class. Read [preservation-rules.md](references/preservation-rules.md) after classifying the subject, and [prompt-template.md](references/prompt-template.md) when constructing or revising the edit prompt.
 
 ## Start with the input contract
 
@@ -22,6 +20,8 @@ Assign every attached image one role before writing the prompt:
 If the user did not label the images, infer roles from context and state the assumption briefly. One clear content image is enough. Do not request a style image when a textual style specification will work.
 
 Inspect each local image before editing it. Use the platform's image-editing path and pass the actual content image as a reference; do not rely on a text-only description when the source is available.
+
+Confirm that the user owns or may transform and deliver every supplied photo, logo, or style reference. Treat images of private people, children, IDs, addresses, and unpublished products as sensitive; keep them in the authorized workspace and do not reuse them as examples. If rights or consent are unclear, pause production use and offer a prompt-only or user-supplied-material path.
 
 ## Route by subject type
 
@@ -74,7 +74,7 @@ Unless the user supplies a different art direction, use this default system:
 - large quiet negative space, restrained contrast, and no heavy cast shadow;
 - no text by default because generated lettering is unstable; add exact text later when typography matters.
 
-## Generate and verify
+## Generation Workflow and Verification
 
 Generate one considered composition first. Compare it against the source on four axes:
 
@@ -85,4 +85,8 @@ Generate one considered composition first. Compare it against the source on four
 
 If one axis fails, iterate with one targeted correction. Start with: `Keep everything else unchanged. Correct only ...` Re-state the exact source invariant and the visible target. Do not rewrite the entire art direction unless the style itself failed.
 
-Use [references/examples.md](references/examples.md) when explaining the Skill to a user or adapting the workflow to a new subject class.
+## Recover and Deliver
+
+If two targeted generations miss the same invariant, stop prompt-only retries. Improve the reference, split generation from deterministic compositing, or narrow the fidelity claim. Never hide a source mismatch under texture, crop, or decorative marks.
+
+Deliver the selected file with its pixel dimensions, orientation, source-role assumptions, requested preserve/change list, and checks performed. Record any generative uncertainty and any deterministic compositing step. When the image will be published on the web, provide an alt-text intent and verify the intended crop at each supplied placement; do not claim responsive or accessible delivery from a single unchecked image. A result is verified only for the fidelity axes and output properties actually inspected.

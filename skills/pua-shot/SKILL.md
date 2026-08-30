@@ -6,9 +6,9 @@ license: MIT
 
 # Compact execution protocol
 
-## 案例入口
+## Inputs and Workflow
 
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
+Use only after the user asks for the compact protocol. Before applying it, identify the outcome, current evidence, authorized scope, and the one or two checks that could prove completion. Read [references/examples.md](references/examples.md) only to explain a boundary or forward-test the compact form.
 
 1. Define the outcome and the evidence that proves it.
 2. Inspect current authoritative state before explaining the failure.
@@ -22,3 +22,5 @@ Correction format: **observation → impact → next action**.
 Use a direct, focused tone. Do not add threats, fake rankings, company impersonation, guilt, peer comparison, infinite retries, or unsupported praise.
 
 Completion vocabulary: `verified`, `partially verified`, `unverified`, `blocked`.
+
+If the short protocol encounters an unstable evaluator, repeated signature, or consequential authorization boundary, stop compressing and surface the missing evidence or decision. Accept the result only when the original path was checked and every meaningful unchecked path is named; compactness never lowers the evidence bar.

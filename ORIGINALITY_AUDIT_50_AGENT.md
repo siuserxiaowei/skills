@@ -1,6 +1,6 @@
 # 50-Agent 原创性与归属复核
 
-审计日期：2026-08-30
+审计日期：2026-08-30；使用文档补验：2026-08-31
 
 固定基线：`aadbe9cc380cbbd9301b750bf40b404a63f86946`
 
@@ -98,9 +98,9 @@
 
 ## 自动证据与限制
 
-最终工作树通过：57/57 `quick_validate.py`、57 个 provenance 条目与 57 份案例的集合审计（0 findings）、全量 Python 编译、20 组共 173 个离线单元测试、`git diff --check`，以及公开目标 `siuserxiaowei/skills` 的发布预检（0 blocker）。
+最终工作树通过：57/57 `quick_validate.py`、57 个 provenance 条目与 57 份案例的集合审计（0 findings）、57 份使用说明与正向/边界/失败恢复案例的使用文档审计（0 findings）、全量 Python 解析、21 组共 180 个离线单元测试、`git diff --check`，以及公开目标 `siuserxiaowei/skills` 的发布预检（0 blocker）。
 
-随后增加了可复跑的 Git 历史基线门禁：`audit_originality.py` 当前检查 56 个 `independently_rebuilt` Skill 的 262 个文件，对固定基线中的 980 个同名 Skill 文件得到 0 个 `material`、4 个 `review`、0 个未复核项和 0 个失效复核记录。四个 `review` 分别是 CLI 调用序列、消息类型编号、Python 标准库 import 和本 Skill 自有脚本固定路径；每项结论都绑定当前文件 SHA-256，文件变化后必须重新审查。`vintage-pencil-card` 通过首次加入 commit `1dc9bf8bbebd495f3e46b5a1f7adee0266931e0b` 与锚点文件做独立沿革核验。
+随后增加了可复跑的 Git 历史基线门禁：`audit_originality.py` 当前检查 56 个 `independently_rebuilt` Skill 的 264 个文件，对固定基线中的 980 个同名 Skill 文件得到 0 个 `material`、4 个 `review`、0 个未复核项和 0 个失效复核记录。四个 `review` 分别是 CLI 调用序列、消息类型编号、Python 标准库 import 和本 Skill 自有脚本固定路径；每项结论都绑定当前文件 SHA-256，文件变化后必须重新审查。`vintage-pencil-card` 通过首次加入 commit `1dc9bf8bbebd495f3e46b5a1f7adee0266931e0b` 与锚点文件做独立沿革核验。
 
 九个纠错 Skill 对本地 Yichen 来源的最终 16-token 结果为：六项 0 命中；`wechat-local-vault` 23 个窗口全部来自连续 CLI 示例和消息类型编号；`wechat-mp-batch-exporter` 1 个窗口为 Python `json/main` 样板；`wecom-operations` 1 个窗口为标准库 import 样板。对应 12-token 覆盖均不超过 0.36%，人工查看未发现实质表达或实现重合。旧基线中的其他重建 Skill 也没有高覆盖窗口；唯一保留大段旧文本的是此前已由本仓库新增的 `vintage-pencil-card`，其第三方 Pexels 原图及衍生示例已删除，不把外部图片说成自有资产。
 

@@ -7,6 +7,15 @@ description: Inspect authorized local WeCom databases on macOS, create private p
 
 Use this Skill only for data the user is entitled to inspect. The operating model is source read-only: discover an account store, validate a captured 16-byte secret against encrypted page one, materialize a new protected snapshot, then run every query against that snapshot.
 
+Read [references/examples.md](references/examples.md) for complete positive, boundary, and recovery cases. Read [references/database-notes.md](references/database-notes.md) only when inspecting or adapting database schemas.
+
+## Inputs and prerequisites
+
+- Confirm the user is entitled to inspect the local dataset and select a passive inspection, secret capture, snapshot, bounded query, or export.
+- Provide or choose an exact dataset label/data directory; multiple discovered accounts must be resolved by the user, not by inspecting private contents.
+- Snapshot/decrypt requires a candidate secret that validates against page one. Query/export requires a pinned private snapshot, exact conversation, time bounds/timezone, and a new owner-only destination.
+- Process attachment, a copied signed app, and sudo scanning are distinct authorization gates. Failure of one route does not authorize the next.
+
 ## Safety contract
 
 - Never drive the WeCom interface or send a message.
@@ -85,6 +94,13 @@ Pass `--snapshot` to pin a specific evidence version. Export refuses an existing
 - The Frida agent intentionally avoids private, build-specific symbol offsets. The memory scanner retains one known 5.x object layout and must be revalidated after a client update.
 - Direction labels such as “me” are not inferred without a separately verified self identifier.
 
+## Operational acceptance
+
+- The selected dataset label, snapshot directory, manifest and query/export bounds are explicit.
+- Source database and WAL metadata remain unchanged; all generated material is owner-only and no output was overwritten.
+- Conversation resolution, time bounds, message counts and media/binary limitations are reported without exposing secrets or unrelated internal IDs.
+- Partial or unsupported results are labeled as such; a readable SQLite header alone is not claimed as a complete successful export.
+
 ## Offline verification
 
 ```bash
@@ -93,3 +109,7 @@ python3 -m py_compile "$SKILL_DIR"/scripts/*.py "$SKILL_DIR"/tests/*.py
 VALIDATOR="$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py"
 python3 "$VALIDATOR" "$SKILL_DIR"
 ```
+
+## Failure and recovery
+
+Unsupported headers, schemas, page layouts, WAL state, or memory layouts fail closed. Preserve the diagnostic and require fixture-based compatibility tests before retrying live data; never reinterpret unknown bytes as plaintext or infer that a capture timeout proves an invalid key.

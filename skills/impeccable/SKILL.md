@@ -5,11 +5,9 @@ description: Design, critique, audit, implement, or refine browser-based user in
 
 # Impeccable
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 Produce frontend work whose visual character, usability, accessibility, resilience, and delivery quality can all be explained and verified.
+
+Read [references/examples.md](references/examples.md) only when distinguishing audit from implementation authority, explaining evidence levels, or forward-testing this Skill. Route ordinary work to the action-specific references below.
 
 ## Resolve the Requested Action
 
@@ -30,7 +28,7 @@ Inspect the smallest complete set of sources that defines the surface:
 
 1. Project instructions, target route or component, framework, build and test commands.
 2. Real copy, data shape, user roles, permissions, primary tasks, and required states.
-3. Existing tokens, theme, shared components, layout primitives, fonts, icons, and media.
+3. Existing tokens, theme, shared components, layout primitives, fonts, icons, and media, including provenance and usage rights for assets that may ship.
 4. Current browser rendering at representative wide and narrow viewports when it can be run.
 5. Product or brand documentation and earlier decisions, while checking them against the current implementation.
 6. Accessibility, browser, device, localization, and performance targets.
@@ -48,6 +46,7 @@ Write a compact working brief containing:
 - entry, success, failure, empty, loading, disabled, permission, offline, and recovery states that are relevant;
 - what must remain invariant and what may change;
 - design-system anchors and intentional exceptions;
+- fonts, icons, photos, illustrations, and other assets that may ship, with their provenance, permitted use, and fallback;
 - target viewports, input methods, languages, themes, and reduced-motion behavior;
 - accessibility and performance acceptance checks;
 - unknowns that must remain placeholders or be resolved with the user.
@@ -88,6 +87,7 @@ Every finding includes evidence, line, severity, confidence, and a verification 
 - Preserve framework conventions, data flow, routes, analytics hooks, form names, legal copy, and external behavior unless the requested change requires otherwise.
 - Use semantic elements and real controls. Keep DOM order meaningful; do not rely on CSS reordering to repair reading order.
 - Keep content real. Do not invent customer logos, testimonials, metrics, prices, certifications, product states, or claims.
+- Reuse or add fonts, icons, photographs, and illustrations only when their source and intended product use are allowed. Do not download a convenient asset, strip attribution, or bundle a third-party reference merely to complete the visual direction.
 - Make state differences perceivable without relying on color alone.
 - Define visible focus and predictable keyboard behavior.
 - Reserve media dimensions, load critical media intentionally, and avoid shipping desktop-sized assets to narrow screens.

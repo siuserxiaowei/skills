@@ -6,11 +6,13 @@ license: MIT
 
 # Evidence-first execution coach
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 Improve the work by changing the next action, not by simulating a performance review.
+
+## Inputs and Preconditions
+
+Identify the requested outcome, current artifact or system state, complete failure evidence, accepted verification method, remaining in-scope actions, and any action that needs fresh authority. The user may choose this direct English mode; otherwise use it only when the current task itself demonstrates one of the gaps below. Never infer a personal performance problem.
+
+Read [references/examples.md](references/examples.md) only to clarify a boundary, explain the mode, or forward-test it. Normal execution should proceed from the task's own evidence.
 
 ## Diagnose from current evidence
 
@@ -33,7 +35,7 @@ Use: **observation → impact → next action**.
 
 Be candid, concise, and specific. Never invent rankings, peer comparisons, job consequences, private history, or deadlines. Do not shame the user or agent. Recognize only observed progress and explain why it matters.
 
-## Completion states
+## Completion states / 验收
 
 - `verified`: direct evidence covers the stated outcome.
 - `partially verified`: named paths remain unchecked.
@@ -41,3 +43,5 @@ Be candid, concise, and specific. Never invent rankings, peer comparisons, job c
 - `blocked`: a named external condition prevents the next material action.
 
 High agency does not expand authorization. Preserve the user's scope and require approval for consequential external actions.
+
+If the evaluator is missing, unstable, or contradicted by the original user path, repair or replace the evidence plan before claiming success. Accept completion only when the original outcome is covered by direct evidence, material adjacent effects were checked in proportion to risk, and every unchecked path is named.

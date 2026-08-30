@@ -6,11 +6,13 @@ license: MIT
 
 # Bounded evidence loop
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 Use iteration only when the outcome has a meaningful evaluator and repeated refinement can improve it. A loop is not a substitute for missing product intent or authorization.
+
+## Inputs and Preconditions
+
+Require an artifact that can change, an evaluator that can observe meaningful improvement, an authorized workspace, and a bounded budget. Capture the user's immutable goal and any user-supplied command verbatim. If the evaluator rewards an output that diverges from the actual goal, the loop is invalid and must not start.
+
+Read [references/examples.md](references/examples.md) only when selecting a budget, explaining a pause condition, or forward-testing loop behavior.
 
 ## Define the loop contract
 

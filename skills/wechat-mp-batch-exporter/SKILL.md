@@ -9,6 +9,13 @@ Separate public URL capture, account-history access, and credential-assisted met
 
 Read [references/examples.md](references/examples.md). For account/exporter integration read [references/exporter-workflow.md](references/exporter-workflow.md); for human-controlled steps read [references/manual-gates.md](references/manual-gates.md).
 
+## Inputs and prerequisites
+
+- Choose exactly one initial route: a finite list of known public URLs, an owner-authorized account-history export, or owner-authorized enhanced metrics/comments.
+- Provide a new private output directory, the requested format, the maximum input scope, and the intended private use. Public redistribution is a separate rights decision.
+- History or enhanced routes require a verified external exporter checkout and version; the user must personally complete QR login, account selection, certificate decisions, proxy changes, and required navigation.
+- Never accept cookies, tokens, `auth-key`, `pass_ticket`, or QR material in chat. Public URL capture does not justify requesting them.
+
 ## Boundaries
 
 - Never control the desktop or mobile WeChat interface.
@@ -118,3 +125,7 @@ Before completion:
 5. disclose external-tool versions, authentication limitations, and missing fields.
 
 Completion means the requested bounded archive and count scopes are verifiable, not that every platform field was obtainable.
+
+## Failure and recovery
+
+On partial or unknown results, keep successful bodies and raw records, mark unavailable fields as `unknown`, and preserve `failures.json`. Retry only a bounded, clearly idempotent download failure; authentication expiry or an unknown helper state returns to the human login/readiness gate instead of starting duplicate services.

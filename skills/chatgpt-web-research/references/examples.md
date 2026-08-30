@@ -1,33 +1,37 @@
-# ChatGPT Web Research examples
+# ChatGPT Web Research｜使用说明与案例
+
+## 使用说明
+
+只有用户明确要求使用 ChatGPT 网页版、指定可见账号/订阅或希望利用其网页会话时才使用本 Skill。开始前确认研究问题、候选范围、截止日期、所需账号/模型证据、输出目录，以及生成结束后是否保留会话。身份只能从用户指定的可见浏览器 profile 和页面证据确认，不能读取 Cookie、Local Storage、密码库或浏览器配置文件来猜账号。
+
+每次运行创建唯一 run token 和 `run.json`，把原始回答与编辑后的报告分开保存。只有页面进入可观察终态、回答首尾与 token 均被捕获、保存文件重新打开通过后，才能报告完成；网页回答中的链接和事实仍需按用户要求单独核验。
 
 ## 正向案例
 
-**用户请求：** “用我工作 Chrome 里的 ChatGPT 网页版比较三款团队知识库，报告保存下来。”
+**用户请求：** “用我工作 Chrome 里的 ChatGPT 网页版比较 Notion、Confluence 和 Slite，按 2026 年 8 月的团队知识库需求生成报告并保存。”
 
-**处理：** Match the named visible profile and existing ChatGPT tab, submit a dated comparison packet with a unique run token, wait for a terminal page state, and preserve raw and edited Markdown separately.
+**准备信息：** 用户指明工作 profile 和现有 `chatgpt.com` 标签页，确认比较维度为权限、搜索、导入、价格与中国团队可用性，输出目录为 `/absolute/path/kb-research`。用户没有要求自动分享会话或把结果发布到外部系统。
 
-**验收证据：** The captured answer contains all three products and the token; `run.json` records the route and conversation URL; the saved report is read back and checked against the requested criteria.
+**处理：** 枚举可控浏览器和标签页，核对目标 profile 与页面可见账号；构造包含日期、三款产品、比较维度、引用要求和唯一 token 的研究提示。提交前保存 prompt hash，等待生成停止且页面稳定；从助手消息容器捕获完整文本，保存 `raw.md`、`report.md` 和不含秘密的 `run.json`，再核对三款产品和所有要求是否出现。
+
+**预期输出：** 原始回答保持网页原貌，编辑稿区分网页回答、外部核验和编辑判断；`run.json` 记录时间、会话 URL、路由、token、捕获方法和完成状态。
+
+**验收证据：** 可见页面、`raw.md` 的开头/结尾和 run token 一致；三款产品与五个维度均有内容，文件可重新读取。没有切换到其他账号、API 或普通搜索来冒充指定网页运行。
 
 ## 边界案例
 
-**场景：** “一定用我的付费账号”，但 only an unverified or free account is visible.
+**场景：** 用户要求“一定用我的付费工作账号”，但当前只能看到一个无法确认身份的免费页面，另一个 Chrome profile 未暴露给控制工具。
 
-**处理：** Stop before entering the prompt and ask the user to expose the intended account. Do not inspect cookies or continue in another profile.
+**边界判断：** 账号/订阅选择会实质影响请求，无法从可见页面验证时必须在提交前停止；不能用方便的免费账号代替，也不能检查 Cookie 或本地浏览器数据库证明身份。
 
-**验收证据：** No research message is submitted under the wrong account, and the missing visible condition is stated precisely.
+**处理：** 描述当前可见页面和缺失条件，请用户在目标 profile 中打开并聚焦 ChatGPT 页面，或明确接受可见账号。保持研究 prompt 未提交，输出目录中只可留下未含账号数据的计划文件。
+
+**验收证据：** 错误账号没有新增消息或会话；报告指出缺的是哪个可见条件，而不是笼统声称“浏览器不可用”。用户暴露正确页面后重新从身份核对开始。
 
 ## 失败与恢复
 
-**场景：** The page shows a long completed response, but the copy action returns only the first section.
+**失败场景：** 页面显示长回答已完成，但复制动作只得到第一节；随后用户关闭了原浏览器窗口。
 
-**处理：** Keep the incomplete copy as diagnostic evidence, extract the assistant message through the accessible page structure, and compare its beginning, end, and run token with the visible page.
+**处理与恢复：** 保存不完整副本、页面状态、token 和缺失区段作为诊断，不把它标为完成。窗口仍在时，可通过可访问页面结构提取助手消息，并与可见首尾/token 比较；窗口已关闭时只交付确认过的部分，状态标记 `interrupted`，不换账号寻找类似答案。恢复需要用户重新暴露同一会话或接受重新运行。
 
-**验收证据：** The final raw file contains the token and all visible sections; the report records the alternate capture method.
-
-### Terminal interruption
-
-**Situation:** The user closes the selected browser window during generation.
-
-**Decision:** Mark the run interrupted and preserve any confirmed partial response. Do not move to a different account or pretend that an unrelated answer completed the run.
-
-**Evidence:** The delivery distinguishes partial material from a finished report and states the minimum step needed to resume.
+**验收证据：** 部分材料与完整报告在目录和状态字段中明确区分；若恢复成功，最终原始文件含可见全部章节、结尾和 token，并记录替代捕获方法。无法恢复时，回复说明已确认范围和最小续做步骤。

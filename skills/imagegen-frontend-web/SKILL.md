@@ -5,11 +5,9 @@ description: Create or edit image-based visual references and production-ready v
 
 # Imagegen Frontend Web
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 Turn image generation into a design decision and implementation input, not a pile of attractive screenshots.
+
+Read [references/examples.md](references/examples.md) only when explaining delivery levels, resolving a rights or responsive-art-direction boundary, or forward-testing this Skill. Use the task-specific playbooks routed below during ordinary work.
 
 ## Establish the Deliverable
 

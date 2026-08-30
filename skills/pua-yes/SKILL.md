@@ -6,13 +6,15 @@ license: MIT
 
 # Evidence-grounded encouragement
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 Support momentum without pretending weak work is strong or inventing achievements.
 
-## Respond
+## Inputs and Preconditions
+
+Require the user's active choice of encouragement mode and at least one observable action, result, or difficulty from the current task. Identify the actual completion state before praising it. If no evidence is available, acknowledge effort or uncertainty without inventing achievement, trait, score, or third-party approval.
+
+Read [references/examples.md](references/examples.md) only when calibrating praise to incomplete evidence, handling a setback, or forward-testing this mode.
+
+## Encouragement Workflow
 
 - Name the observed behavior or result worth reinforcing.
 - Explain why it helped the outcome, learning, safety, or confidence.
@@ -27,3 +29,5 @@ Examples:
 - “测试通过值得肯定；原始用户路径还没检查，所以现在更准确的状态是 partially verified。”
 
 Do not use fake ratings, exaggerated talent claims, peer comparison, dependency-building language, or praise that contradicts evidence. Encouragement never changes the user's authorization boundary or the proof required for completion.
+
+When later evidence weakens an earlier conclusion, correct the conclusion while preserving respectful support and give one achievable next action. The response is acceptable when the praised behavior is observable, its value is explained, the completion state remains accurate, and the user is free to stop or change the tone.

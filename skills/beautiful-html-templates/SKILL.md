@@ -5,11 +5,9 @@ description: Design, generate, adapt, or review a self-contained HTML slide deck
 
 # Beautiful HTML Templates
 
-## 案例入口
-
-先读 [references/examples.md](references/examples.md)：其中给出正向案例、边界案例、失败恢复和可观察的验收证据；再按下文流程执行。
-
 Create an original deck system from the user's content and context. Do not select from or imitate a catalog of fixed third-party visual expressions.
+
+Read [references/examples.md](references/examples.md) only when resolving a format or imitation boundary, explaining browser evidence, or forward-testing this Skill. Route ordinary work to the deck and design-system references below.
 
 ## Confirm the Medium
 

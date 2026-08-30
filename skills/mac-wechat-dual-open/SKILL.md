@@ -9,6 +9,13 @@ This is an unofficial, reversible local workaround. It may stop working after a 
 
 Read [references/examples.md](references/examples.md) and [references/reliability-and-risks.md](references/reliability-and-risks.md) before changing an app bundle.
 
+## Inputs and prerequisites
+
+- macOS with an official source WeChat app, plus an explicit request for a second local instance; the workaround is unsupported and may break after updates.
+- A resolved source, a different target under the user's control, a unique bundle identifier, and desired languages. The target must not already exist for `create`.
+- Separate authorization for create/repair, language preference, icon recoloring, and launch. Recoloring additionally requires Pillow and `iconutil`.
+- Capture source version, identifier, signature, and target existence in `plan` before applying. Never request account credentials; the user signs in to the duplicate themselves.
+
 ## Non-negotiable boundary
 
 - The source app is read-only.
@@ -100,3 +107,7 @@ The original icon is not redistributed by this repository; it is read from the u
 - No injector, modified source executable, privileged installer, or third-party binary was introduced.
 
 Report notification uncertainty and the fact that a future application update may invalidate the copy.
+
+## Failure and recovery
+
+If create, repair, signing, or launch fails, run `status` before trying again. Preserve any existing target, use a new target for rebuilding after an update, and never merge bundles or modify the source to make a damaged duplicate work.

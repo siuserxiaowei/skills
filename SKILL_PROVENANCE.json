@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "as_of": "2026-08-30",
+  "as_of": "2026-08-31",
   "claim_scope": "当前仓库内 57 个 Skill 的入口说明、参考资料、自有脚本、测试和随包自有案例。",
   "not_claimed": [
     "外部产品、API、协议、命令行工具和软件依赖",
@@ -15,7 +15,7 @@
     "baseline_scope": "该 Git commit 保存重建前进入本仓库的已知 Skill 制品；扫描只读 Git 对象，不执行基线代码。",
     "gate": "skills/skill-vetter/scripts/audit_originality.py",
     "default_failure_level": "unreviewed",
-    "verification_date": "2026-08-30",
+    "verification_date": "2026-08-31",
     "thresholds": {
       "exact_blob_min_bytes": 96,
       "window_size": 16,
@@ -144,9 +144,9 @@
     {
       "skill": "wechat-local-vault",
       "path": "skills/wechat-local-vault/SKILL.md",
-      "sha256": "1fbbbdce19527aa61bae9a57da7fc480974b9d3c5705be6162b4ba4ec04ae7b0",
+      "sha256": "87c152bf271383942706811cdbc0e7240bc6fd4efdc7e9a6714fed8231b3ca72",
       "disposition": "necessary-interface-expression",
-      "rationale": "22 个窗口组成一段连续 CLI 调用示例；命令名、参数名和调用顺序由当前自有 CLI 接口决定，覆盖 1.855%，候选连续长度 37 token，未达到实质重合阈值。"
+      "rationale": "22 个窗口组成一段连续 CLI 调用示例；逐行复核确认命令名、参数名和调用顺序由当前自有 CLI 接口决定，覆盖 1.535%，候选连续长度 37 token，未达到实质重合阈值。"
     },
     {
       "skill": "wechat-local-vault",
