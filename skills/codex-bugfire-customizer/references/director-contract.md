@@ -31,7 +31,7 @@ The API key is environment-only. Before a live draft can be written, both the pa
 node bugfire-director.mjs verify-fixture ai-draft.json ai-draft.sha256 brief.json
 ```
 
-The plan must say `recorded-agent-fixture`, identify its agent/model, and state that replay is not a live call or human approval. A checksum proves integrity only; it does not independently prove model identity.
+The brief argument is mandatory. The verifier requires the plan to say `recorded-agent-fixture`, checks the checksum and prompt/brief digests, and requires persisted `manifestProposal.rights` to exactly match the validated human brief rights. It also requires the artifact to state that replay is not a live call or human approval. A checksum proves integrity only; it does not independently prove model identity or rights on its own.
 
 ## Review, materialize, validate
 

@@ -32,7 +32,7 @@ The desktop pet and deterministic pack tools remain offline. `v1.3.0-bugfire.1` 
 
 - The API key is read from `BUGFIRE_OPENAI_API_KEY`; it is not accepted as a CLI argument. The parsed response and validated plan are recursively scanned for the exact key value before writing, so a reflecting or malicious endpoint is rejected without an output artifact.
 - Output records only the endpoint origin, model ID, timestamp, and prompt/brief digests; it does not store headers or credentials.
-- The AI cannot author the persisted rights claim: `manifestProposal.rights` is always copied from the validated human brief.
+- Live generation cannot author the persisted rights claim: `manifestProposal.rights` is copied from the validated human brief. Recorded-fixture verification requires that brief and rejects any exact-rights mismatch, even with an updated valid checksum.
 - Remote endpoints require HTTPS. HTTP is permitted only for loopback local-model/test endpoints.
 - The checked offline fixture performs no network request and states that it is not a live call.
 

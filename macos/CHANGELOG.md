@@ -19,6 +19,7 @@
 - 自动化测试会启动 loopback mock endpoint，证明 live 路径确实发起 HTTP 请求，并校验凭据没有进入输出
 - 对 AI 响应与最终 plan 做递归精确凭据扫描；恶意端点回显 API Key 时在落盘前拒绝，错误信息也不回显 Key
 - `manifestProposal.rights` 强制从已校验的人工 brief 派生，AI 不能覆盖素材权利声明
+- recorded fixture 校验强制携带 human brief；即使攻击者修改 rights 并重算 checksum，只要与 brief 不完全一致仍会拒绝
 - `materialize` 会重建 canonical AI draft 并严格校验 `humanReview.draftSha256`，同时拒绝调用方可控输出路径中的 symlink 祖先
 - Character Director 纳入 lines / branches / functions 均 80% 的独立覆盖率门禁；测试路径改用 `fileURLToPath`，支持含空格与中文的 Client ZIP 解包目录
 - 保持既有 loopback-only CDP、官方应用不修改、Build 仅演示与一键恢复边界

@@ -34,7 +34,7 @@
 ./contest/bugfire/run-demo.sh
 ```
 
-无 API Key 时，Demo 使用由本项目 Codex agent 实际产出、SHA-256 锁定的离线 fixture，并明确标注“不是实时 API 调用、不是人工审批证明”。有兼容端点时，`bugfire-director.mjs draft-live` 会真实调用 Chat Completions 或 Responses API；Key 只从环境变量读取，响应与最终 plan 在写盘前都会递归拒绝 Key 的精确值，即使恶意端点把凭据回显进合法字段也不会产生文件。`manifestProposal.rights` 强制复制自人工 brief，AI 无权改写。AI 草案不能直接 materialize，人工替换也不能绕过原有 pack validator。
+无 API Key 时，Demo 使用由本项目 Codex agent 实际产出、SHA-256 锁定的离线 fixture，并明确标注“不是实时 API 调用、不是人工审批证明”；fixture 校验必须同时提供 human brief，并精确核对 brief 摘要与持久化 rights。有兼容端点时，`bugfire-director.mjs draft-live` 会真实调用 Chat Completions 或 Responses API；Key 只从环境变量读取，响应与最终 plan 在写盘前都会递归拒绝 Key 的精确值，即使恶意端点把凭据回显进合法字段也不会产生文件。`manifestProposal.rights` 强制复制自人工 brief，AI 无权改写。AI 草案不能直接 materialize，人工替换也不能绕过原有 pack validator。
 
 [VibeLab 投稿与复现证据](contest/bugfire/README.md) · [AI fixture](contest/bugfire/demo/ai-draft-plan.json) · [人工 review 输入](contest/bugfire/demo/human-review.json) · [来源与归属](PROVENANCE.md)
 

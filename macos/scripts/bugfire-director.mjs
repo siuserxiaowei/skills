@@ -634,7 +634,8 @@ export async function materializeReviewedPlan(rawPlan, packDirectory) {
   return { ...report, output: root };
 }
 
-export async function verifyRecordedFixture(planFile, checksumFile, briefFile = "") {
+export async function verifyRecordedFixture(planFile, checksumFile, briefFile) {
+  if (!briefFile) invalid("recorded fixture verification requires its human brief");
   const planRecord = await readJson(planFile, "recorded plan fixture");
   const plan = validateDirectorPlan(planRecord.value, { requiredStatus: "ai-draft" });
   if (plan.provenance.mode !== "recorded-agent-fixture") invalid("fixture must be labeled recorded-agent-fixture");
@@ -648,19 +649,18 @@ export async function verifyRecordedFixture(planFile, checksumFile, briefFile = 
   if (plan.provenance.promptSha256 !== sha256(directorPrompt())) {
     invalid("fixture prompt digest does not match the current director contract");
   }
-  let briefVerified = false;
-  if (briefFile) {
-    const brief = validateDirectorBrief((await readJson(briefFile, "fixture brief")).value);
-    const briefDigest = sha256(stableJson(brief));
-    if (briefDigest !== plan.provenance.briefSha256) invalid("fixture brief digest mismatch");
-    briefVerified = true;
+  const brief = validateDirectorBrief((await readJson(briefFile, "fixture brief")).value);
+  const briefDigest = sha256(stableJson(brief));
+  if (briefDigest !== plan.provenance.briefSha256) invalid("fixture brief digest mismatch");
+  if (stableJson(plan.manifestProposal.rights) !== stableJson(brief.rights)) {
+    invalid("recorded fixture manifestProposal.rights must exactly match the validated human brief rights");
   }
   return {
     pass: true,
     mode: plan.provenance.mode,
     model: plan.provenance.model,
     sha256: actual,
-    briefVerified,
+    briefVerified: true,
     notice: plan.provenance.sourceNotice,
   };
 }
@@ -693,8 +693,8 @@ async function cli(argv) {
     await writeJsonNoClobber(second, plan, "AI draft output", { secrets: [apiKey] });
     return { pass: true, mode: plan.provenance.mode, model: plan.provenance.model, output: path.resolve(second) };
   }
-  if (command === "verify-fixture" && first && second && rest.length === 0) {
-    return verifyRecordedFixture(first, second, third || "");
+  if (command === "verify-fixture" && first && second && third && rest.length === 0) {
+    return verifyRecordedFixture(first, second, third);
   }
   if (command === "review" && first && second && third && rest.length === 0) {
     await assertOutputAbsent(third, "reviewed plan output");
@@ -719,7 +719,7 @@ async function cli(argv) {
   throw new Error([
     "Usage:",
     "  bugfire-director.mjs draft-live <brief.json> <draft.json> --model <id> [--base-url <url>] [--api-mode chat-completions|responses]",
-    "  bugfire-director.mjs verify-fixture <draft.json> <draft.sha256> [brief.json]",
+    "  bugfire-director.mjs verify-fixture <draft.json> <draft.sha256> <brief.json>",
     "  bugfire-director.mjs review <draft.json> <review.json> <reviewed.json>",
     "  bugfire-director.mjs validate <plan.json>",
     "  bugfire-director.mjs materialize <reviewed.json> <pack-dir>",

@@ -12,6 +12,7 @@ import {
   applyHumanReview,
   draftWithOpenAI,
   materializeReviewedPlan,
+  sha256,
   stableJson,
   validateDirectorBrief,
   validateDirectorPlan,
@@ -53,6 +54,26 @@ test("recorded AI fixture is explicit, schema-valid, and checksum locked", async
   assert.match(result.notice, /not presented as a live API call/i);
 });
 
+test("a checksum-valid recorded fixture cannot replace the human brief rights", async () => {
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-fixture-rights-"));
+  const forgedPlan = structuredClone(await json(path.join(DEMO, "ai-draft-plan.json")));
+  forgedPlan.manifestProposal.rights = {
+    declaration: "A recorded model falsely replaces the human rights declaration.",
+    sourceUrl: "https://malicious.example.test/forged-rights",
+  };
+  const bytes = Buffer.from(`${JSON.stringify(forgedPlan, null, 2)}\n`);
+  const planFile = path.join(workspace, "forged-plan.json");
+  const checksumFile = path.join(workspace, "forged-plan.sha256");
+  await fs.writeFile(planFile, bytes);
+  await fs.writeFile(checksumFile, `${sha256(bytes)}  forged-plan.json\n`);
+
+  await assert.rejects(verifyRecordedFixture(
+    planFile,
+    checksumFile,
+    path.join(DEMO, "brief.json"),
+  ), /rights.*brief|brief.*rights/i);
+});
+
 test("director inputs and endpoint envelopes reject malformed UTF-8", async () => {
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-utf8-"));
   const malformedPlan = path.join(workspace, "malformed-plan.json");
@@ -60,6 +81,7 @@ test("director inputs and endpoint envelopes reject malformed UTF-8", async () =
   await assert.rejects(verifyRecordedFixture(
     malformedPlan,
     path.join(DEMO, "ai-draft-plan.sha256"),
+    path.join(DEMO, "brief.json"),
   ), /not valid UTF-8/i);
 
   const brief = await json(path.join(DEMO, "brief.json"));
@@ -386,6 +408,15 @@ test("director CLI covers fixture verification, review, validation, and material
   await fs.access(path.join(pack, "bugfire-pack.json"));
   await fs.access(path.join(pack, "director-report.json"));
 
+  await assert.rejects(execFileAsync(process.execPath, [
+    DIRECTOR,
+    "verify-fixture",
+    path.join(DEMO, "ai-draft-plan.json"),
+    path.join(DEMO, "ai-draft-plan.sha256"),
+  ]), (error) => {
+    assert.match(error.stderr, /Usage:.*brief\.json/s);
+    return true;
+  });
   await assert.rejects(execFileAsync(process.execPath, [DIRECTOR, "unknown"]), (error) => {
     assert.match(error.stderr, /Usage:/);
     return true;
@@ -458,6 +489,7 @@ test("director rejects malformed briefs, endpoints, API envelopes, and fixture c
   await assert.rejects(verifyRecordedFixture(
     path.join(DEMO, "ai-draft-plan.json"),
     checksum,
+    path.join(DEMO, "brief.json"),
   ), /checksum mismatch/i);
 });
 
@@ -534,10 +566,12 @@ test("live response size and JSON-content boundaries fail closed", async () => {
   await assert.rejects(verifyRecordedFixture(
     malformed,
     path.join(DEMO, "ai-draft-plan.sha256"),
+    path.join(DEMO, "brief.json"),
   ), /not valid JSON/i);
   await assert.rejects(verifyRecordedFixture(
     path.join(workspace, "missing.json"),
     path.join(DEMO, "ai-draft-plan.sha256"),
+    path.join(DEMO, "brief.json"),
   ), /is missing/i);
 });
 
