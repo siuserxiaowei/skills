@@ -1,0 +1,140 @@
+{
+  "semantic_schema_version": "1.0",
+  "request": "为项目做 SEO 关键词集群计划，并输出有来源的验证简报",
+  "provenance": {
+    "mode": "test_fixture",
+    "producer": "Goal Compiler automated SEO domain test",
+    "live_ai_claimed": false,
+    "notice": "测试 fixture，不是实时 AI 证明或真人审批。"
+  },
+  "smart_router": {
+    "task_type": "SEO",
+    "maturity": "目标明确、证据待收集",
+    "risk_level": "中",
+    "external_information_need": "标准",
+    "output_length": "标准版",
+    "ask_questions_first": false,
+    "routing_reason": "SEO 关键词与搜索意图会随实时 SERP 改变，必须先收集外部证据再审批。"
+  },
+  "default_assumptions": [
+    "尚未获得站点后台、搜索流量或付费关键词库授权。",
+    "第一步只交付带来源 ID 的 Markdown 验证简报，不发布内容。"
+  ],
+  "strategy_gate": {
+    "problem_reframe": "不是批量生成关键词文章，而是先找到一个能被多个独立 SERP 证据支持的用户意图集群。",
+    "smallest_bet": "将一个候选集群、两个独立来源 ID 和明确的否证条件写入一份本地 Markdown 简报。",
+    "success_metrics": [
+      {
+        "id": "seo-source-brief",
+        "statement": "生成 1 份包含标题与来源 ID 的 Markdown SEO 验证简报。",
+        "measurement": {
+          "method": "Markdown 结构与来源引用检查",
+          "target": {
+            "min_markdown_files": 1,
+            "heading_required": true,
+            "source_reference_required": true
+          }
+        },
+        "evidence_path": "first-output/execution-report.json"
+      }
+    ],
+    "disconfirming_evidence": [
+      {
+        "signal": "候选搜索意图只有 1 个可访问来源支持。",
+        "threshold": {
+          "minimum_independent_sources": 2,
+          "observed_independent_sources": 1
+        },
+        "response": "将候选集群标记为低置信度并暂停内容投入。"
+      }
+    ],
+    "kill_criteria": [
+      {
+        "condition": "连续 2 轮检索后仍无法得到两个独立来源支持任一集群。",
+        "threshold": {
+          "max_research_rounds": 2,
+          "minimum_supported_clusters": 1
+        },
+        "action": "pause_cluster_build"
+      }
+    ]
+  },
+  "tool_evidence_gate": {
+    "research_required": true,
+    "permitted_tools": [
+      "公开搜索结果与官方页面读取"
+    ],
+    "authorization_required_for": [
+      "付费关键词数据、站点后台、登录资源或发布操作"
+    ],
+    "evidence_requirements": [
+      {
+        "claim_type": "SEO 搜索意图",
+        "minimum_independent_sources": 2,
+        "record_fields": [
+          "title",
+          "url",
+          "source_type",
+          "tool_channel",
+          "access_limit"
+        ]
+      }
+    ],
+    "blocked_claims": [
+      "无来源的流量、排名、竞争度或转化率结论"
+    ]
+  },
+  "goal_plan": {
+    "preference_application": "先核对来源再输出可执行的本地验证简报。",
+    "feedback_adjustment": "将宽泛的 SEO 请求压缩为一个有反证与来源门禁的候选集群。",
+    "business_priority": "业务价值待验证，证据强度低，执行成本中，分发潜力中，变现路径待定，风险中；建议先做来源验证。",
+    "output_length_reason": "需要保留候选意图、来源 ID、矛盾与反证，选择标准版。",
+    "choice_rationale": "单个来源不足以支持内容投入，两个独立来源是首个最小门禁。",
+    "outcome": "产出一份带来源 ID 和否证条件的 SEO 集群验证简报。",
+    "task_pack": "SEO 内容集群包",
+    "task_pack_application": "只保留搜索意图、候选集群、来源与终止门禁，不生成或发布文章。",
+    "domain_pack": "不适用",
+    "domain_pack_application": "本测试只验证 SEO 领域路由，不混入产品建站或编程领域语义。",
+    "tool_stack": "使用公开 SERP 与官方页面形成来源记录；CLI 只验证来源 ID 与 Markdown 结构。",
+    "research_stages": {
+      "stage_1": "从标准规模候选集中收集 15-25 个候选来源，记录工具渠道与访问限制。",
+      "stage_2": "对候选意图交叉核对至少两个独立来源，降级过期、营销或不可访问来源。",
+      "stage_3": "把来源支持、矛盾和低置信度假设写入简报，留给真人决定是否投入。"
+    },
+    "deliverables": "SEO 语义合同、来源证据包、待审批指标与 Markdown 验证简报。",
+    "quality_gate": "每个主张至少 2 个独立来源；记录来源强弱、工具/渠道和访问限制；过期、营销、不可访问来源降级；保留矛盾；低置信度写为假设。",
+    "verification": "检查证据包的 source_ids 与最低独立来源数，再检查 Markdown 标题和来源引用。",
+    "limits": "不登录、不使用付费数据、不发布内容，不把未验证的搜索量当作事实。",
+    "boundary": "Agent/Skill 生成 SEO 语义，真人批准指标与执行，CLI 只负责证据、哈希与文件检查。",
+    "progress_rules": "先收集来源，再由真人审批，最后写入一份简报；任一门禁失败就停止。",
+    "stop_criteria": "简报通过标题、来源 ID 和审批 payload 检查，或终止门禁被触发。",
+    "pause_conditions": "来源少于 2 个、缺人工批准、payload 篡改、输出已存在或需要付费/登录数据时暂停。"
+  },
+  "first_step": {
+    "action": "write_markdown_validation_brief",
+    "purpose": "将已批准的 SEO 候选集群与来源 ID 写入本地 Markdown 简报。",
+    "metric_id": "seo-source-brief",
+    "output_directory": "first-output",
+    "primary_artifact": "first-output/seo-validation-brief.md",
+    "report_path": "first-output/execution-report.json",
+    "artifact_kind": "markdown",
+    "media_type": "text/markdown",
+    "validators": [
+      "nonempty",
+      "markdown_heading",
+      "source_reference",
+      "no_unresolved_template"
+    ],
+    "acceptance": {
+      "task_type": "SEO",
+      "required_terms": [
+        "SEO",
+        "source_ids"
+      ],
+      "forbidden_terms": [
+        "REGRESSION_FIXTURE"
+      ]
+    },
+    "content_file": "seo-first-output.md"
+  }
+}

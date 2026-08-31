@@ -1,0 +1,15 @@
+{
+  "record_type": "synthetic_test_review",
+  "decision": "approved",
+  "reviewer": "Automated test fixture",
+  "reason": "Synthetic approval used only to exercise approval binding and deterministic dispatch in tests.",
+  "metric_id": "csv-empty-line-regression",
+  "success_metric_override": null,
+  "acknowledgements": {
+    "metric_reviewed": true,
+    "evidence_reviewed": true,
+    "action_reviewed": true,
+    "execution_scope_reviewed": true
+  },
+  "notice": "TEST ONLY: this record is not evidence of real human approval."
+}

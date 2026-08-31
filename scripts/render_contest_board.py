@@ -23,6 +23,7 @@ LIME = "#D9FF57"
 VIOLET = "#7557FF"
 RED = "#FF5C5C"
 GREEN = "#2DD4A7"
+AMBER = "#FFBF47"
 
 FONT_CANDIDATES = (
     "/System/Library/Fonts/PingFang.ttc",
@@ -62,7 +63,7 @@ def draw_card(
     draw.multiline_text((x1 + 28, y1 + 180), body, font=font(20), fill=MUTED, spacing=7)
     state_width = int(draw.textlength(state, font=font(18, bold=True))) + 28
     draw.rounded_rectangle((x1 + 28, y2 - 54, x1 + 28 + state_width, y2 - 18), radius=9, fill=state_color)
-    state_ink = INK if state_color in {LIME, GREEN} else "#FFFFFF"
+    state_ink = INK if state_color in {LIME, GREEN, AMBER} else "#FFFFFF"
     draw.text((x1 + 42, y2 - 48), state, font=font(18, bold=True), fill=state_ink)
 
 
@@ -86,7 +87,7 @@ def render(output: Path) -> None:
     )
     draw.multiline_text(
         (760, 145),
-        "把“越快越好”编译成\n能 FAIL、能反证、知道何时停止的执行。",
+        "把“越快越好”编译成\n能 FAIL、能反证、知道何时停止的契约。",
         font=font(44, bold=True),
         fill=INK,
         spacing=12,
@@ -98,10 +99,10 @@ def render(output: Path) -> None:
     card_width = 424
     left = 78
     cards = (
-        ("01 / ROUTER", "模糊网站需求", "website / 模糊想法\n中风险 / 标准研究\n策略：先验证需求", "COMPILED", VIOLET),
-        ("02 / NEGATIVE GATE", "成功指标：\n“好看”", "无数字阈值\n无证据路径\n无人工签字", "VALIDATOR FAIL", RED),
-        ("03 / HUMAN PATCH", "60 分钟\n1 页 · 1 CTA", "加入假设标记\n明确测量方法\n人工说明原因并批准", "STRICT PASS", GREEN),
-        ("04 / FIRST OUTPUT", "真实 HTML\n+ 6 项检查", "无登录 / 无表单提交\n无外部资产\n产物与报告可直接打开", "EXECUTED", GREEN),
+        ("01 / AGENT RESULT", "完整语义\n进入 CLI", "website / 模糊想法\n路由 · 策略 · 反证\nliveAiClaimed:false", "AGENT RESULT", VIOLET),
+        ("02 / METRIC GATE", "“看起来\n足够好看”", "statement 主观\nmethod 主观\n只写 FAIL.log", "VALIDATOR FAIL", RED),
+        ("03 / EVIDENCE", "研究来源\n不能跳过", "缺 sources + claims\n不允许审批\n不伪造市场证据", "EVIDENCE PENDING", AMBER),
+        ("04 / HUMAN", "精确指标\n与执行范围", "四项 acknowledgment\napproved payload SHA-256\n本次未执行", "HUMAN PENDING", AMBER),
     )
     for index, card in enumerate(cards):
         x1 = left + index * (card_width + gap)
@@ -113,8 +114,8 @@ def render(output: Path) -> None:
     draw.text((620, 921), "HUMAN", font=font(20, bold=True), fill=LIME)
     draw.text((620, 954), "修改指标并审批", font=font(21), fill="#FFFFFF")
     draw.text((1040, 921), "CLI VALIDATOR / EXECUTOR", font=font(20, bold=True), fill=LIME)
-    draw.text((1040, 954), "确定性门禁、安全执行与证据文件", font=font(21), fill="#FFFFFF")
-    draw.text((80, 1030), "github.com/siuserxiaowei/xiaowei-goal  ·  v0.12.0  ·  MIT", font=font(18), fill=MUTED)
+    draw.text((1040, 954), "确定性验证、审批绑定与白名单调度", font=font(21), fill="#FFFFFF")
+    draw.text((80, 1030), "github.com/siuserxiaowei/xiaowei-goal  ·  v0.13.0  ·  HUMAN_PENDING  ·  MIT", font=font(18), fill=MUTED)
 
     metadata = PngImagePlugin.PngInfo()
     metadata.add_text("Title", "Goal Compiler contest board")

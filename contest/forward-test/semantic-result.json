@@ -1,0 +1,65 @@
+{
+  "record_schema": "goal-compiler-forward-test/1.0",
+  "status": "agent_result",
+  "human_status": "human_pending",
+  "request": "给我做个 AI 网站，越快越好",
+  "provenance": {
+    "agent_context": "Codex subagent /root/build_goal_compiler",
+    "skill_path": "SKILL.md",
+    "runtime_reference": "references/compiler-runtime.md",
+    "transcript_ref": "contest/forward-test/transcript.md",
+    "agentExecutionRecorded": true,
+    "liveAiClaimed": false,
+    "browsingClaimed": false,
+    "humanApprovalClaimed": false,
+    "executionClaimed": false
+  },
+  "smart_router": {
+    "task_type": "website",
+    "maturity": "模糊想法",
+    "risk_level": "中",
+    "external_information_need": "标准",
+    "output_length": "标准版",
+    "ask_questions_first": false
+  },
+  "default_assumptions": [
+    "目标用户、高频问题与付费意愿未验证",
+    "首轮不做后端、登录、支付、数据采集或生产部署",
+    "页面内容只能标记为待验证假设"
+  ],
+  "strategy_gate": {
+    "problem_reframe": "验证一个具体人群、一个问题和一个可点击承诺是否值得继续，而不是立即建完网站。",
+    "smallest_bet": "证据与人工批准通过后，只写入一个无外部依赖的本地 HTML 假设页。",
+    "proposed_success_metric": {
+      "statement": "生成 1 个本地 HTML 假设页，包含 1 个主标题、1 个主 CTA 和假设标记。",
+      "method": "HTML 结构检查",
+      "human_confirmation_required": true
+    },
+    "disconfirming_evidence": [
+      {"threshold": "5 人中可复述问题的人数小于 2", "response": "重写人群和问题假设"},
+      {"threshold": "5 次测试的 CTA 意图数等于 0", "response": "降级为低置信度假设"}
+    ],
+    "kill_criteria": [
+      {"threshold": "2 轮×每轮 5 次测试仍无 CTA 意图", "action": "pause_full_build"},
+      {"threshold": "1 个未授权依赖", "action": "stop_and_request_authorization"}
+    ]
+  },
+  "tool_evidence_gate": {
+    "research_required": true,
+    "minimum_independent_sources": 2,
+    "required_claim_type": "用户痛点或需求",
+    "authorization_required_for": [
+      "登录",
+      "Cookie/Token",
+      "付费数据",
+      "表单提交",
+      "生产变更"
+    ]
+  },
+  "first_step": {
+    "action": "write_static_hypothesis_page",
+    "artifact": "first-output/index.html",
+    "report": "first-output/execution-report.json",
+    "status": "proposed_not_executed"
+  }
+}

@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-"""Compile vague requests into reviewable, executable goal contracts.
+"""Validate Agent-authored semantics, bind human approval, and dispatch one safe step.
 
-The compiler intentionally separates AI-assisted drafting from deterministic
-validation and execution. A contract cannot execute until a human replaces any
-vague metric and explicitly approves the review record.
+The CLI is deliberately not an AI model. `compile` requires a complete semantic
+input produced by an Agent/Skill (or an explicitly labelled deterministic demo
+fixture). The CLI serializes that input, rejects cross-domain or incomplete
+contracts, binds human approval to every execution-relevant field, and exposes a
+small whitelist of deterministic text-artifact dispatches.
 """
 
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import html
 import json
 import re
-import shutil
 import sys
 from pathlib import Path
 from typing import Any
@@ -21,25 +23,134 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DEMO_REQUEST = ROOT / "contest" / "demo-fixtures" / "request.txt"
-DEFAULT_DEMO_REVIEW = ROOT / "contest" / "demo-fixtures" / "human-review.json"
-SCHEMA_VERSION = "1.0"
+DEFAULT_DEMO_SEMANTIC = ROOT / "contest" / "demo-fixtures" / "semantic-input.demo.json"
+SCHEMA_VERSION = "1.1"
+SEMANTIC_SCHEMA_VERSION = "1.0"
+
+SUPPORTED_TASK_TYPES = {"website", "app", "SEO", "competitor", "growth", "coding", "docs", "mixed"}
+SUPPORTED_SEMANTIC_MODES = {"agent_result", "deterministic_demo_fixture", "test_fixture"}
 
 VAGUE_METRIC_PATTERNS = (
-    r"^好看$",
-    r"^更好$",
-    r"^尽快$",
-    r"^越快越好$",
-    r"^高质量$",
-    r"^提升体验$",
-    r"^beautiful$",
-    r"^better$",
-    r"^fast$",
-    r"^works?$",
+    r"好看",
+    r"更好",
+    r"尽快",
+    r"越快越好",
+    r"高质量",
+    r"提升体验",
+    r"用户满意",
+    r"感觉不错",
+    r"看起来",
+    r"挺好",
+    r"不错",
+    r"更专业",
+    r"令人满意",
+    r"beautiful",
+    r"better",
+    r"as fast as possible",
+    r"high[ -]?quality",
+    r"looks? good",
+    r"nice",
+    r"professional",
+    r"satisfying",
+)
+
+SUBJECTIVE_METHOD_PATTERNS = (
+    r"主观",
+    r"感觉",
+    r"审美",
+    r"凭印象",
+    r"人工感受",
+    r"subjective",
+    r"gut feel",
+    r"visual appeal only",
+    r"qualitative only",
+)
+
+TASK_PACKS = {
+    "website": {"网站/落地页改版包"},
+    "app": {"App MVP 研究包"},
+    "SEO": {"SEO 内容集群包"},
+    "competitor": {"竞品分析包"},
+    "growth": {"增长实验包"},
+    "coding": {"Coding 回归包", "不适用"},
+    "docs": {"文档交付包", "不适用"},
+    "mixed": {"混合验证包", "不适用"},
+}
+
+DOMAIN_FORBIDDEN = {
+    "coding": ("IdeaSignal", "15-25", "网站/落地页改版包", "CTA", "首屏", "landing page"),
+    "SEO": ("IdeaSignal", "write_python_regression_fixture", "Coding 回归包"),
+}
+
+ACTION_POLICIES: dict[str, dict[str, Any]] = {
+    "write_static_hypothesis_page": {
+        "task_types": {"website", "app"},
+        "artifact_kind": "html",
+        "suffix": ".html",
+        "media_type": "text/html",
+        "validators": (
+            "nonempty",
+            "html_single_h1",
+            "html_primary_cta",
+            "assumption_label",
+            "no_external_urls",
+            "no_unresolved_template",
+        ),
+        "measurement_methods": {"HTML 结构检查", "HTML structure checks"},
+        "metric_targets": {
+            "min_html_pages": 1,
+            "min_primary_cta": 1,
+            "assumption_label_required": True,
+        },
+        "dispatch": "write_approved_text_artifact",
+    },
+    "write_python_regression_fixture": {
+        "task_types": {"coding"},
+        "artifact_kind": "python",
+        "suffix": ".py",
+        "media_type": "text/x-python",
+        "validators": ("nonempty", "python_syntax", "regression_marker", "no_unresolved_template"),
+        "measurement_methods": {"Python 语法与回归夹具检查", "Python syntax and regression fixture checks"},
+        "metric_targets": {
+            "min_python_files": 1,
+            "syntax_valid": True,
+            "regression_case_required": True,
+        },
+        "dispatch": "write_approved_text_artifact",
+    },
+    "write_markdown_validation_brief": {
+        "task_types": {"SEO", "competitor", "growth", "docs", "mixed"},
+        "artifact_kind": "markdown",
+        "suffix": ".md",
+        "media_type": "text/markdown",
+        "validators": ("nonempty", "markdown_heading", "source_reference", "no_unresolved_template"),
+        "measurement_methods": {"Markdown 结构与来源引用检查", "Markdown structure and source reference checks"},
+        "metric_targets": {
+            "min_markdown_files": 1,
+            "heading_required": True,
+            "source_reference_required": True,
+        },
+        "dispatch": "write_approved_text_artifact",
+    },
+}
+
+EXECUTION_BOUND_FIELDS = (
+    "schema_version",
+    "contract_id",
+    "request",
+    "semantic_compilation",
+    "smart_router",
+    "default_assumptions",
+    "strategy_gate",
+    "tool_evidence_gate",
+    "evidence_bundle",
+    "goal_plan",
+    "first_step",
 )
 
 
 class CompilerError(ValueError):
-    """Raised for invalid input or unsafe output paths."""
+    """Raised for invalid input, unsafe paths, or failed execution gates."""
 
 
 def compiler_version() -> str:
@@ -51,17 +162,20 @@ def canonical_json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
+def sha256_value(value: Any) -> str:
+    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
+
+
+def sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
 def stable_id(prefix: str, value: Any) -> str:
-    digest = hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()[:12]
-    return f"{prefix}-{digest}"
+    return f"{prefix}-{sha256_value(value)[:12]}"
 
 
-def write_json(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+def normalized_request(value: str) -> str:
+    return " ".join(value.split())
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -74,194 +188,373 @@ def load_json(path: Path) -> dict[str, Any]:
     return value
 
 
+def ensure_new_file(path: Path) -> Path:
+    resolved = path.expanduser().resolve()
+    if resolved.exists():
+        raise CompilerError(f"refusing to overwrite existing file: {resolved}")
+    if resolved in {Path("/").resolve(), Path.home().resolve(), ROOT.resolve()}:
+        raise CompilerError(f"refusing protected file path: {resolved}")
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    return resolved
+
+
+def write_json(path: Path, value: Any, *, refuse_existing: bool = False) -> None:
+    target = ensure_new_file(path) if refuse_existing else path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def write_text(path: Path, value: str, *, refuse_existing: bool = False) -> None:
+    target = ensure_new_file(path) if refuse_existing else path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(value, encoding="utf-8")
+
+
 def prepare_new_directory(path: Path) -> Path:
     resolved = path.expanduser().resolve()
-    protected = {Path("/").resolve(), Path.home().resolve(), ROOT.resolve()}
-    if resolved in protected:
-        raise CompilerError(f"refusing to use protected output directory: {resolved}")
+    if resolved in {Path("/").resolve(), Path.home().resolve(), ROOT.resolve()}:
+        raise CompilerError(f"refusing protected output directory: {resolved}")
     if resolved.exists():
         raise CompilerError(f"output already exists; choose a new directory: {resolved}")
     resolved.mkdir(parents=True)
     return resolved
 
 
-def classify_request(request: str) -> dict[str, Any]:
+def safe_relative_path(value: str) -> bool:
+    path = Path(value)
+    return bool(value) and not path.is_absolute() and ".." not in path.parts
+
+
+def searchable_text(value: Any) -> str:
+    """Flatten only payload values so schema keys/acceptance lists cannot self-satisfy checks."""
+    if isinstance(value, dict):
+        return "\n".join(searchable_text(item) for item in value.values())
+    if isinstance(value, list):
+        return "\n".join(searchable_text(item) for item in value)
+    return str(value)
+
+
+def infer_request_task_type(request: str) -> str:
     text = request.lower()
+    if any(
+        token in text
+        for token in (
+            "bug",
+            "fix",
+            "parser",
+            "csv",
+            "python",
+            "javascript",
+            "typescript",
+            "pytest",
+            "修复",
+            "崩溃",
+            "代码",
+            "编程",
+            "程序",
+            "脚本",
+            "函数",
+            "单元测试",
+            "回归测试",
+            "api 报错",
+        )
+    ):
+        return "coding"
+    if any(token in text for token in ("seo", "关键词", "serp", "搜索流量")):
+        return "SEO"
+    if any(token in text for token in ("竞品", "competitor")):
+        return "competitor"
+    if any(token in text for token in ("增长", "growth", "获客")):
+        return "growth"
     if any(token in text for token in ("网站", "官网", "落地页", "website", "landing page")):
-        task_type = "website"
-        task_pack = "网站/落地页改版包"
-    elif any(token in text for token in ("seo", "关键词", "搜索流量")):
-        task_type = "SEO"
-        task_pack = "SEO 内容集群包"
-    elif any(token in text for token in ("竞品", "competitor")):
-        task_type = "competitor"
-        task_pack = "竞品分析包"
-    elif any(token in text for token in ("增长", "growth", "获客")):
-        task_type = "growth"
-        task_pack = "增长实验包"
-    elif any(token in text for token in ("app", "saas", "应用")):
-        task_type = "app"
-        task_pack = "App MVP 研究包"
-    elif any(token in text for token in ("代码", "bug", "修复", "coding")):
-        task_type = "coding"
-        task_pack = "不适用"
+        return "website"
+    if any(token in text for token in ("app", "saas", "应用")):
+        return "app"
+    if any(token in text for token in ("文档", "readme", "docs")):
+        return "docs"
+    return "unknown"
+
+
+def load_semantic_input(path: Path) -> dict[str, Any]:
+    semantic = load_json(path)
+    first_step = semantic.get("first_step")
+    if not isinstance(first_step, dict):
+        return semantic
+    content_file = first_step.get("content_file")
+    if content_file:
+        if not isinstance(content_file, str) or not safe_relative_path(content_file):
+            raise CompilerError("first_step.content_file must be a safe path relative to semantic input")
+        base = path.expanduser().resolve().parent
+        content_path = (base / content_file).resolve()
+        try:
+            content_path.relative_to(base)
+        except ValueError as exc:
+            raise CompilerError("first_step.content_file escapes semantic input directory") from exc
+        try:
+            content = content_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise CompilerError(f"cannot read first-step content file: {content_path}: {exc}") from exc
+        first_step = copy.deepcopy(first_step)
+        first_step.pop("content_file", None)
+        first_step["content_template"] = content
+        first_step["content_source"] = content_file
+        first_step["content_sha256"] = sha256_text(content)
+        semantic = copy.deepcopy(semantic)
+        semantic["first_step"] = first_step
+    return semantic
+
+
+def _semantic_required_object(semantic: dict[str, Any], key: str, errors: list[str]) -> dict[str, Any]:
+    value = semantic.get(key)
+    if not isinstance(value, dict):
+        errors.append(f"semantic_input.{key}: must be an object")
+        return {}
+    return value
+
+
+def semantic_input_errors(request: str, semantic: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if semantic.get("semantic_schema_version") != SEMANTIC_SCHEMA_VERSION:
+        errors.append(f"semantic_input.semantic_schema_version: expected {SEMANTIC_SCHEMA_VERSION}")
+    if normalized_request(str(semantic.get("request", ""))) != normalized_request(request):
+        errors.append("semantic_input.request: must exactly match the compiled request")
+
+    provenance = _semantic_required_object(semantic, "provenance", errors)
+    mode = provenance.get("mode")
+    if mode not in SUPPORTED_SEMANTIC_MODES:
+        errors.append(f"semantic_input.provenance.mode: unsupported mode `{mode}`")
+    if not str(provenance.get("producer", "")).strip():
+        errors.append("semantic_input.provenance.producer: is required")
+    if not isinstance(provenance.get("live_ai_claimed"), bool):
+        errors.append("semantic_input.provenance.live_ai_claimed: must be boolean")
+    if "liveAiClaimed" in provenance and provenance.get("liveAiClaimed") != provenance.get("live_ai_claimed"):
+        errors.append("semantic_input.provenance: live AI provenance flags disagree")
+    if mode == "deterministic_demo_fixture" and provenance.get("live_ai_claimed") is not False:
+        errors.append("semantic_input.provenance: deterministic demo fixtures must set live_ai_claimed=false")
+    if mode == "agent_result" and not str(provenance.get("transcript_ref", "")).strip():
+        errors.append("semantic_input.provenance.transcript_ref: agent results require a transcript reference")
+
+    router = _semantic_required_object(semantic, "smart_router", errors)
+    task_type = router.get("task_type")
+    if task_type not in SUPPORTED_TASK_TYPES:
+        errors.append(f"semantic_input.smart_router.task_type: unsupported task type `{task_type}`")
+    inferred = infer_request_task_type(request)
+    if inferred != "unknown" and task_type != inferred:
+        errors.append(f"semantic_input domain mismatch: request implies `{inferred}` but router says `{task_type}`")
+    for key in ("maturity", "risk_level", "external_information_need", "output_length", "routing_reason"):
+        if not str(router.get(key, "")).strip():
+            errors.append(f"semantic_input.smart_router.{key}: is required")
+
+    assumptions = semantic.get("default_assumptions")
+    if not isinstance(assumptions, list) or not assumptions or any(len(str(item).strip()) < 8 for item in assumptions):
+        errors.append("semantic_input.default_assumptions: needs at least one concrete assumption")
+
+    strategy = _semantic_required_object(semantic, "strategy_gate", errors)
+    for key in ("problem_reframe", "smallest_bet"):
+        if len(str(strategy.get(key, "")).strip()) < 20:
+            errors.append(f"semantic_input.strategy_gate.{key}: is too thin")
+    if not isinstance(strategy.get("success_metrics"), list) or not strategy.get("success_metrics"):
+        errors.append("semantic_input.strategy_gate.success_metrics: at least one metric is required")
+    if not isinstance(strategy.get("disconfirming_evidence"), list) or not strategy.get("disconfirming_evidence"):
+        errors.append("semantic_input.strategy_gate.disconfirming_evidence: at least one signal is required")
+    if not isinstance(strategy.get("kill_criteria"), list) or not strategy.get("kill_criteria"):
+        errors.append("semantic_input.strategy_gate.kill_criteria: at least one stop rule is required")
+
+    tool_gate = _semantic_required_object(semantic, "tool_evidence_gate", errors)
+    research_required = tool_gate.get("research_required")
+    if not isinstance(research_required, bool):
+        errors.append("semantic_input.tool_evidence_gate.research_required: must be boolean")
+    external_none = router.get("external_information_need") in {"不需要", "none"}
+    if isinstance(research_required, bool) and research_required == external_none:
+        errors.append("semantic_input: research_required must agree with external_information_need")
+    for key in ("permitted_tools", "authorization_required_for", "blocked_claims"):
+        if not isinstance(tool_gate.get(key), list) or not tool_gate.get(key):
+            errors.append(f"semantic_input.tool_evidence_gate.{key}: must be a non-empty list")
+    evidence_requirements = tool_gate.get("evidence_requirements")
+    if not isinstance(evidence_requirements, list) or (research_required and not evidence_requirements):
+        errors.append(
+            "semantic_input.tool_evidence_gate.evidence_requirements: "
+            "must be a list and non-empty for research tasks"
+        )
+    elif isinstance(evidence_requirements, list):
+        for index, requirement in enumerate(evidence_requirements):
+            if not isinstance(requirement, dict):
+                errors.append(f"semantic_input.tool_evidence_gate.evidence_requirements[{index}]: must be an object")
+                continue
+            if not str(requirement.get("claim_type", "")).strip():
+                errors.append(f"semantic_input.tool_evidence_gate.evidence_requirements[{index}].claim_type: is required")
+            minimum = requirement.get("minimum_independent_sources")
+            if not isinstance(minimum, int) or isinstance(minimum, bool) or minimum < 1:
+                errors.append(
+                    f"semantic_input.tool_evidence_gate.evidence_requirements[{index}].minimum_independent_sources: "
+                    "must be a positive integer"
+                )
+            record_fields = requirement.get("record_fields")
+            if not isinstance(record_fields, list) or not record_fields or any(not str(item).strip() for item in record_fields):
+                errors.append(f"semantic_input.tool_evidence_gate.evidence_requirements[{index}].record_fields: must be non-empty")
+
+    goal_plan = _semantic_required_object(semantic, "goal_plan", errors)
+    for key in (
+        "preference_application",
+        "feedback_adjustment",
+        "business_priority",
+        "output_length_reason",
+        "choice_rationale",
+        "outcome",
+        "task_pack_application",
+        "domain_pack_application",
+        "tool_stack",
+        "deliverables",
+        "quality_gate",
+        "verification",
+        "limits",
+        "boundary",
+        "progress_rules",
+        "stop_criteria",
+        "pause_conditions",
+    ):
+        if len(str(goal_plan.get(key, "")).strip()) < 8:
+            errors.append(f"semantic_input.goal_plan.{key}: is required and must be concrete")
+    for key in ("task_pack", "domain_pack"):
+        if not str(goal_plan.get(key, "")).strip():
+            errors.append(f"semantic_input.goal_plan.{key}: is required")
+    if task_type in TASK_PACKS and goal_plan.get("task_pack") not in TASK_PACKS[task_type]:
+        errors.append(f"semantic_input.goal_plan.task_pack: `{goal_plan.get('task_pack')}` does not match `{task_type}`")
+    stages = goal_plan.get("research_stages")
+    if research_required:
+        if not isinstance(stages, dict) or any(len(str(stages.get(key, "")).strip()) < 16 for key in ("stage_1", "stage_2", "stage_3")):
+            errors.append("semantic_input.goal_plan.research_stages: research tasks require three concrete stages")
+    elif stages not in (None, {}):
+        errors.append("semantic_input.goal_plan.research_stages: direct tasks must not contain research stages")
+
+    first_step = _semantic_required_object(semantic, "first_step", errors)
+    action = first_step.get("action")
+    policy = ACTION_POLICIES.get(str(action))
+    if policy is None:
+        errors.append(f"semantic_input.first_step.action: unsupported action `{action}`")
     else:
-        task_type = "mixed"
-        task_pack = "不适用"
+        if task_type not in policy["task_types"]:
+            errors.append(f"semantic_input.first_step.action: `{action}` is not allowed for `{task_type}`")
+        if first_step.get("artifact_kind") != policy["artifact_kind"]:
+            errors.append("semantic_input.first_step.artifact_kind: does not match action policy")
+        if first_step.get("media_type") != policy["media_type"]:
+            errors.append("semantic_input.first_step.media_type: does not match action policy")
+        if tuple(first_step.get("validators", [])) != policy["validators"]:
+            errors.append("semantic_input.first_step.validators: must exactly match the action policy")
+        artifact = str(first_step.get("primary_artifact", ""))
+        if not safe_relative_path(artifact) or Path(artifact).suffix != policy["suffix"]:
+            errors.append("semantic_input.first_step.primary_artifact: unsafe path or wrong action suffix")
+        output_directory = str(first_step.get("output_directory", ""))
+        if not safe_relative_path(output_directory) or Path(artifact).parent != Path(output_directory):
+            errors.append("semantic_input.first_step: artifact must be directly inside output_directory")
+        expected_report = str(Path(output_directory) / "execution-report.json")
+        if first_step.get("report_path") != expected_report:
+            errors.append("semantic_input.first_step.report_path: must be execution-report.json in output_directory")
+        if not str(first_step.get("content_template", "")).strip():
+            errors.append("semantic_input.first_step.content_template: is required")
+        content_hash = first_step.get("content_sha256")
+        if content_hash and content_hash != sha256_text(str(first_step.get("content_template", ""))):
+            errors.append("semantic_input.first_step.content_sha256: does not match content_template")
 
-    business_task = task_type in {"website", "SEO", "competitor", "growth", "app", "mixed"}
-    vague = len(request.strip()) < 80 or any(
-        token in request for token in ("帮我做", "越快越好", "优化一下", "更好")
-    )
-    return {
-        "task_type": task_type,
-        "maturity": "模糊想法" if vague else "已有方向",
-        "risk_level": "中" if business_task else "低",
-        "external_information_need": "标准" if business_task else "不需要",
-        "ask_questions_first": False,
-        "output_length": "标准版" if business_task else "短版",
-        "strategy_recommendation": "先验证需求" if business_task else "直接执行",
-        "business_recommendation": "先小实验验证" if business_task else "立即做",
-        "task_pack": task_pack,
-        "domain_pack": "AI 工具站包" if "ai" in text or "人工智能" in text else "不适用",
-        "routing_reason": (
-            "这是模糊的业务建设请求，外部证据会改变定位和范围，因此先编译最小验证闭环。"
-            if business_task
-            else "这是可以用本地产物和检查直接证明的任务，不需要额外研究。"
-        ),
-    }
+    acceptance = first_step.get("acceptance")
+    if not isinstance(acceptance, dict):
+        errors.append("semantic_input.first_step.acceptance: must be an object")
+        acceptance = {}
+    if acceptance.get("task_type") != task_type:
+        errors.append("semantic_input.first_step.acceptance.task_type: must match router task_type")
+    required_terms = acceptance.get("required_terms")
+    forbidden_terms = acceptance.get("forbidden_terms")
+    if not isinstance(required_terms, list) or not required_terms:
+        errors.append("semantic_input.first_step.acceptance.required_terms: must be non-empty")
+        required_terms = []
+    if not isinstance(forbidden_terms, list):
+        errors.append("semantic_input.first_step.acceptance.forbidden_terms: must be a list")
+        forbidden_terms = []
 
-
-def measurable_metric() -> dict[str, Any]:
-    return {
-        "id": "first-validation-page",
-        "statement": "在 60 分钟内生成 1 个可打开的单页，页面包含 1 个明确价值承诺、1 个 CTA 和假设标记。",
-        "measurement": {
-            "method": "本地 HTML 结构检查",
-            "target": {
-                "max_minutes": 60,
-                "min_html_pages": 1,
-                "min_primary_cta": 1,
-                "assumption_label_required": True,
-            },
-        },
-        "evidence_path": "first-output/execution-report.json",
-    }
-
-
-def vague_metric(statement: str) -> dict[str, Any]:
-    return {
-        "id": "human-proposed-metric",
-        "statement": statement,
-        "measurement": {"method": "主观感受", "target": {}},
-        "evidence_path": "",
-    }
+    domain_first_step = copy.deepcopy(first_step)
+    domain_first_step.pop("acceptance", None)
+    semantic_domain_text = searchable_text({"goal_plan": goal_plan, "first_step": domain_first_step})
+    for term in required_terms:
+        if str(term) not in semantic_domain_text:
+            errors.append(f"semantic_input domain acceptance: required term `{term}` is absent")
+    for term in [*forbidden_terms, *DOMAIN_FORBIDDEN.get(str(task_type), ())]:
+        if str(term) and str(term).lower() in semantic_domain_text.lower():
+            errors.append(f"semantic_input domain acceptance: forbidden term `{term}` leaked into `{task_type}`")
+    return errors
 
 
-def compile_contract(request: str, proposed_metric: str | None = None) -> dict[str, Any]:
-    normalized_request = " ".join(request.split())
-    if len(normalized_request) < 8:
+def build_contract(request: str, semantic: dict[str, Any], evidence_bundle: dict[str, Any] | None = None) -> dict[str, Any]:
+    request_text = normalized_request(request)
+    if len(request_text) < 8:
         raise CompilerError("request must contain at least 8 non-whitespace characters")
+    fatal = semantic_input_errors(request_text, semantic)
+    if fatal:
+        raise CompilerError("semantic input rejected:\n- " + "\n- ".join(fatal))
 
-    router = classify_request(normalized_request)
-    metric = vague_metric(proposed_metric) if proposed_metric else measurable_metric()
-    identity_seed = {"request": normalized_request, "router": router, "schema": SCHEMA_VERSION}
-    contract_id = stable_id("goal", identity_seed)
+    semantic_hash = sha256_value(semantic)
+    request_hash = sha256_text(request_text)
+    identity = {"schema_version": SCHEMA_VERSION, "request_sha256": request_hash, "semantic_input_sha256": semantic_hash}
+    provenance = copy.deepcopy(semantic["provenance"])
     return {
         "schema_version": SCHEMA_VERSION,
-        "compiler": {"name": "Goal Compiler | 需求编译器", "version": compiler_version()},
-        "contract_id": contract_id,
-        "request": {
-            "raw": normalized_request,
-            "request_sha256": hashlib.sha256(normalized_request.encode("utf-8")).hexdigest(),
+        "compiler": {"name": "Goal Compiler | 需求编译器", "version": compiler_version(), "kind": "deterministic-cli"},
+        "contract_id": stable_id("goal", identity),
+        "request": {"raw": request_text, "request_sha256": request_hash},
+        "semantic_compilation": {
+            **provenance,
+            "semantic_schema_version": semantic["semantic_schema_version"],
+            "semantic_input_sha256": semantic_hash,
         },
-        "smart_router": router,
-        "default_assumptions": [
-            "当前没有已验证的目标用户、核心场景或付费证据。",
-            "首轮不做后端、登录、支付或生产部署。",
-            "只使用自有文字、系统字体和无外部依赖的 HTML/CSS。",
-        ],
-        "strategy_gate": {
-            "problem_reframe": "不是立刻做完整 AI 网站，而是先验证一个具体人群、一个高频问题和一个可点击承诺能否形成首个需求证据。",
-            "smallest_bet": "先产出一个标注为假设的单页和一个 CTA，然后用 5 次目标用户反馈决定是否扩大实现。",
-            "success_metrics": [metric],
-            "disconfirming_evidence": [
-                {
-                    "signal": "少于 2/5 名目标用户能复述页面承诺",
-                    "threshold": {"max_comprehension_count": 1, "sample_size": 5},
-                    "response": "停止加功能，先重写用户和问题定义。",
-                },
-                {
-                    "signal": "在 5 次访谈中没有人愿意点击 CTA 或留下下一步联系",
-                    "threshold": {"max_cta_intent_count": 0, "sample_size": 5},
-                    "response": "把方向降级为待验证假设，不进入完整开发。",
-                },
-            ],
-            "kill_criteria": [
-                {
-                    "condition": "连续两轮文案/人群调整后仍无 CTA 意图",
-                    "threshold": {"max_rounds": 2, "max_cta_intent_count": 0},
-                    "action": "pause_full_build",
-                },
-                {
-                    "condition": "首个页面需要未授权数据、账号或付费服务才能证明",
-                    "threshold": {"unauthorized_dependencies": 1},
-                    "action": "stop_and_request_authorization",
-                },
-            ],
-        },
-        "tool_evidence_gate": {
-            "research_required": router["external_information_need"] != "不需要",
-            "permitted_tools": [
-                "公开网页阅读器",
-                "Agent Reach（仅在已安装且渠道可用时）",
-                "本地文件与标准库脚本",
-            ],
-            "authorization_required_for": [
-                "账号登录",
-                "Cookie 或 Token",
-                "付费数据",
-                "私域内容",
-                "表单提交或生产变更",
-            ],
-            "evidence_requirements": [
-                {
-                    "claim_type": "用户痛点或需求",
-                    "minimum_independent_sources": 2,
-                    "record_fields": ["title", "url", "source_type", "tool_channel", "access_limit"],
-                },
-                {
-                    "claim_type": "页面结构完成",
-                    "minimum_independent_sources": 1,
-                    "record_fields": ["artifact_path", "check", "result"],
-                },
-            ],
-            "blocked_claims": [
-                "未经证据的市场规模",
-                "未经测量的效率提升",
-                "未经用户验证的付费意愿",
-            ],
-        },
-        "first_step": {
-            "action": "generate_validation_landing_page",
-            "output_directory": "first-output",
-            "primary_artifact": "first-output/index.html",
-            "purpose": "用可打开的单页替代抽象方案，仅表达待验证假设。",
-            "checks": ["one_h1", "one_primary_cta", "assumption_label", "no_external_assets"],
-        },
+        "smart_router": copy.deepcopy(semantic["smart_router"]),
+        "default_assumptions": copy.deepcopy(semantic["default_assumptions"]),
+        "strategy_gate": copy.deepcopy(semantic["strategy_gate"]),
+        "tool_evidence_gate": copy.deepcopy(semantic["tool_evidence_gate"]),
+        "evidence_bundle": copy.deepcopy(evidence_bundle or semantic.get("evidence_bundle") or {"sources": [], "claims": []}),
+        "goal_plan": copy.deepcopy(semantic["goal_plan"]),
+        "first_step": copy.deepcopy(semantic["first_step"]),
         "human_review": {
             "decision": "pending",
             "reviewer": None,
             "reason": "",
             "changed_fields": [],
+            "approved_payload_sha256": None,
             "sign_off": "PENDING HUMAN SIGN-OFF",
         },
     }
 
 
-def _is_vague_metric(statement: str) -> bool:
-    normalized = re.sub(r"[\s。，,;；!！?？]+", "", statement.strip().lower())
-    return any(re.fullmatch(pattern, normalized, flags=re.IGNORECASE) for pattern in VAGUE_METRIC_PATTERNS)
+def expected_contract_id(contract: dict[str, Any]) -> str:
+    request = contract.get("request", {})
+    semantic = contract.get("semantic_compilation", {})
+    identity = {
+        "schema_version": contract.get("schema_version"),
+        "request_sha256": request.get("request_sha256") if isinstance(request, dict) else None,
+        "semantic_input_sha256": semantic.get("semantic_input_sha256") if isinstance(semantic, dict) else None,
+    }
+    return stable_id("goal", identity)
+
+
+def approved_payload(contract: dict[str, Any]) -> dict[str, Any]:
+    return {key: copy.deepcopy(contract.get(key)) for key in EXECUTION_BOUND_FIELDS}
+
+
+def approved_payload_sha256(contract: dict[str, Any]) -> str:
+    return sha256_value(approved_payload(contract))
+
+
+def expected_review_id(contract: dict[str, Any]) -> str:
+    review = contract.get("human_review", {})
+    seed = {
+        "contract_id": contract.get("contract_id"),
+        "approved_payload_sha256": review.get("approved_payload_sha256") if isinstance(review, dict) else None,
+        "reviewer": review.get("reviewer") if isinstance(review, dict) else None,
+        "reason": review.get("reason") if isinstance(review, dict) else None,
+        "decision": review.get("decision") if isinstance(review, dict) else None,
+        "review_kind": review.get("review_kind") if isinstance(review, dict) else None,
+        "acknowledgements": review.get("acknowledgements") if isinstance(review, dict) else None,
+        "sign_off": review.get("sign_off") if isinstance(review, dict) else None,
+    }
+    return stable_id("review", seed)
 
 
 def _contains_number_or_boolean(value: Any) -> bool:
@@ -276,473 +569,682 @@ def _contains_number_or_boolean(value: Any) -> bool:
     return bool(re.search(r"\d", str(value)))
 
 
-def validate_contract(contract: dict[str, Any], require_human_approval: bool = True) -> list[str]:
+def _metric_errors(contract: dict[str, Any]) -> list[str]:
     errors: list[str] = []
-
-    def require_object(parent: dict[str, Any], key: str) -> dict[str, Any]:
-        value = parent.get(key)
-        if not isinstance(value, dict):
-            errors.append(f"{key}: must be an object")
-            return {}
-        return value
-
-    if contract.get("schema_version") != SCHEMA_VERSION:
-        errors.append(f"schema_version: expected {SCHEMA_VERSION}")
-    if not re.fullmatch(r"goal-[0-9a-f]{12}", str(contract.get("contract_id", ""))):
-        errors.append("contract_id: must be a stable goal identifier")
-
-    router = require_object(contract, "smart_router")
-    for key in (
-        "task_type",
-        "maturity",
-        "risk_level",
-        "external_information_need",
-        "strategy_recommendation",
-    ):
-        if not str(router.get(key, "")).strip():
-            errors.append(f"smart_router.{key}: is required")
-
-    strategy = require_object(contract, "strategy_gate")
-    for key in ("problem_reframe", "smallest_bet"):
-        if len(str(strategy.get(key, "")).strip()) < 20:
-            errors.append(f"strategy_gate.{key}: is too thin")
-
+    strategy = contract.get("strategy_gate", {})
+    first_step = contract.get("first_step", {})
+    if not isinstance(strategy, dict) or not isinstance(first_step, dict):
+        return ["strategy_gate and first_step must be objects"]
+    policy = ACTION_POLICIES.get(str(first_step.get("action")))
     metrics = strategy.get("success_metrics")
     if not isinstance(metrics, list) or not metrics:
-        errors.append("strategy_gate.success_metrics: at least one metric is required")
-        metrics = []
+        return ["strategy_gate.success_metrics: at least one metric is required"]
+
+    metric_id = first_step.get("metric_id")
+    matched = [metric for metric in metrics if isinstance(metric, dict) and metric.get("id") == metric_id]
+    if len(matched) != 1:
+        errors.append("first_step.metric_id: must match exactly one success metric")
     for index, metric in enumerate(metrics):
         prefix = f"strategy_gate.success_metrics[{index}]"
         if not isinstance(metric, dict):
             errors.append(f"{prefix}: must be an object")
             continue
         statement = str(metric.get("statement", "")).strip()
-        if len(statement) < 8:
+        method = str(metric.get("measurement", {}).get("method", "")) if isinstance(metric.get("measurement"), dict) else ""
+        if len(statement) < 10:
             errors.append(f"{prefix}.statement: must describe an observable outcome")
-        if _is_vague_metric(statement):
-            errors.append(f"{prefix}.statement: vague metric `{statement}` is not measurable")
+        for pattern in VAGUE_METRIC_PATTERNS:
+            if re.search(pattern, statement, flags=re.IGNORECASE):
+                errors.append(f"{prefix}.statement: vague wording matched `{pattern}`")
+                break
+        for pattern in SUBJECTIVE_METHOD_PATTERNS:
+            if re.search(pattern, method, flags=re.IGNORECASE):
+                errors.append(f"{prefix}.measurement.method: subjective method matched `{pattern}`")
+                break
         measurement = metric.get("measurement")
         if not isinstance(measurement, dict):
             errors.append(f"{prefix}.measurement: must be an object")
-        else:
-            if not str(measurement.get("method", "")).strip():
-                errors.append(f"{prefix}.measurement.method: is required")
-            target = measurement.get("target")
-            if not isinstance(target, dict) or not target:
-                errors.append(f"{prefix}.measurement.target: must contain explicit thresholds")
-            elif not _contains_number_or_boolean(target):
-                errors.append(f"{prefix}.measurement.target: needs a number or boolean gate")
-        if not str(metric.get("evidence_path", "")).strip():
-            errors.append(f"{prefix}.evidence_path: is required")
-
-    disconfirming = strategy.get("disconfirming_evidence")
-    if not isinstance(disconfirming, list) or not disconfirming:
-        errors.append("strategy_gate.disconfirming_evidence: at least one signal is required")
-    else:
-        for index, signal in enumerate(disconfirming):
-            if not isinstance(signal, dict) or not signal.get("signal") or not signal.get("response"):
-                errors.append(f"strategy_gate.disconfirming_evidence[{index}]: signal and response are required")
-            elif not _contains_number_or_boolean(signal.get("threshold", {})):
-                errors.append(f"strategy_gate.disconfirming_evidence[{index}].threshold: must be measurable")
-
-    kill_criteria = strategy.get("kill_criteria")
-    if not isinstance(kill_criteria, list) or not kill_criteria:
-        errors.append("strategy_gate.kill_criteria: at least one stop rule is required")
-    else:
-        for index, criterion in enumerate(kill_criteria):
-            if not isinstance(criterion, dict) or not criterion.get("condition") or not criterion.get("action"):
-                errors.append(f"strategy_gate.kill_criteria[{index}]: condition and action are required")
-            elif not _contains_number_or_boolean(criterion.get("threshold", {})):
-                errors.append(f"strategy_gate.kill_criteria[{index}].threshold: must be measurable")
-
-    gate = require_object(contract, "tool_evidence_gate")
-    if not isinstance(gate.get("permitted_tools"), list) or not gate.get("permitted_tools"):
-        errors.append("tool_evidence_gate.permitted_tools: at least one tool is required")
-    if not isinstance(gate.get("evidence_requirements"), list) or not gate.get("evidence_requirements"):
-        errors.append("tool_evidence_gate.evidence_requirements: at least one rule is required")
-    if not isinstance(gate.get("authorization_required_for"), list) or not gate.get("authorization_required_for"):
-        errors.append("tool_evidence_gate.authorization_required_for: must define pause boundaries")
-
-    first_step = require_object(contract, "first_step")
-    artifact = str(first_step.get("primary_artifact", ""))
-    if not artifact or artifact.startswith("/") or ".." in Path(artifact).parts:
-        errors.append("first_step.primary_artifact: must be a safe relative path")
-    if not isinstance(first_step.get("checks"), list) or len(first_step.get("checks", [])) < 3:
-        errors.append("first_step.checks: at least three observable checks are required")
-
-    review = require_object(contract, "human_review")
-    if require_human_approval:
-        if review.get("decision") != "approved":
-            errors.append("human_review.decision: must be `approved` before execution")
-        if len(str(review.get("reviewer") or "").strip()) < 2:
-            errors.append("human_review.reviewer: is required before execution")
-        if review.get("sign_off") != "APPROVED BY HUMAN":
-            errors.append("human_review.sign_off: must equal `APPROVED BY HUMAN`")
-
+            continue
+        target = measurement.get("target")
+        if not isinstance(target, dict) or not target or not _contains_number_or_boolean(target):
+            errors.append(f"{prefix}.measurement.target: needs explicit number or boolean gates")
+        if metric.get("id") == metric_id and policy:
+            if method not in policy["measurement_methods"]:
+                errors.append(f"{prefix}.measurement.method: does not correspond to action `{first_step.get('action')}`")
+            for key, expected in policy["metric_targets"].items():
+                if not isinstance(target, dict) or target.get(key) != expected:
+                    errors.append(f"{prefix}.measurement.target.{key}: expected {expected!r} for action")
+            if metric.get("evidence_path") != first_step.get("report_path"):
+                errors.append(f"{prefix}.evidence_path: must equal first_step.report_path")
     return errors
 
 
-def validation_report(contract: dict[str, Any], require_human_approval: bool = True) -> dict[str, Any]:
-    errors = validate_contract(contract, require_human_approval=require_human_approval)
+def _evidence_errors(contract: dict[str, Any]) -> list[str]:
+    gate = contract.get("tool_evidence_gate", {})
+    bundle = contract.get("evidence_bundle", {})
+    if not isinstance(gate, dict):
+        return ["tool_evidence_gate: must be an object"]
+    if not gate.get("research_required"):
+        return []
+    errors: list[str] = []
+    if not isinstance(bundle, dict):
+        return ["evidence_bundle: research-required contracts need an evidence object"]
+    sources = bundle.get("sources")
+    claims = bundle.get("claims")
+    if not isinstance(sources, list) or not sources:
+        errors.append("evidence_bundle.sources: research-required contract needs recorded sources")
+        sources = []
+    if not isinstance(claims, list) or not claims:
+        errors.append("evidence_bundle.claims: research-required contract needs source-backed claims")
+        claims = []
+
+    source_map: dict[str, dict[str, Any]] = {}
+    source_urls: set[str] = set()
+    required_source_fields = {"id", "title", "url", "source_type", "tool_channel", "access_limit"}
+    for index, source in enumerate(sources):
+        if not isinstance(source, dict):
+            errors.append(f"evidence_bundle.sources[{index}]: must be an object")
+            continue
+        missing = [key for key in required_source_fields if not str(source.get(key, "")).strip()]
+        if missing:
+            errors.append(f"evidence_bundle.sources[{index}]: missing {missing}")
+        source_id = str(source.get("id", ""))
+        source_url = str(source.get("url", "")).strip()
+        if source_url and not re.match(r"^https?://[^\s]+$", source_url, flags=re.IGNORECASE):
+            errors.append(f"evidence_bundle.sources[{index}].url: must be an HTTP(S) URL")
+        if source_url in source_urls:
+            errors.append(f"evidence_bundle.sources[{index}].url: duplicate URL is not an independent source")
+        elif source_url:
+            source_urls.add(source_url)
+        if source_id in source_map:
+            errors.append(f"evidence_bundle.sources[{index}].id: duplicate `{source_id}`")
+        elif source_id:
+            source_map[source_id] = source
+
+    requirements = gate.get("evidence_requirements", [])
+    for index, claim in enumerate(claims):
+        if not isinstance(claim, dict):
+            errors.append(f"evidence_bundle.claims[{index}]: must be an object")
+            continue
+        if not str(claim.get("claim_type", "")).strip():
+            errors.append(f"evidence_bundle.claims[{index}].claim_type: is required")
+        if len(str(claim.get("statement", "")).strip()) < 8:
+            errors.append(f"evidence_bundle.claims[{index}].statement: must record the source-backed claim")
+        if not isinstance(claim.get("source_ids"), list) or not claim.get("source_ids"):
+            errors.append(f"evidence_bundle.claims[{index}].source_ids: must be non-empty")
+    for requirement_index, requirement in enumerate(requirements if isinstance(requirements, list) else []):
+        if not isinstance(requirement, dict):
+            errors.append(f"tool_evidence_gate.evidence_requirements[{requirement_index}]: must be an object")
+            continue
+        claim_type = requirement.get("claim_type")
+        minimum = requirement.get("minimum_independent_sources")
+        if not isinstance(minimum, int) or minimum < 1:
+            errors.append(f"tool_evidence_gate.evidence_requirements[{requirement_index}]: invalid source minimum")
+            continue
+        matching_claims = [claim for claim in claims if isinstance(claim, dict) and claim.get("claim_type") == claim_type]
+        if not matching_claims:
+            errors.append(f"evidence_bundle.claims: missing claim_type `{claim_type}`")
+            continue
+        requirement_satisfied = False
+        for claim in matching_claims:
+            source_ids = claim.get("source_ids")
+            if not isinstance(source_ids, list):
+                continue
+            unique_ids = set(str(item) for item in source_ids)
+            unknown = unique_ids.difference(source_map)
+            if unknown:
+                errors.append(f"evidence_bundle claim `{claim_type}` references unknown sources {sorted(unknown)}")
+            if len(unique_ids.intersection(source_map)) >= minimum:
+                requirement_satisfied = True
+        if not requirement_satisfied:
+            errors.append(f"evidence_bundle claim `{claim_type}` needs at least {minimum} independent sources")
+    return errors
+
+
+def _domain_action_errors(contract: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    router = contract.get("smart_router", {})
+    first_step = contract.get("first_step", {})
+    goal_plan = contract.get("goal_plan", {})
+    if not isinstance(router, dict) or not isinstance(first_step, dict) or not isinstance(goal_plan, dict):
+        return ["smart_router, goal_plan, and first_step must be objects"]
+    task_type = router.get("task_type")
+    if task_type not in SUPPORTED_TASK_TYPES:
+        errors.append(f"smart_router.task_type: unsupported `{task_type}`")
+    request = contract.get("request", {})
+    raw_request = str(request.get("raw", "")) if isinstance(request, dict) else ""
+    inferred = infer_request_task_type(raw_request)
+    if inferred != "unknown" and task_type != inferred:
+        errors.append(f"contract domain mismatch: request implies `{inferred}` but router says `{task_type}`")
+    if task_type in TASK_PACKS and goal_plan.get("task_pack") not in TASK_PACKS[task_type]:
+        errors.append(f"goal_plan.task_pack: does not match task type `{task_type}`")
+
+    action = str(first_step.get("action", ""))
+    policy = ACTION_POLICIES.get(action)
+    if policy is None:
+        return [*errors, f"first_step.action: unsupported action `{action}`"]
+    if task_type not in policy["task_types"]:
+        errors.append(f"first_step.action: `{action}` is not allowed for `{task_type}`")
+    if first_step.get("artifact_kind") != policy["artifact_kind"]:
+        errors.append("first_step.artifact_kind: does not match action whitelist")
+    if first_step.get("media_type") != policy["media_type"]:
+        errors.append("first_step.media_type: does not match action whitelist")
+    if tuple(first_step.get("validators", [])) != policy["validators"]:
+        errors.append("first_step.validators: must exactly match action whitelist")
+    artifact = str(first_step.get("primary_artifact", ""))
+    if not safe_relative_path(artifact) or Path(artifact).suffix != policy["suffix"]:
+        errors.append("first_step.primary_artifact: unsafe or incompatible with action")
+    output_directory = str(first_step.get("output_directory", ""))
+    if Path(artifact).parent != Path(output_directory):
+        errors.append("first_step.primary_artifact: must be directly inside output_directory")
+    if first_step.get("report_path") != str(Path(output_directory) / "execution-report.json"):
+        errors.append("first_step.report_path: inconsistent with output_directory")
+    content = str(first_step.get("content_template", ""))
+    content_hash = first_step.get("content_sha256")
+    if content_hash and content_hash != sha256_text(content):
+        errors.append("first_step.content_sha256: does not match content_template")
+
+    acceptance = first_step.get("acceptance", {})
+    if not isinstance(acceptance, dict) or acceptance.get("task_type") != task_type:
+        errors.append("first_step.acceptance.task_type: must match router")
+        acceptance = {}
+    domain_first_step = copy.deepcopy(first_step)
+    domain_first_step.pop("acceptance", None)
+    domain_text = searchable_text({"goal_plan": goal_plan, "first_step": domain_first_step})
+    for term in acceptance.get("required_terms", []) if isinstance(acceptance.get("required_terms"), list) else []:
+        if str(term) not in domain_text:
+            errors.append(f"first_step.acceptance: required term `{term}` absent")
+    forbidden = acceptance.get("forbidden_terms", []) if isinstance(acceptance.get("forbidden_terms"), list) else []
+    for term in [*forbidden, *DOMAIN_FORBIDDEN.get(str(task_type), ())]:
+        if str(term) and str(term).lower() in domain_text.lower():
+            errors.append(f"first_step.acceptance: forbidden term `{term}` leaked into `{task_type}`")
+    return errors
+
+
+def validate_contract(
+    contract: dict[str, Any],
+    *,
+    require_human_approval: bool = True,
+    require_evidence: bool = True,
+) -> list[str]:
+    errors: list[str] = []
+    if contract.get("schema_version") != SCHEMA_VERSION:
+        errors.append(f"schema_version: expected {SCHEMA_VERSION}")
+    request = contract.get("request")
+    if not isinstance(request, dict):
+        errors.append("request: must be an object")
+    else:
+        raw = str(request.get("raw", ""))
+        expected_request_hash = sha256_text(raw)
+        if request.get("request_sha256") != expected_request_hash:
+            errors.append("request.request_sha256: does not match request.raw")
+    semantic = contract.get("semantic_compilation")
+    if not isinstance(semantic, dict) or not re.fullmatch(r"[0-9a-f]{64}", str(semantic.get("semantic_input_sha256", ""))):
+        errors.append("semantic_compilation.semantic_input_sha256: must be a SHA-256 digest")
+    if contract.get("contract_id") != expected_contract_id(contract):
+        errors.append("contract_id: inconsistent with request/schema/semantic input hashes")
+
+    errors.extend(_domain_action_errors(contract))
+    errors.extend(_metric_errors(contract))
+    strategy = contract.get("strategy_gate", {})
+    if isinstance(strategy, dict):
+        for key in ("disconfirming_evidence", "kill_criteria"):
+            items = strategy.get(key)
+            if not isinstance(items, list) or not items:
+                errors.append(f"strategy_gate.{key}: must be non-empty")
+                continue
+            for index, item in enumerate(items):
+                if not isinstance(item, dict) or not item.get("threshold") or not _contains_number_or_boolean(item.get("threshold")):
+                    errors.append(f"strategy_gate.{key}[{index}].threshold: must be measurable")
+    if require_evidence:
+        errors.extend(_evidence_errors(contract))
+
+    review = contract.get("human_review")
+    if not isinstance(review, dict):
+        errors.append("human_review: must be an object")
+    elif require_human_approval:
+        decision_is_approved = review.get("decision") == "approved"
+        if not decision_is_approved:
+            errors.append("human_review.decision: must be `approved` before execution")
+        else:
+            if len(str(review.get("reviewer") or "").strip()) < 2:
+                errors.append("human_review.reviewer: is required before execution")
+            if len(str(review.get("reason") or "").strip()) < 8:
+                errors.append("human_review.reason: must explain the approval")
+            acknowledgements = review.get("acknowledgements")
+            required_acknowledgements = ("metric_reviewed", "evidence_reviewed", "action_reviewed", "execution_scope_reviewed")
+            if not isinstance(acknowledgements, dict) or any(acknowledgements.get(key) is not True for key in required_acknowledgements):
+                errors.append("human_review.acknowledgements: all execution acknowledgements must be true")
+            semantic_mode = (
+                contract.get("semantic_compilation", {}).get("mode")
+                if isinstance(contract.get("semantic_compilation"), dict)
+                else None
+            )
+            review_kind = review.get("review_kind")
+            if review_kind == "synthetic_test":
+                if semantic_mode != "test_fixture":
+                    errors.append("human_review.review_kind: synthetic approval is allowed only for test_fixture contracts")
+                if review.get("sign_off") != "SYNTHETIC TEST APPROVAL":
+                    errors.append("human_review.sign_off: invalid synthetic test sign-off")
+            elif review_kind == "human":
+                if review.get("sign_off") != "APPROVED BY HUMAN":
+                    errors.append("human_review.sign_off: must equal `APPROVED BY HUMAN`")
+            else:
+                errors.append("human_review.review_kind: must be `human` (or `synthetic_test` for test_fixture only)")
+            current_payload_hash = approved_payload_sha256(contract)
+            if review.get("approved_payload_sha256") != current_payload_hash:
+                errors.append("human_review.approved_payload_sha256: execution payload changed after approval")
+            if review.get("review_id") != expected_review_id(contract):
+                errors.append("human_review.review_id: inconsistent with approval record")
+    return errors
+
+
+def validation_report(
+    contract: dict[str, Any],
+    *,
+    require_human_approval: bool = True,
+    require_evidence: bool = True,
+) -> dict[str, Any]:
+    errors = validate_contract(
+        contract,
+        require_human_approval=require_human_approval,
+        require_evidence=require_evidence,
+    )
     return {
         "contract_id": contract.get("contract_id"),
         "status": "PASS" if not errors else "FAIL",
         "human_approval_required": require_human_approval,
+        "approval_context": (
+            contract.get("human_review", {}).get("review_kind")
+            if isinstance(contract.get("human_review"), dict)
+            else None
+        ),
+        "evidence_required": bool(contract.get("tool_evidence_gate", {}).get("research_required")) if isinstance(contract.get("tool_evidence_gate"), dict) else None,
         "error_count": len(errors),
         "errors": errors,
     }
 
 
-def apply_human_review(contract: dict[str, Any], review: dict[str, Any]) -> dict[str, Any]:
-    if review.get("decision") != "approved":
-        raise CompilerError("human review decision must be `approved`")
-    reviewer = str(review.get("reviewer", "")).strip()
-    reason = str(review.get("reason", "")).strip()
-    metric_override = review.get("success_metric_override")
-    if len(reviewer) < 2 or len(reason) < 8:
-        raise CompilerError("human review needs a reviewer and a concrete reason")
-    if not isinstance(metric_override, dict):
-        raise CompilerError("human review needs success_metric_override")
+def pending_human_review_template(contract: dict[str, Any]) -> dict[str, Any]:
+    strategy = contract.get("strategy_gate", {})
+    return {
+        "record_type": "pending_human_review_example",
+        "decision": "pending",
+        "reviewer": "",
+        "reason": "",
+        "metric_id": contract.get("first_step", {}).get("metric_id"),
+        "agent_proposed_metric": copy.deepcopy(strategy.get("success_metrics", [None])[0]) if isinstance(strategy, dict) else None,
+        "success_metric_override": None,
+        "acknowledgements": {
+            "metric_reviewed": False,
+            "evidence_reviewed": False,
+            "action_reviewed": False,
+            "execution_scope_reviewed": False,
+        },
+        "notice": "这是待人工填写的记录模板，不是已审批证明。",
+    }
 
-    reviewed = json.loads(json.dumps(contract, ensure_ascii=False))
-    original_metric = reviewed["strategy_gate"]["success_metrics"][0]
-    reviewed["strategy_gate"]["success_metrics"][0] = metric_override
-    review_seed = {"contract_id": reviewed["contract_id"], "review": review}
+
+def attach_evidence(contract: dict[str, Any], evidence: dict[str, Any]) -> dict[str, Any]:
+    review = contract.get("human_review", {})
+    if isinstance(review, dict) and review.get("decision") == "approved":
+        raise CompilerError("cannot attach evidence after approval; create a new review cycle")
+    updated = copy.deepcopy(contract)
+    updated["evidence_bundle"] = copy.deepcopy(evidence)
+    return updated
+
+
+def apply_human_review(
+    contract: dict[str, Any],
+    review_record: dict[str, Any],
+    evidence_bundle: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    record_type = review_record.get("record_type")
+    if record_type == "pending_human_review_example" or review_record.get("decision") != "approved":
+        raise CompilerError("review record is pending; exact metric and approval must come from a human")
+    if record_type not in {"human_review", "synthetic_test_review"}:
+        raise CompilerError("review record_type must be `human_review` or the test-only `synthetic_test_review`")
+    semantic_mode = (
+        contract.get("semantic_compilation", {}).get("mode")
+        if isinstance(contract.get("semantic_compilation"), dict)
+        else None
+    )
+    if record_type == "synthetic_test_review" and semantic_mode != "test_fixture":
+        raise CompilerError("synthetic test approval is allowed only for a test_fixture contract")
+    reviewer = str(review_record.get("reviewer", "")).strip()
+    reason = str(review_record.get("reason", "")).strip()
+    if len(reviewer) < 2 or len(reason) < 8:
+        raise CompilerError("human review needs a named reviewer and a concrete reason")
+    acknowledgements = review_record.get("acknowledgements")
+    required_acknowledgements = ("metric_reviewed", "evidence_reviewed", "action_reviewed", "execution_scope_reviewed")
+    if not isinstance(acknowledgements, dict) or any(acknowledgements.get(key) is not True for key in required_acknowledgements):
+        raise CompilerError("human review must explicitly acknowledge metric, evidence, action, and execution scope")
+    reviewed_metric_id = contract.get("first_step", {}).get("metric_id") if isinstance(contract.get("first_step"), dict) else None
+    if review_record.get("metric_id") != reviewed_metric_id:
+        raise CompilerError("human review metric_id must match the exact first-step success metric")
+
+    reviewed = copy.deepcopy(contract)
+    if evidence_bundle is not None:
+        reviewed["evidence_bundle"] = copy.deepcopy(evidence_bundle)
+    metric_override = review_record.get("success_metric_override")
+    changed_fields: list[str] = []
+    if metric_override is not None:
+        if not isinstance(metric_override, dict):
+            raise CompilerError("success_metric_override must be an object or null")
+        metric_id = review_record.get("metric_id") or reviewed.get("first_step", {}).get("metric_id")
+        metrics = reviewed.get("strategy_gate", {}).get("success_metrics", [])
+        matches = [index for index, metric in enumerate(metrics) if isinstance(metric, dict) and metric.get("id") == metric_id]
+        if len(matches) != 1:
+            raise CompilerError("review metric_id must match exactly one success metric")
+        index = matches[0]
+        reviewed["strategy_gate"]["success_metrics"][index] = copy.deepcopy(metric_override)
+        changed_fields.append(f"strategy_gate.success_metrics[{index}]")
+
+    preapproval_errors = validate_contract(reviewed, require_human_approval=False, require_evidence=True)
+    if preapproval_errors:
+        raise CompilerError("cannot approve an invalid/evidence-incomplete payload:\n- " + "\n- ".join(preapproval_errors))
+
     reviewed["human_review"] = {
         "decision": "approved",
         "reviewer": reviewer,
         "reason": reason,
-        "review_id": stable_id("review", review_seed),
-        "changed_fields": ["strategy_gate.success_metrics[0]"],
-        "previous_metric_statement": original_metric.get("statement", ""),
-        "sign_off": "APPROVED BY HUMAN",
+        "review_kind": "synthetic_test" if record_type == "synthetic_test_review" else "human",
+        "changed_fields": changed_fields,
+        "acknowledgements": copy.deepcopy(acknowledgements),
+        "approved_payload_sha256": None,
+        "sign_off": "SYNTHETIC TEST APPROVAL" if record_type == "synthetic_test_review" else "APPROVED BY HUMAN",
     }
+    reviewed["human_review"]["approved_payload_sha256"] = approved_payload_sha256(reviewed)
+    reviewed["human_review"]["review_id"] = expected_review_id(reviewed)
+    strict_errors = validate_contract(reviewed, require_human_approval=True, require_evidence=True)
+    if strict_errors:
+        raise CompilerError("reviewed contract failed strict validation:\n- " + "\n- ".join(strict_errors))
     return reviewed
 
 
 def render_goal(contract: dict[str, Any]) -> str:
     router = contract["smart_router"]
     strategy = contract["strategy_gate"]
-    metric = strategy["success_metrics"][0]
+    goal = contract["goal_plan"]
+    review = contract["human_review"]
+    metric = next(
+        metric for metric in strategy["success_metrics"] if metric.get("id") == contract["first_step"]["metric_id"]
+    )
     disconfirm = strategy["disconfirming_evidence"][0]
     kill = strategy["kill_criteria"][0]
-    review = contract["human_review"]
-    assumptions = "；".join(contract["default_assumptions"])
-    review_text = (
-        f"已由 {review['reviewer']} 审核，人工把指标改为可测量门槛。"
-        if review.get("decision") == "approved"
-        else "尚未完成人工签字，只允许生成草案，不允许执行。"
+    if review.get("decision") == "approved" and review.get("review_kind") == "synthetic_test":
+        review_text = f"仅测试用的合成批准，payload {review['approved_payload_sha256'][:12]}；不是真人签字。"
+    elif review.get("decision") == "approved":
+        review_text = f"已由 {review['reviewer']} 批准，审批绑定 payload {review['approved_payload_sha256'][:12]}。"
+    else:
+        review_text = "Agent 语义结果已记录，精确指标与执行范围仍待人工批准。"
+    lines = [
+        f"决策摘要：任务类型={router['task_type']}；成熟度={router['maturity']}；外部信息需求={router['external_information_need']}；风险等级={router['risk_level']}；输出长度={router['output_length']}；是否先提问={'是' if router.get('ask_questions_first') else '否'}",
+        f"默认假设：{'；'.join(contract['default_assumptions'])}",
+        f"偏好应用：{goal['preference_application']}",
+        f"反馈调整：{goal['feedback_adjustment']}；{review_text}",
+        f"策略判断：问题重构={strategy['problem_reframe']}；最小验证={strategy['smallest_bet']}；成功指标={metric['statement']}；反证信号={disconfirm['signal']}；终止/暂缓条件={kill['condition']}",
+        f"优先级判断：{goal['business_priority']}",
+        f"输出长度：{router['output_length']}；{goal['output_length_reason']}",
+        f"选择理由：{goal['choice_rationale']}",
+        "推荐执行版（中文，可直接复制）",
+        f"/goal {goal['outcome']}",
+        f"任务包：{goal['task_pack']}；{goal['task_pack_application']}",
+        f"领域包：{goal['domain_pack']}；{goal['domain_pack_application']}",
+        f"工具栈：{goal['tool_stack']}",
+    ]
+    stages = goal.get("research_stages")
+    if isinstance(stages, dict):
+        lines.extend(
+            (
+                f"阶段 1 - 广域调研：{stages['stage_1']}",
+                f"阶段 2 - Deep Research：{stages['stage_2']}",
+                f"阶段 3 - 业务应用：{stages['stage_3']}",
+                f"输出物：{goal['deliverables']}",
+                f"质量门槛：{goal['quality_gate']}",
+            )
+        )
+    lines.extend(
+        (
+            f"验证方式：{goal['verification']}",
+            f"限制：{goal['limits']}",
+            f"工作边界：{goal['boundary']}",
+            f"推进规则：{goal['progress_rules']}",
+            f"停止标准：{goal['stop_criteria']}",
+            f"暂停条件：{goal['pause_conditions']}",
+        )
     )
-    return f"""决策摘要：任务类型={router['task_type']}；成熟度={router['maturity']}；外部信息需求={router['external_information_need']}；风险等级={router['risk_level']}；输出长度={router['output_length']}；是否先提问=否
-默认假设：{assumptions}
-偏好应用：优先小闭环和真实产物，先做一个可打开的验证页，不先做完整站点。
-反馈调整：{review_text}
-策略判断：问题重构={strategy['problem_reframe']}；最小验证={strategy['smallest_bet']}；成功指标={metric['statement']}；反证信号={disconfirm['signal']}；终止/暂缓条件={kill['condition']}
-优先级判断：业务价值=中；证据强度=低；执行成本=低；分发潜力=中；变现路径=待验证；风险=过早开发；建议=先做单页小实验
-输出长度：{router['output_length']}；保留机器可读契约与必要研究门槛。
-选择理由：{router['routing_reason']}
-推荐执行版（中文，可直接复制）
-/goal 把“{contract['request']['raw']}”编译为一个可验证的 AI 网站最小闭环：先核实人群与问题，再生成标注假设的单页和 CTA，最后用反证和终止条件决定是否继续。
-任务包：{router['task_pack']}；本次只映射到目标用户、首屏承诺、CTA、证据和第一个页面产物。
-领域包：{router['domain_pack']}；先验证免费入口和使用意图，不扩张后端或付费功能。
-工具栈：先运行 `agent-reach doctor` 确认渠道；可用时用 Agent Reach 收集公开来源，简单公开页用 web reader/browser，重复结构化抽取才用 Scrapling，需要点击或截图才用 browser-use，Claude for Chrome 只作用户授权的人工接管选项。
-阶段 1 - 广域调研：收集 15-25 个候选来源，覆盖直接竞品、相邻产品、用户抱怨和官方资料；记录标题、URL、来源类型、工具/渠道、检索日期和访问限制。
-阶段 2 - Deep Research：深读高价值来源，每个需求结论至少用 2 个独立来源交叉验证；不足时标为低置信假设，列出矛盾和反例。
-阶段 3 - 业务应用：把去重且可追溯的证据映射到人群、问题、首屏承诺、CTA 和 5 次用户反馈，只执行人工批准后的第一步。
-输出物：生成 goal-contract.json、goal.md、来源证据表、单页 first-output/index.html 和 execution-report.json。
-质量门槛：关键需求结论至少 2 个独立来源；标注来源强弱；过期、营销、不可访问来源降权；矛盾信息必须列出；不足证据只能标为低置信假设。
-验证方式：运行 `python3 scripts/goal_compiler.py validate goal-contract.json`；通过后执行第一步，用 execution-report.json 和可打开的 HTML 产物证明完成。
-限制：不复制竞品，不编造需求，不把 Agent Reach 描述成无限制全网访问；不用自动化绕过登录、付费、验证码或平台限制。
-工作边界：只创建契约、研究记录和一个无外部资产的静态验证页；不改生产站点。
-推进规则：先编译，再由人改掉主观指标，验证 PASS 后才执行；任一门槛失败就回到契约，不绕过。
-停止标准：契约通过严格校验，单页和检查报告存在，或命中反证/终止门槛后明确暂缓。
-暂停条件：需要账号、Cookie、Token、付费数据、私域内容、表单提交、版权授权或生产变更时暂停。
-""".strip() + "\n"
+    return "\n".join(lines) + "\n"
 
 
-def render_landing_page(contract: dict[str, Any]) -> str:
-    contract_id = html.escape(str(contract["contract_id"]))
-    return f"""<!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IdeaSignal · AI 需求验证页</title>
-  <style>
-    :root {{ --ink:#101828; --muted:#667085; --paper:#fffdf7; --lime:#d7ff55; --violet:#7657ff; --line:#d0d5dd; }}
-    * {{ box-sizing:border-box; }}
-    body {{ margin:0; background:#f1f0ea; color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"PingFang SC",sans-serif; }}
-    main {{ width:min(1080px,calc(100% - 32px)); margin:0 auto; padding:36px 0 72px; }}
-    .top {{ display:flex; justify-content:space-between; gap:20px; align-items:center; font-size:14px; }}
-    .brand {{ font-weight:900; letter-spacing:-.03em; }}
-    .badge {{ padding:8px 12px; border:1px solid var(--ink); border-radius:999px; background:var(--lime); font-weight:800; }}
-    .hero {{ margin-top:54px; display:grid; grid-template-columns:1.35fr .65fr; gap:20px; }}
-    .panel {{ background:var(--paper); border:2px solid var(--ink); border-radius:24px; box-shadow:8px 8px 0 var(--ink); padding:clamp(24px,5vw,58px); }}
-    .eyebrow {{ color:var(--violet); font-weight:900; text-transform:uppercase; letter-spacing:.08em; }}
-    h1 {{ margin:14px 0 18px; max-width:760px; font-size:clamp(42px,7vw,82px); line-height:.98; letter-spacing:-.065em; }}
-    .lead {{ max-width:680px; color:var(--muted); font-size:clamp(18px,2.2vw,24px); }}
-    .cta {{ display:inline-block; margin-top:30px; padding:16px 22px; color:white; background:var(--violet); border:2px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); font-weight:900; text-decoration:none; }}
-    aside {{ display:grid; align-content:space-between; gap:18px; }}
-    .number {{ font-size:68px; font-weight:950; line-height:1; }}
-    .small {{ color:var(--muted); }}
-    .grid {{ margin-top:34px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }}
-    .card {{ background:white; border:1px solid var(--line); border-radius:18px; padding:24px; }}
-    .card strong {{ display:block; margin-bottom:8px; font-size:20px; }}
-    #waitlist {{ margin-top:34px; padding:30px; border-radius:18px; background:var(--ink); color:white; }}
-    code {{ color:var(--lime); }}
-    @media (max-width:760px) {{ .hero,.grid {{ grid-template-columns:1fr; }} .top {{ align-items:flex-start; }} }}
-  </style>
-</head>
-<body data-goal-compiler-output="true">
-  <main>
-    <header class="top">
-      <span class="brand">IdeaSignal / Goal Compiler Output</span>
-      <span class="badge">假设待验证 · NOT A MARKET CLAIM</span>
-    </header>
-    <section class="hero">
-      <div class="panel">
-        <div class="eyebrow">从模糊想法到第一个证据</div>
-        <h1>先验证有没有人需要，再开发 AI 网站。</h1>
-        <p class="lead">这是需求编译器执行的第一步：一个可打开、可点击、能被反证的单页，不是一份继续拖延的方案。</p>
-        <a class="cta" href="#waitlist">我愿意测试这个闭环 →</a>
-      </div>
-      <aside class="panel">
-        <div><div class="number">5</div><strong>次用户反馈就决定去留</strong></div>
-        <p class="small">两轮仍无 CTA 意图，就暂停完整开发。成功和停止条件都在契约里。</p>
-      </aside>
-    </section>
-    <section class="grid" aria-label="验证步骤">
-      <article class="card"><strong>01 可测量</strong><span>把“好看”改成时间、页面、CTA 和结构检查。</span></article>
-      <article class="card"><strong>02 可反证</strong><span>少于 2/5 人能复述承诺，回到问题定义。</span></article>
-      <article class="card"><strong>03 可停止</strong><span>没有意图就不加功能，不让沉没成本替代证据。</span></article>
-    </section>
-    <section id="waitlist">
-      <strong>第一步已真实生成。</strong>
-      <p>契约 <code>{contract_id}</code> 已通过人工签字和机器校验；此页未发送表单、未收集个人数据、未引用外部资产。</p>
-    </section>
-  </main>
-</body>
-</html>
-"""
-
-
-def inspect_landing_page(path: Path) -> dict[str, Any]:
-    text = path.read_text(encoding="utf-8") if path.exists() else ""
-    checks = {
-        "html_exists": path.is_file(),
-        "one_h1": len(re.findall(r"<h1(?:\s|>)", text, flags=re.IGNORECASE)) == 1,
-        "one_primary_cta": len(re.findall(r'href="#waitlist"', text)) == 1,
-        "assumption_label": "NOT A MARKET CLAIM" in text and "假设待验证" in text,
-        "no_external_assets": not bool(re.search(r'(?:src|href)="https?://', text, flags=re.IGNORECASE)),
-        "compiler_marker": 'data-goal-compiler-output="true"' in text,
-    }
-    return {
-        "status": "PASS" if all(checks.values()) else "FAIL",
-        "artifact": path.name,
-        "checks": checks,
-    }
-
-
-def render_demo_walkthrough(report: dict[str, Any]) -> str:
-    fail_errors = report["negative_gate"]["errors"]
-    error_items = "".join(f"<li>{html.escape(error)}</li>" for error in fail_errors)
-    return f"""<!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Goal Compiler · 失败到可执行的证据链</title>
-  <style>
-    :root {{ --ink:#111827; --paper:#fffdf5; --lime:#d9ff57; --red:#ff5c5c; --green:#2dd4a7; --violet:#7557ff; }}
-    * {{ box-sizing:border-box; }}
-    body {{ margin:0; background:#ebe9e1; color:var(--ink); font-family:ui-sans-serif,system-ui,-apple-system,"PingFang SC",sans-serif; }}
-    main {{ width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:40px 0 70px; }}
-    header {{ display:flex; justify-content:space-between; gap:24px; align-items:flex-start; }}
-    h1 {{ margin:10px 0 12px; font-size:clamp(40px,7vw,78px); line-height:.95; letter-spacing:-.06em; }}
-    .kicker {{ color:var(--violet); font-weight:900; letter-spacing:.1em; text-transform:uppercase; }}
-    .overall {{ padding:10px 14px; background:var(--lime); border:2px solid var(--ink); border-radius:999px; font-weight:950; }}
-    .flow {{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:40px; }}
-    article {{ min-height:310px; display:flex; flex-direction:column; background:var(--paper); border:2px solid var(--ink); border-radius:20px; padding:24px; box-shadow:6px 6px 0 var(--ink); }}
-    .step {{ font-size:14px; font-weight:900; }}
-    h2 {{ margin:34px 0 12px; font-size:26px; line-height:1.05; }}
-    p,li {{ color:#475467; line-height:1.55; }}
-    ul {{ padding-left:18px; }}
-    .status {{ margin-top:auto; padding:9px 12px; width:max-content; border-radius:8px; font-weight:950; color:white; }}
-    .fail {{ background:var(--red); }} .pass {{ background:var(--green); color:var(--ink); }} .human {{ background:var(--violet); }}
-    .links {{ margin-top:32px; padding:24px; background:var(--ink); color:white; border-radius:18px; }}
-    .links a {{ color:var(--lime); margin-right:18px; font-weight:900; }}
-    @media(max-width:900px) {{ .flow {{ grid-template-columns:1fr 1fr; }} }}
-    @media(max-width:560px) {{ .flow {{ grid-template-columns:1fr; }} header {{ display:block; }} .overall {{ display:inline-block; margin-top:14px; }} }}
-  </style>
-</head>
-<body>
-  <main>
-    <header>
-      <div><div class="kicker">Goal Compiler / 需求编译器</div><h1>不润色 Prompt。<br>把模糊需求编译成可停止的执行。</h1></div>
-      <span class="overall">完整 Demo {html.escape(report['status'])}</span>
-    </header>
-    <section class="flow">
-      <article><span class="step">01 / ROUTER</span><h2>“给我做个 AI 网站，越快越好”</h2><p>路由为 website / 模糊想法 / 中风险 / 标准外部信息需求。</p><span class="status human">COMPILED</span></article>
-      <article><span class="step">02 / NEGATIVE GATE</span><h2>成功指标：“好看”</h2><ul>{error_items}</ul><span class="status fail">VALIDATOR FAIL</span></article>
-      <article><span class="step">03 / HUMAN PATCH</span><h2>60 分钟 · 1 页 · 1 CTA · 假设标记</h2><p>人工替换主观指标，明确测量方法、数字门槛和证据路径。</p><span class="status pass">VALIDATOR PASS</span></article>
-      <article><span class="step">04 / FIRST REAL OUTPUT</span><h2>真正生成页面，再跑 6 项结构检查</h2><p>无外部资产、无表单提交、无生产变更。产物和检查报告都可直接打开。</p><span class="status pass">EXECUTION PASS</span></article>
-    </section>
-    <nav class="links">
-      <a href="./01-invalid-draft/router.json">Router JSON</a>
-      <a href="./01-invalid-draft/validator.FAIL.log">FAIL log</a>
-      <a href="./human-metric-patch.json">Human patch</a>
-      <a href="./02-reviewed-contract/validator.PASS.log">PASS log</a>
-      <a href="./03-first-output/index.html">First output</a>
-      <a href="./03-first-output/execution-report.json">Execution report</a>
-    </nav>
-  </main>
-</body>
-</html>
-"""
+def inspect_artifact(contract: dict[str, Any], artifact_path: Path, content: str) -> dict[str, bool]:
+    first_step = contract["first_step"]
+    validators = first_step["validators"]
+    checks: dict[str, bool] = {}
+    for validator in validators:
+        if validator == "nonempty":
+            checks[validator] = artifact_path.is_file() and bool(content.strip())
+        elif validator == "html_single_h1":
+            checks[validator] = len(re.findall(r"<h1(?:\s|>)", content, flags=re.IGNORECASE)) == 1
+        elif validator == "html_primary_cta":
+            checks[validator] = len(re.findall(r'data-primary-cta="true"', content, flags=re.IGNORECASE)) == 1
+        elif validator == "assumption_label":
+            checks[validator] = "NOT A MARKET CLAIM" in content and "假设待验证" in content
+        elif validator == "no_external_urls":
+            checks[validator] = not bool(re.search(r'(?:src|href)="https?://', content, flags=re.IGNORECASE))
+        elif validator == "no_unresolved_template":
+            checks[validator] = "{{" not in content and "}}" not in content
+        elif validator == "python_syntax":
+            try:
+                compile(content, str(artifact_path), "exec")
+            except SyntaxError:
+                checks[validator] = False
+            else:
+                checks[validator] = True
+        elif validator == "regression_marker":
+            checks[validator] = "REGRESSION_FIXTURE" in content
+        elif validator == "markdown_heading":
+            checks[validator] = bool(re.search(r"^#\s+\S", content, flags=re.MULTILINE))
+        elif validator == "source_reference":
+            checks[validator] = "source_ids" in content or "来源" in content
+        else:
+            checks[f"unknown_validator:{validator}"] = False
+    acceptance = first_step.get("acceptance", {})
+    for term in acceptance.get("required_terms", []):
+        checks[f"required_term:{term}"] = str(term) in content
+    for term in acceptance.get("forbidden_terms", []):
+        checks[f"forbidden_term_absent:{term}"] = str(term).lower() not in content.lower()
+    return checks
 
 
 def execute_first_step(contract: dict[str, Any], output: Path) -> dict[str, Any]:
-    errors = validate_contract(contract, require_human_approval=True)
+    errors = validate_contract(contract, require_human_approval=True, require_evidence=True)
     if errors:
         raise CompilerError("contract failed strict validation:\n- " + "\n- ".join(errors))
+    first_step = contract["first_step"]
+    action = first_step["action"]
+    policy = ACTION_POLICIES[action]
     output_dir = prepare_new_directory(output)
-    page = output_dir / "index.html"
-    page.write_text(render_landing_page(contract), encoding="utf-8")
-    report = inspect_landing_page(page)
-    report["contract_id"] = contract["contract_id"]
-    report["action"] = contract["first_step"]["action"]
-    report["external_side_effects"] = []
-    write_json(output_dir / "execution-report.json", report)
+    artifact_name = Path(first_step["primary_artifact"]).name
+    artifact_path = output_dir / artifact_name
+    content = str(first_step["content_template"]).replace("{{CONTRACT_ID}}", str(contract["contract_id"]))
+    write_text(artifact_path, content, refuse_existing=True)
+    checks = inspect_artifact(contract, artifact_path, content)
+    report = {
+        "status": "PASS" if checks and all(checks.values()) else "FAIL",
+        "contract_id": contract["contract_id"],
+        "approved_payload_sha256": approved_payload_sha256(contract),
+        "approval_context": contract["human_review"].get("review_kind"),
+        "dispatch": {
+            "action": action,
+            "handler": policy["dispatch"],
+            "artifact_kind": policy["artifact_kind"],
+        },
+        "artifact": artifact_name,
+        "artifact_sha256": sha256_text(content),
+        "checks": checks,
+        "external_side_effects": [],
+    }
+    write_json(output_dir / "execution-report.json", report, refuse_existing=True)
     if report["status"] != "PASS":
-        raise CompilerError("first output failed deterministic checks")
+        raise CompilerError("dispatched artifact failed its approved checks")
     return report
 
 
-def human_review_template() -> dict[str, Any]:
-    return {
-        "decision": "pending",
-        "reviewer": "",
-        "reason": "把主观词改成可通过文件和检查报告验收的指标。",
-        "success_metric_override": measurable_metric(),
-    }
+def write_validation_log(directory: Path, report: dict[str, Any]) -> Path:
+    status = report["status"]
+    path = directory / f"validator.{status}.log"
+    lines = [f"VALIDATOR {status}"]
+    if status == "PASS":
+        lines.extend(("- contract identity: PASS", "- domain/action policy: PASS", "- metric/evidence correspondence: PASS", "- evidence precondition: PASS", "- human payload binding: PASS"))
+    else:
+        lines.extend(f"- {error}" for error in report["errors"])
+    write_text(path, "\n".join(lines) + "\n")
+    return path
 
 
-def write_compile_bundle(output: Path, request: str, proposed_metric: str | None = None) -> dict[str, Any]:
-    output_dir = prepare_new_directory(output)
-    contract = compile_contract(request, proposed_metric=proposed_metric)
-    (output_dir / "request.txt").write_text(request.strip() + "\n", encoding="utf-8")
-    write_json(output_dir / "router.json", contract["smart_router"])
-    write_json(output_dir / "goal-contract.json", contract)
-    (output_dir / "goal.md").write_text(render_goal(contract), encoding="utf-8")
-    write_json(output_dir / "human-review.template.json", human_review_template())
-    report = validation_report(contract, require_human_approval=True)
-    report["next_action"] = "edit human-review.template.json, set decision to approved, then run apply-review"
-    write_json(output_dir / "preflight-report.json", report)
-    return contract
+def _write_bundle(directory: Path, request: str, semantic: dict[str, Any], contract: dict[str, Any]) -> dict[str, Any]:
+    directory.mkdir(parents=True, exist_ok=False)
+    write_text(directory / "request.txt", normalized_request(request) + "\n")
+    write_json(directory / "semantic-input.snapshot.json", semantic)
+    write_json(directory / "router.json", contract["smart_router"])
+    write_json(directory / "strategy-gate.json", contract["strategy_gate"])
+    write_json(directory / "goal-contract.json", contract)
+    write_text(directory / "goal.md", render_goal(contract))
+    write_json(directory / "human-review.pending.json", pending_human_review_template(contract))
+    report = validation_report(contract, require_human_approval=True, require_evidence=True)
+    report["next_action"] = "complete evidence first when required, then have the human edit and approve human-review.pending.json"
+    write_json(directory / "preflight-report.json", report)
+    write_validation_log(directory, report)
+    return report
 
 
-def run_demo(output: Path, request_file: Path, review_file: Path) -> dict[str, Any]:
+def write_compile_bundle(
+    output: Path,
+    request: str,
+    semantic: dict[str, Any],
+    evidence_bundle: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    output_dir = output.expanduser().resolve()
+    if output_dir.exists():
+        raise CompilerError(f"output already exists; choose a new directory: {output_dir}")
+    contract = build_contract(request, semantic, evidence_bundle=evidence_bundle)
+    report = _write_bundle(output_dir, request, semantic, contract)
+    return contract, report
+
+
+def render_demo_walkthrough(report: dict[str, Any]) -> str:
+    agent_errors = report["agent_preflight"]["errors"]
+    evidence_errors = [error for error in agent_errors if "evidence_bundle" in error]
+    evidence_text = "<br>".join(html.escape(error) for error in evidence_errors[:2]) or "等待来源证据包"
+    return f"""<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Goal Compiler · Agent result to human pending</title>
+<style>
+:root{{--ink:#111827;--paper:#fffdf5;--lime:#d9ff57;--red:#ff5c5c;--amber:#ffbf47;--violet:#7557ff}}*{{box-sizing:border-box}}body{{margin:0;background:#ebe9e1;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"PingFang SC",sans-serif}}main{{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:40px 0 70px}}header{{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}}h1{{margin:10px 0 12px;font-size:clamp(40px,7vw,78px);line-height:.95;letter-spacing:-.06em}}.k{{color:var(--violet);font-weight:900;letter-spacing:.1em}}.overall{{padding:10px 14px;background:var(--amber);border:2px solid var(--ink);border-radius:999px;font-weight:950}}.flow{{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px}}article{{min-height:320px;display:flex;flex-direction:column;background:var(--paper);border:2px solid var(--ink);border-radius:20px;padding:24px;box-shadow:6px 6px 0 var(--ink)}}.step{{font-size:14px;font-weight:900}}h2{{margin:34px 0 12px;font-size:26px;line-height:1.08}}p{{color:#475467;line-height:1.55}}.status{{margin-top:auto;padding:9px 12px;width:max-content;border-radius:8px;font-weight:950}}.agent{{background:var(--violet);color:white}}.fail{{background:var(--red);color:white}}.pending{{background:var(--amber)}}.links{{margin-top:32px;padding:24px;background:var(--ink);color:white;border-radius:18px}}.links a{{color:var(--lime);margin-right:18px;font-weight:900}}@media(max-width:900px){{.flow{{grid-template-columns:1fr 1fr}}}}@media(max-width:560px){{.flow{{grid-template-columns:1fr}}header{{display:block}}}}
+</style></head><body><main><header><div><div class="k">GOAL COMPILER / AUDIT-CORRECT DEMO</div><h1>Agent 负责语义。<br>证据先到，人再批准。</h1></div><span class="overall">{html.escape(report['status'])}</span></header>
+<section class="flow">
+<article><span class="step">01 / SEMANTIC INPUT</span><h2>完整 Agent 结果进入 CLI</h2><p>Router、Strategy、Metric、反证、Kill criteria、工具/证据门禁与任务专属验收一次传入。</p><span class="status agent">AGENT_RESULT</span></article>
+<article><span class="step">02 / STRICT METRIC</span><h2>“好看”仍然会被拒绝</h2><p>主观 statement、主观 method、空 threshold 都只能写 FAIL.log，不会写 PASS.log。</p><span class="status fail">VALIDATOR FAIL</span></article>
+<article><span class="step">03 / EVIDENCE PRECONDITION</span><h2>研究型任务不能跳过来源</h2><p>{evidence_text}</p><span class="status pending">EVIDENCE PENDING</span></article>
+<article><span class="step">04 / HUMAN APPROVAL</span><h2>精确指标和执行 payload 留给人</h2><p>人工审批后写入 approved_payload_sha256；任一执行字段被篡改，validate/execute 都拒绝。</p><span class="status pending">HUMAN PENDING</span></article>
+</section><nav class="links"><a href="./01-agent-result/semantic-input.snapshot.json">Agent semantic JSON</a><a href="./01-agent-result/validator.FAIL.log">Preflight FAIL</a><a href="./02-subjective-metric/validator.FAIL.log">Metric FAIL</a><a href="./03-human-pending/human-review.pending.json">Human pending</a></nav>
+</main></body></html>"""
+
+
+def run_demo(output: Path, request_file: Path, semantic_file: Path) -> dict[str, Any]:
     output_dir = prepare_new_directory(output)
     request = request_file.read_text(encoding="utf-8").strip()
-    review = load_json(review_file)
+    semantic = load_semantic_input(semantic_file)
+    agent_contract = build_contract(request, semantic)
+    agent_report = _write_bundle(output_dir / "01-agent-result", request, semantic, agent_contract)
 
-    invalid_dir = output_dir / "01-invalid-draft"
-    invalid_dir.mkdir()
-    invalid_contract = compile_contract(request, proposed_metric="好看")
-    write_json(invalid_dir / "goal-contract.json", invalid_contract)
-    write_json(invalid_dir / "router.json", invalid_contract["smart_router"])
-    write_json(invalid_dir / "strategy-gate.json", invalid_contract["strategy_gate"])
-    (invalid_dir / "goal.md").write_text(render_goal(invalid_contract), encoding="utf-8")
-    invalid_report = validation_report(invalid_contract, require_human_approval=True)
-    write_json(invalid_dir / "validation-report.json", invalid_report)
-    (invalid_dir / "validator.FAIL.log").write_text(
-        "VALIDATOR FAIL\n" + "\n".join(f"- {error}" for error in invalid_report["errors"]) + "\n",
-        encoding="utf-8",
-    )
+    negative_semantic = copy.deepcopy(semantic)
+    metric = negative_semantic["strategy_gate"]["success_metrics"][0]
+    metric["statement"] = "看起来足够好看"
+    metric["measurement"] = {"method": "主观感受", "target": {}}
+    negative_contract = build_contract(request, negative_semantic)
+    negative_dir = output_dir / "02-subjective-metric"
+    negative_report = _write_bundle(negative_dir, request, negative_semantic, negative_contract)
 
-    reviewed_dir = output_dir / "02-reviewed-contract"
-    reviewed_dir.mkdir()
-    reviewed_contract = apply_human_review(invalid_contract, review)
-    write_json(output_dir / "human-metric-patch.json", review)
-    write_json(reviewed_dir / "goal-contract.json", reviewed_contract)
-    write_json(reviewed_dir / "strategy-gate.json", reviewed_contract["strategy_gate"])
-    (reviewed_dir / "goal.md").write_text(render_goal(reviewed_contract), encoding="utf-8")
-    reviewed_report = validation_report(reviewed_contract, require_human_approval=True)
-    write_json(reviewed_dir / "validation-report.json", reviewed_report)
-    (reviewed_dir / "validator.PASS.log").write_text(
-        "VALIDATOR PASS\n- contract schema: PASS\n- measurable success metric: PASS\n"
-        "- disconfirming evidence: PASS\n- kill criteria: PASS\n- tool/evidence gate: PASS\n"
-        "- human sign-off: PASS\n",
-        encoding="utf-8",
-    )
+    pending_dir = output_dir / "03-human-pending"
+    pending_dir.mkdir()
+    pending_review = pending_human_review_template(agent_contract)
+    write_json(pending_dir / "human-review.pending.json", pending_review)
+    write_text(pending_dir / "NOTICE.md", "# Human approval pending\n\n此记录未经真人批准，不得用于 execute。\n")
 
-    execution = execute_first_step(reviewed_contract, output_dir / "03-first-output")
-    demo_status = (
-        "PASS"
-        if invalid_report["status"] == "FAIL"
-        and reviewed_report["status"] == "PASS"
-        and execution["status"] == "PASS"
-        else "FAIL"
+    expected = (
+        agent_report["status"] == "FAIL"
+        and negative_report["status"] == "FAIL"
+        and any("vague wording" in error or "subjective method" in error for error in negative_report["errors"])
+        and pending_review["decision"] == "pending"
+        and not (negative_dir / "validator.PASS.log").exists()
     )
-    demo_report = {
-        "status": demo_status,
+    report = {
+        "status": "HUMAN_PENDING" if expected else "FAIL",
+        "liveAiClaimed": False,
         "request": request,
-        "negative_gate": invalid_report,
-        "human_review": reviewed_contract["human_review"],
-        "positive_gate": reviewed_report,
-        "first_step_execution": execution,
+        "agent_preflight": agent_report,
+        "subjective_metric_gate": negative_report,
+        "human_review": {"decision": "pending", "record": "03-human-pending/human-review.pending.json"},
+        "execution": {"attempted": False, "reason": "evidence and exact human approval are pending"},
     }
-    write_json(output_dir / "demo-report.json", demo_report)
-    (output_dir / "request.txt").write_text(request + "\n", encoding="utf-8")
-    (output_dir / "walkthrough.html").write_text(render_demo_walkthrough(demo_report), encoding="utf-8")
-    (output_dir / "DEMO_RESULT.md").write_text(
-        "\n".join(
-            (
-                "# Goal Compiler Demo Result",
-                "",
-                f"- Overall: **{demo_status}**",
-                f"- Initial vague metric: **{invalid_report['status']}** ({invalid_report['error_count']} errors)",
-                f"- Human-reviewed contract: **{reviewed_report['status']}**",
-                f"- First real output: **{execution['status']}**",
-                "- Artifact: `03-first-output/index.html`",
-                "- Check evidence: `03-first-output/execution-report.json`",
-                "",
-            )
-        ),
-        encoding="utf-8",
+    write_json(output_dir / "demo-report.json", report)
+    write_text(output_dir / "walkthrough.html", render_demo_walkthrough(report))
+    write_text(
+        output_dir / "DEMO_RESULT.md",
+        "# Goal Compiler Demo Result\n\n"
+        f"- Overall: **{report['status']}**\n"
+        f"- Agent semantic contract: **{agent_report['status']}** until evidence/human approval\n"
+        f"- Subjective metric fixture: **{negative_report['status']}**\n"
+        "- Human review: **PENDING**\n"
+        "- Execution attempted: **NO**\n",
     )
-    return demo_report
+    return report
 
 
 def command_compile(args: argparse.Namespace) -> int:
     request = args.request or Path(args.request_file).read_text(encoding="utf-8")
-    contract = write_compile_bundle(Path(args.output), request, proposed_metric=args.metric)
-    print(f"Compiled {contract['contract_id']} -> {Path(args.output).resolve()}")
-    print("Status: PENDING HUMAN SIGN-OFF")
+    semantic = load_semantic_input(Path(args.semantic_input))
+    evidence = load_json(Path(args.evidence_input)) if args.evidence_input else None
+    contract, report = write_compile_bundle(Path(args.output), request, semantic, evidence_bundle=evidence)
+    print(f"Compiled {contract['contract_id']} from semantic input -> {Path(args.output).resolve()}")
+    print(f"Preflight: {report['status']} / HUMAN SIGN-OFF PENDING")
     return 0
 
 
 def command_validate(args: argparse.Namespace) -> int:
     contract = load_json(Path(args.contract))
-    report = validation_report(contract, require_human_approval=not args.allow_pending_review)
+    report = validation_report(
+        contract,
+        require_human_approval=not args.allow_pending_review,
+        require_evidence=not args.allow_missing_evidence,
+    )
     if args.report:
-        write_json(Path(args.report), report)
+        write_json(Path(args.report), report, refuse_existing=True)
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0 if report["status"] == "PASS" else 1
+
+
+def command_attach_evidence(args: argparse.Namespace) -> int:
+    contract = load_json(Path(args.contract))
+    evidence = load_json(Path(args.evidence))
+    updated = attach_evidence(contract, evidence)
+    write_json(Path(args.output), updated, refuse_existing=True)
+    report = validation_report(updated, require_human_approval=False, require_evidence=True)
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 0 if not _evidence_errors(updated) else 1
 
 
 def command_apply_review(args: argparse.Namespace) -> int:
     contract = load_json(Path(args.contract))
     review = load_json(Path(args.review))
-    reviewed = apply_human_review(contract, review)
-    errors = validate_contract(reviewed, require_human_approval=True)
-    write_json(Path(args.output), reviewed)
-    if errors:
-        print("Review applied, but strict validation failed:", file=sys.stderr)
-        for error in errors:
-            print(f"- {error}", file=sys.stderr)
-        return 1
-    print(f"Human review applied; strict validation PASS -> {Path(args.output).resolve()}")
+    evidence = load_json(Path(args.evidence)) if args.evidence else None
+    reviewed = apply_human_review(contract, review, evidence_bundle=evidence)
+    write_json(Path(args.output), reviewed, refuse_existing=True)
+    context = reviewed["human_review"]["review_kind"]
+    label = "Human approval" if context == "human" else "Synthetic test approval (not human)"
+    print(f"{label} bound to payload {reviewed['human_review']['approved_payload_sha256']} -> {Path(args.output).resolve()}")
     return 0
 
 
@@ -754,53 +1256,58 @@ def command_execute(args: argparse.Namespace) -> int:
 
 
 def command_demo(args: argparse.Namespace) -> int:
-    report = run_demo(Path(args.output), Path(args.request_file), Path(args.review_file))
-    print("模糊指标 `好看`: FAIL (expected)")
-    print("人工改为可测量指标: PASS")
-    print("第一个真实页面与检查: PASS")
+    report = run_demo(Path(args.output), Path(args.request_file), Path(args.semantic_input))
+    print("Agent semantic result: RECORDED")
+    print("Subjective metric: FAIL (expected)")
+    print("Evidence: PENDING")
+    print("Human approval: PENDING")
+    print("Execution: NOT ATTEMPTED")
     print(f"Demo -> {Path(args.output).resolve()}")
-    return 0 if report["status"] == "PASS" else 1
+    return 0 if report["status"] == "HUMAN_PENDING" else 1
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Compile vague intent into a reviewable goal contract and execute its first safe step."
-    )
+    parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    compile_parser = subparsers.add_parser("compile", help="compile a request into a draft bundle")
+    compile_parser = subparsers.add_parser("compile", help="compile a request plus complete Agent semantic JSON")
     request_group = compile_parser.add_mutually_exclusive_group(required=True)
-    request_group.add_argument("--request", help="request text")
-    request_group.add_argument("--request-file", help="UTF-8 request file")
-    compile_parser.add_argument("--metric", help="optional human-proposed metric; vague text will fail strict validation")
+    request_group.add_argument("--request")
+    request_group.add_argument("--request-file")
+    compile_parser.add_argument("--semantic-input", required=True, help="complete Agent/Skill semantic result JSON")
+    compile_parser.add_argument("--evidence-input", help="optional evidence bundle JSON collected before human review")
     compile_parser.add_argument("--output", required=True, help="new output directory")
     compile_parser.set_defaults(handler=command_compile)
 
-    validate_parser = subparsers.add_parser("validate", help="strictly validate a goal contract")
-    validate_parser.add_argument("contract", help="goal-contract.json path")
-    validate_parser.add_argument("--report", help="optional JSON report path")
-    validate_parser.add_argument(
-        "--allow-pending-review",
-        action="store_true",
-        help="validate structure without requiring human approval",
-    )
+    validate_parser = subparsers.add_parser("validate", help="validate identity, domain, evidence, approval hash, and action")
+    validate_parser.add_argument("contract")
+    validate_parser.add_argument("--report", help="new JSON report path")
+    validate_parser.add_argument("--allow-pending-review", action="store_true")
+    validate_parser.add_argument("--allow-missing-evidence", action="store_true")
     validate_parser.set_defaults(handler=command_validate)
 
-    review_parser = subparsers.add_parser("apply-review", help="apply a human review to a draft contract")
-    review_parser.add_argument("contract", help="draft goal-contract.json path")
-    review_parser.add_argument("--review", required=True, help="human review JSON path")
-    review_parser.add_argument("--output", required=True, help="reviewed contract JSON path")
+    evidence_parser = subparsers.add_parser("attach-evidence", help="attach evidence before human approval")
+    evidence_parser.add_argument("contract")
+    evidence_parser.add_argument("--evidence", required=True)
+    evidence_parser.add_argument("--output", required=True, help="new contract JSON path")
+    evidence_parser.set_defaults(handler=command_attach_evidence)
+
+    review_parser = subparsers.add_parser("apply-review", help="bind an exact human approval to the execution payload")
+    review_parser.add_argument("contract")
+    review_parser.add_argument("--review", required=True)
+    review_parser.add_argument("--evidence", help="optional evidence bundle to attach before approval")
+    review_parser.add_argument("--output", required=True, help="new reviewed contract JSON path")
     review_parser.set_defaults(handler=command_apply_review)
 
-    execute_parser = subparsers.add_parser("execute", help="execute the first safe step of an approved contract")
-    execute_parser.add_argument("contract", help="approved goal-contract.json path")
+    execute_parser = subparsers.add_parser("execute", help="dispatch one whitelisted first step from an approved contract")
+    execute_parser.add_argument("contract")
     execute_parser.add_argument("--output", required=True, help="new output directory")
     execute_parser.set_defaults(handler=command_execute)
 
-    demo_parser = subparsers.add_parser("demo", help="run the reproducible failure-review-pass-execute demo")
+    demo_parser = subparsers.add_parser("demo", help="create an honest agent-result/evidence/human-pending demo")
     demo_parser.add_argument("--output", required=True, help="new output directory")
     demo_parser.add_argument("--request-file", default=str(DEFAULT_DEMO_REQUEST))
-    demo_parser.add_argument("--review-file", default=str(DEFAULT_DEMO_REVIEW))
+    demo_parser.add_argument("--semantic-input", default=str(DEFAULT_DEMO_SEMANTIC))
     demo_parser.set_defaults(handler=command_demo)
     return parser
 
@@ -810,7 +1317,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         return int(args.handler(args))
-    except (CompilerError, OSError, KeyError) as exc:
+    except (CompilerError, OSError, KeyError, StopIteration) as exc:
         print(f"goal-compiler: {exc}", file=sys.stderr)
         return 2
 

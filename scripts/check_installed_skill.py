@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 
-MIN_VERSION = (0, 12, 0)
+MIN_VERSION = (0, 13, 0)
 DEFAULT_SKILL_DIR = Path.home() / ".agents" / "skills" / "xiaowei-goal"
 
 REQUIRED_SKILL_PATTERNS = {
@@ -41,7 +41,7 @@ REQUIRED_SKILL_PATTERNS = {
     ],
     "compiler runtime": [
         r"compiler-runtime\.md|goal_compiler\.py|Executable Contract Mode",
-        r"PENDING HUMAN SIGN-OFF|APPROVED BY HUMAN",
+        r"semantic.input|approved_payload_sha256|PENDING HUMAN SIGN-OFF",
     ],
     "xiaowei preferences": [
         r"xiaowei-preferences\.md|偏好应用",
@@ -124,7 +124,7 @@ def main(argv: list[str]) -> int:
             if version is None:
                 errors.append(f"{manifest_file}: missing semver `version`")
             elif version < MIN_VERSION:
-                errors.append(f"{manifest_file}: version {manifest.get('version')} is older than 0.12.0")
+                errors.append(f"{manifest_file}: version {manifest.get('version')} is older than 0.13.0")
     else:
         warnings.append(f"{manifest_file}: missing manifest.json, checked SKILL.md markers only")
 

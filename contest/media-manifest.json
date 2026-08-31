@@ -3,17 +3,18 @@
   "targetDurationSeconds": 70,
   "primaryWalkthrough": "demo-output/walkthrough.html",
   "staticBoard": "goal-compiler-board-1920x1080.png",
+  "demoStatus": "HUMAN_PENDING",
   "shots": [
-    {"start": 0, "end": 7, "artifact": "demo-output/walkthrough.html"},
-    {"start": 7, "end": 15, "artifact": "demo-output/01-invalid-draft/router.json"},
-    {"start": 15, "end": 25, "artifact": "demo-output/01-invalid-draft/strategy-gate.json"},
-    {"start": 25, "end": 34, "artifact": "demo-output/01-invalid-draft/validator.FAIL.log"},
-    {"start": 34, "end": 45, "artifact": "demo-output/human-metric-patch.json"},
-    {"start": 45, "end": 52, "artifact": "demo-output/02-reviewed-contract/validator.PASS.log"},
-    {"start": 52, "end": 64, "artifact": "demo-output/03-first-output/index.html"},
-    {"start": 64, "end": 70, "artifact": "demo-output/03-first-output/execution-report.json"}
+    {"start": 0, "end": 7, "artifact": "goal-compiler-board-1920x1080.png"},
+    {"start": 7, "end": 16, "artifact": "demo-output/01-agent-result/semantic-input.snapshot.json"},
+    {"start": 16, "end": 26, "artifact": "demo-output/01-agent-result/strategy-gate.json"},
+    {"start": 26, "end": 38, "artifact": "demo-output/01-agent-result/validator.FAIL.log"},
+    {"start": 38, "end": 48, "artifact": "demo-output/02-subjective-metric/validator.FAIL.log"},
+    {"start": 48, "end": 59, "artifact": "demo-output/03-human-pending/human-review.pending.json"},
+    {"start": 59, "end": 70, "artifact": "../tests/test_goal_compiler.py"}
   ],
   "audioIncluded": false,
   "externalAssetsIncluded": false,
-  "liveAiClaimed": false
+  "liveAiClaimed": false,
+  "executionClaimed": false
 }

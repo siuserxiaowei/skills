@@ -1,0 +1,28 @@
+{
+  "acknowledgements": {
+    "action_reviewed": false,
+    "evidence_reviewed": false,
+    "execution_scope_reviewed": false,
+    "metric_reviewed": false
+  },
+  "agent_proposed_metric": {
+    "evidence_path": "first-output/execution-report.json",
+    "id": "csv-empty-line-regression",
+    "measurement": {
+      "method": "Python 语法与回归夹具检查",
+      "target": {
+        "min_python_files": 1,
+        "regression_case_required": true,
+        "syntax_valid": true
+      }
+    },
+    "statement": "生成 1 个语法有效的 Python 回归夹具，并包含 1 个针对 CSV 空行的回归用例。"
+  },
+  "decision": "pending",
+  "metric_id": "csv-empty-line-regression",
+  "notice": "这是待人工填写的记录模板，不是已审批证明。",
+  "reason": "",
+  "record_type": "pending_human_review_example",
+  "reviewer": "",
+  "success_metric_override": null
+}

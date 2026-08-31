@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Goal Compiler 把模糊需求编译成可测量、可反证、有人审、能执行第一步的目标契约。">
+  <meta name="description" content="Goal Compiler 分离 Agent 语义、真人决策与 CLI 确定性门禁，把模糊需求编译成可测量、可反证、可停止的契约。">
   <title>Goal Compiler｜需求编译器</title>
   <style>
-    :root { --ink:#101828; --muted:#667085; --paper:#fffdf6; --lime:#d9ff57; --violet:#7557ff; --line:#d0d5dd; }
+    :root { --ink:#101828; --muted:#667085; --paper:#fffdf6; --lime:#d9ff57; --violet:#7557ff; --red:#ff5c5c; --amber:#ffbf47; --line:#d0d5dd; }
     * { box-sizing:border-box; }
     html { scroll-behavior:smooth; }
     body { margin:0; background:#efeee8; color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"PingFang SC",sans-serif; }
@@ -23,18 +23,19 @@
     .actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:30px; }
     .button { padding:14px 18px; border:2px solid var(--ink); border-radius:12px; background:var(--violet); color:white; box-shadow:4px 4px 0 var(--ink); font-weight:950; text-decoration:none; }
     .button.alt { background:var(--lime); color:var(--ink); }
-    .aside-number { font-size:80px; line-height:.9; font-weight:950; letter-spacing:-.08em; }
-    .aside-copy { margin-top:16px; color:var(--muted); line-height:1.6; }
+    .aside-number { font-size:clamp(50px,6vw,76px); line-height:.9; font-weight:950; letter-spacing:-.07em; }
+    .aside-copy { margin-top:20px; color:var(--muted); line-height:1.6; }
     .flow { margin-top:38px; display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
-    .step { min-height:270px; display:flex; flex-direction:column; padding:22px; background:white; border:1px solid var(--line); border-radius:18px; }
+    .step { min-height:292px; display:flex; flex-direction:column; padding:22px; background:white; border:1px solid var(--line); border-radius:18px; }
     .step small { color:var(--violet); font-weight:950; }
     .step h2 { margin:36px 0 12px; font-size:25px; letter-spacing:-.035em; }
     .step p { color:var(--muted); line-height:1.55; }
-    .state { margin-top:auto; width:max-content; padding:7px 10px; border-radius:7px; background:var(--ink); color:white; font-size:12px; font-weight:950; }
-    .state.fail { background:#ff5c5c; } .state.pass { background:#2dd4a7; color:var(--ink); }
+    .state { margin-top:auto; width:max-content; padding:7px 10px; border-radius:7px; background:var(--violet); color:white; font-size:12px; font-weight:950; }
+    .state.fail { background:var(--red); } .state.pending { background:var(--amber); color:var(--ink); }
     .evidence { margin-top:38px; display:grid; grid-template-columns:.7fr 1.3fr; gap:18px; align-items:start; }
     .terminal { margin:0; overflow:auto; padding:24px; border-radius:18px; background:var(--ink); color:#e6edf3; font:14px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; }
     .terminal .green { color:var(--lime); }
+    .boundary { margin-top:34px; padding:24px; border-radius:18px; background:white; border:1px solid var(--line); color:var(--muted); line-height:1.65; }
     .archive { margin-top:34px; padding:24px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; }
     .archive a { margin-right:14px; }
     @media(max-width:900px) { .hero,.evidence { grid-template-columns:1fr; } .flow { grid-template-columns:1fr 1fr; } }
@@ -50,42 +51,46 @@
 
     <section class="hero">
       <div class="panel">
-        <div class="kicker">VibeWork · Executable Agent Skill</div>
-        <h1>不润色 Prompt。<br>把模糊需求编译成可停止的执行。</h1>
-        <p class="lead">Smart Router、Strategy Gate、可测量指标、反证、kill criteria、工具/证据门禁、人工签字，以及一个真正生成出来的第一步。</p>
+        <div class="kicker">VibeWork · Agent semantics + deterministic gates</div>
+        <h1>不润色 Prompt。<br>把模糊需求编译成可停止的契约。</h1>
+        <p class="lead">Agent/Skill 生成语义，真人负责精确指标与审批，CLI 负责来源、哈希、领域一致性与白名单门禁。</p>
         <div class="actions">
-          <a class="button" href="./demo/walkthrough.html">打开完整 Demo →</a>
+          <a class="button" href="./demo/walkthrough.html">打开录制 Demo →</a>
           <a class="button alt" href="https://github.com/siuserxiaowei/xiaowei-goal">查看源码与测试</a>
         </div>
       </div>
       <aside class="panel">
-        <div class="aside-number">FAIL<br>→<br>PASS</div>
-        <p class="aside-copy">“好看”不能执行。人把它改成 60 分钟、1 个页面、1 个 CTA 和假设标记之后，validator 才允许生成真实页面。</p>
+        <div class="aside-number">FAIL<br>→<br>HUMAN<br>PENDING</div>
+        <p class="aside-copy">固定 Demo 不伪造来源、不伪造真人签字、不写假 PASS，因此不执行第一步。</p>
       </aside>
     </section>
 
     <section class="flow" id="mechanism">
-      <article class="step"><small>01 / COMPILE</small><h2>判断任务，不隐藏默认值</h2><p>把一句话拆成类型、成熟度、风险、外部信息需求、策略与最小验证。</p><span class="state">ROUTED</span></article>
-      <article class="step"><small>02 / NEGATIVE GATE</small><h2>主观指标真实失败</h2><p>没有数字或布尔阈值、证据路径和人工签字，CLI 返回非零退出码。</p><span class="state fail">VALIDATOR FAIL</span></article>
-      <article class="step"><small>03 / HUMAN REVIEW</small><h2>人负责定义“够好”</h2><p>修改指标、说明原因、记录 changed fields，并明确批准执行。</p><span class="state pass">STRICT PASS</span></article>
-      <article class="step"><small>04 / EXECUTE</small><h2>交付第一个真实产物</h2><p>只执行批准的安全第一步，输出 HTML 和六项机器检查报告。</p><span class="state pass">EXECUTED</span></article>
+      <article class="step"><small>01 / AGENT RESULT</small><h2>完整语义进入 CLI</h2><p>Router、策略、指标、反证、终止条件与领域专属第一步一次传入。</p><span class="state">AGENT RESULT</span></article>
+      <article class="step"><small>02 / METRIC GATE</small><h2>主观语句和方法都失败</h2><p>“看起来足够好看”和“主观感受”只会产生 FAIL.log。</p><span class="state fail">VALIDATOR FAIL</span></article>
+      <article class="step"><small>03 / EVIDENCE</small><h2>研究来源不能跳过</h2><p>缺 sources 与 source-backed claims 时，审批和执行都被阻断。</p><span class="state pending">EVIDENCE PENDING</span></article>
+      <article class="step"><small>04 / HUMAN</small><h2>人负责定义“够好”</h2><p>精确指标、证据认可与执行范围必须真实审批；本次未签字、未执行。</p><span class="state pending">HUMAN PENDING</span></article>
     </section>
 
     <section class="evidence" id="evidence">
       <div>
         <div class="kicker">Reproducible evidence</div>
-        <h2>一条命令，重放完整证据链。</h2>
-        <p class="lead">固定 Demo 不冒充实时模型调用。Agent/Skill 负责语义判断，人负责审批，CLI 负责确定性门禁。</p>
+        <h2>一条命令，重放诚实的门禁证据。</h2>
+        <p class="lead">固定 fixture 是 <code>liveAiClaimed:false</code>。真实 Agent forward-test 单独保留 transcript，仍然是 human pending。</p>
       </div>
       <pre class="terminal"><span class="green">$</span> python3 scripts/goal_compiler.py demo \
     --output /tmp/goal-compiler-demo
 
-模糊指标 `好看`: FAIL (expected)
-人工改为可测量指标: PASS
-第一个真实页面与检查: PASS
+Agent semantic result: RECORDED
+Subjective metric: FAIL (expected)
+Evidence: PENDING
+Human approval: PENDING
+Execution: NOT ATTEMPTED
 
-<span class="green">6/6 deterministic checks passed</span></pre>
+<span class="green">liveAiClaimed:false · no PASS.log · no execution</span></pre>
     </section>
+
+    <section class="boundary"><strong>审批防篡改：</strong>真人批准时，请求、语义、router、策略、证据、指标、动作、产物、内容和检查会一起绑定为 <code>approved_payload_sha256</code>。审批后任一篡改都会使 validate / execute 失败。</section>
 
     <footer class="archive">
       历史报告：

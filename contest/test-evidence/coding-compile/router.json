@@ -1,0 +1,9 @@
+{
+  "ask_questions_first": false,
+  "external_information_need": "不需要",
+  "maturity": "明确缺陷",
+  "output_length": "短版",
+  "risk_level": "低",
+  "routing_reason": "请求指定了 CSV parser、空行崩溃与回归测试，可用本地最小夹具直接验证。",
+  "task_type": "coding"
+}

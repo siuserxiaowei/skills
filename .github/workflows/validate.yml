@@ -37,8 +37,10 @@ jobs:
       - name: Run reproducible Goal Compiler demo
         run: |
           python3 scripts/goal_compiler.py demo --output /tmp/goal-compiler-demo
-          python3 scripts/validate_xiaowei_goal.py /tmp/goal-compiler-demo/02-reviewed-contract/goal.md
-          python3 scripts/evaluate_goal_output.py /tmp/goal-compiler-demo/02-reviewed-contract/goal.md
+          python3 scripts/validate_xiaowei_goal.py /tmp/goal-compiler-demo/01-agent-result/goal.md
+          python3 scripts/evaluate_goal_output.py /tmp/goal-compiler-demo/01-agent-result/goal.md
+          test ! -e /tmp/goal-compiler-demo/03-first-output
+          test -z "$(find /tmp/goal-compiler-demo -name 'validator.PASS.log' -print -quit)"
 
       - name: Validate committed contest evidence
         run: python3 scripts/validate_contest_pack.py

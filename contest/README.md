@@ -1,6 +1,6 @@
 # Goal Compiler Contest Pack
 
-Product name: **Goal Compiler｜需求编译器**
+Product: **Goal Compiler｜需求编译器**
 
 Track: **VibeWork**
 
@@ -10,21 +10,20 @@ Live page: https://siuserxiaowei.github.io/xiaowei-goal/
 
 ## One-sentence product
 
-It compiles a vague request into a machine-readable goal with measurable
-success, disconfirming evidence, kill criteria, tool/evidence gates, human
-sign-off, and a real first safe output.
+Agent/Skill turns a vague request into task-specific semantics; a human owns
+the exact metric and approval; a deterministic CLI enforces sources, identity,
+approval binding, and one whitelisted first-step dispatch.
 
-## Proven demo chain
+## Recorded demo chain
 
 ```text
 “给我做个 AI 网站，越快越好”
+  → complete recorded semantic fixture (`liveAiClaimed:false`)
   → router.json + strategy-gate.json
-  → subjective metric “好看”
-  → validator.FAIL.log
-  → human-metric-patch.json
-  → validator.PASS.log
-  → first-output/index.html
-  → execution-report.json
+  → research evidence missing → validator.FAIL.log
+  → subjective metric variant → validator.FAIL.log
+  → exact metric + execution approval → HUMAN PENDING
+  → execution not attempted
 ```
 
 Reproduce it:
@@ -34,47 +33,58 @@ python3 scripts/goal_compiler.py demo --output /tmp/goal-compiler-demo
 open /tmp/goal-compiler-demo/walkthrough.html
 ```
 
-The command refuses to overwrite an existing output directory.
+The command refuses an existing output directory. It writes no `PASS.log` and
+does not pretend that a fixture is a human signature or live model call.
 
 ## Artifact index
 
-- `demo-output/walkthrough.html`: single-page, video-ready overview.
-- `demo-output/01-invalid-draft/router.json`: task type, maturity, risk, and external-information route.
-- `demo-output/01-invalid-draft/strategy-gate.json`: invalid contract state with metric `好看`.
-- `demo-output/01-invalid-draft/validator.FAIL.log`: actual negative-gate log.
-- `demo-output/human-metric-patch.json`: explicit human change and approval.
-- `demo-output/02-reviewed-contract/strategy-gate.json`: corrected measurable gate.
-- `demo-output/02-reviewed-contract/validator.PASS.log`: actual pass log.
-- `demo-output/02-reviewed-contract/goal.md`: executable human-readable goal.
-- `demo-output/03-first-output/index.html`: real first output.
-- `demo-output/03-first-output/execution-report.json`: six deterministic checks.
-- `demo-output/demo-report.json`: whole-chain machine report.
+- `demo-output/walkthrough.html`: video-ready four-state walkthrough.
+- `demo-output/01-agent-result/semantic-input.snapshot.json`: complete recorded
+  semantic payload supplied to the CLI.
+- `demo-output/01-agent-result/router.json`: task, maturity, risk, and evidence
+  route.
+- `demo-output/01-agent-result/strategy-gate.json`: metric, counter-evidence,
+  and kill criteria.
+- `demo-output/01-agent-result/validator.FAIL.log`: actual source + human gate
+  failure.
+- `demo-output/02-subjective-metric/validator.FAIL.log`: actual objective-metric
+  failure.
+- `demo-output/03-human-pending/human-review.pending.json`: editable form, not a
+  signature.
+- `demo-output/demo-report.json`: machine-readable status and provenance.
+- `demo-fixtures/website-first-output.html`: proposed page content bound into
+  the semantic payload; it is not claimed as executed in the fixed demo.
+- `forward-test/transcript.md` and `forward-test/semantic-result.json`: preserved
+  Agent forward-test result, still `human_pending`.
+- `test-evidence/coding-first-output/`: real deterministic CLI dispatch under a
+  `synthetic_test` approval that is accepted only for `test_fixture` contracts;
+  it proves cross-domain behavior, not real human approval or a production fix.
+- `goal-compiler-board-1920x1080.png`: 16:9 overview board.
 
-## AI, human, and CLI boundary
+## Three-layer boundary
 
-- Agent/Skill: semantic compilation, default assumptions, routing, strategy,
-  counter-evidence, and tool choice.
-- Human: changes the subjective metric and explicitly approves the contract.
-- CLI: deterministic serialization, validation, exit codes, safe execution, and
-  evidence files.
+- **Agent/Skill:** semantic compilation and default assumptions. A real Agent
+  run must preserve its transcript; deterministic fixtures say so explicitly.
+- **Human:** source review, exact metric edits, and explicit execution approval.
+  The repository does not sign on the reviewer's behalf.
+- **CLI validator/executor:** deterministic identity, source and payload-hash
+  gates; task/action/artifact/check whitelist; refuse-existing writes.
 
-The bundled fixed fixture is not presented as a live model call. Its metadata
-sets `liveAiClaimed` to `false`. Use `forward-test-prompt.txt` for an independent
-Codex/Claude invocation of the Skill, and preserve that run's own transcript if
-it is shown in the final video.
+Cross-domain regressions prove that a coding request cannot inherit CTA,
+`15-25 个候选来源`, IdeaSignal, or the website action. The coding test
+dispatches a Python regression fixture and records the actual handler/checks.
 
 ## Originality boundary
 
-The submission claims the concrete implementation and combined mechanism, not
-the invention of goals, prompts, strategy gates, human review, validators, or
-compiler metaphors. See `../PROVENANCE.md`, `../SOURCES.md`, and
-`../THIRD_PARTY_NOTICES.md`.
+The submission claims its concrete implementation and this combined mechanism,
+not the invention of goals, prompts, strategy gates, human review, validators,
+or compiler metaphors. See `../PROVENANCE.md`, `../SOURCES.md`,
+`../THIRD_PARTY_NOTICES.md`, and `../ASSET_RIGHTS.csv`.
 
 ## Submission assets
 
 - `weibo-copy.md`: posting draft.
-- `demo-script.md`: 70-second voiceover and exact artifact sequence.
+- `demo-script.md`: 70-second voiceover.
 - `shot-list.md`: capture checklist.
-- `media-manifest.json`: machine-readable media plan.
+- `media-manifest.json`: machine-readable edit plan.
 - `submission.json`: factual claims and provenance flags.
-- `goal-compiler-board-1920x1080.png`: ready-to-use 16:9 overview board.

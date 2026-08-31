@@ -1,21 +1,24 @@
 {
   "productName": "Goal Compiler｜需求编译器",
+  "version": "0.13.0",
   "track": "VibeWork",
   "repository": "https://github.com/siuserxiaowei/xiaowei-goal",
   "livePage": "https://siuserxiaowei.github.io/xiaowei-goal/",
   "demoInput": "给我做个 AI 网站，越快越好",
+  "demoStatus": "HUMAN_PENDING",
   "demoProvenance": {
     "liveAiClaimed": false,
-    "semanticLayer": "Agent/Skill performs semantic compilation in a real invocation; the bundled fixture records deterministic reference decisions.",
-    "humanLayer": "A named human review record replaces the vague metric and approves execution.",
-    "deterministicLayer": "The Python CLI validates, returns exit codes, creates the first safe artifact, and writes evidence reports."
+    "semanticLayer": "Agent/Skill owns semantic compilation. The bundled website payload is an explicitly recorded deterministic fixture, and a separate preserved forward test is labelled agent_result.",
+    "humanLayer": "The exact metric, evidence acceptance, and execution approval remain pending; no repository fixture impersonates a real reviewer.",
+    "deterministicLayer": "The Python CLI validates identity/domain/evidence/action, binds approval payload hashes, refuses existing outputs, and dispatches only whitelisted text artifacts after strict approval."
   },
   "claims": [
-    "The bundled negative metric fails strict validation.",
-    "The reviewed metric passes strict validation.",
-    "The executor creates a static HTML artifact and a six-check report.",
-    "The fixed demo has no network, account, form-submission, or production side effect."
+    "The bundled research-required contract fails without source-backed evidence.",
+    "The bundled subjective metric statement and method fail strict validation.",
+    "The bundled demo writes no PASS log and does not attempt execution.",
+    "Cross-domain tests reject website semantics for coding and dispatch a domain-correct Python fixture under a clearly synthetic test approval.",
+    "Post-approval mutations to request, strategy, evidence, action, artifact, checks, or content invalidate the approval hash."
   ],
-  "originalityClaim": "Concrete implementation and combined contract-review-gate-execute mechanism; no global or category-first claim.",
+  "originalityClaim": "Concrete implementation and combined semantic-input/evidence/review-binding/whitelisted-dispatch mechanism; no global or category-first claim.",
   "assetRightsFile": "../ASSET_RIGHTS.csv"
 }

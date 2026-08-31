@@ -1,0 +1,9 @@
+{
+  "ask_questions_first": false,
+  "external_information_need": "标准",
+  "maturity": "模糊想法",
+  "output_length": "标准版",
+  "risk_level": "中",
+  "routing_reason": "请求指向网站，但用户、问题与付费意愿都未验证，先形成有证据门禁的最小页面假设。",
+  "task_type": "website"
+}

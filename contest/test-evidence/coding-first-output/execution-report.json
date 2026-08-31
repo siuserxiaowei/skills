@@ -1,0 +1,22 @@
+{
+  "approval_context": "synthetic_test",
+  "approved_payload_sha256": "eba36febc496ee708de92e59a241fd7e7503a7b42159211dbb0ca29f38a44b72",
+  "artifact": "test_csv_empty_lines.py",
+  "artifact_sha256": "73ad46bf15a1164320a3cfafb939b31ef7677ce576c2261c5f8b01fc247fd611",
+  "checks": {
+    "no_unresolved_template": true,
+    "nonempty": true,
+    "python_syntax": true,
+    "regression_marker": true,
+    "required_term:REGRESSION_FIXTURE": true,
+    "required_term:parse_rows": true
+  },
+  "contract_id": "goal-edec1a5e50bd",
+  "dispatch": {
+    "action": "write_python_regression_fixture",
+    "artifact_kind": "python",
+    "handler": "write_approved_text_artifact"
+  },
+  "external_side_effects": [],
+  "status": "PASS"
+}

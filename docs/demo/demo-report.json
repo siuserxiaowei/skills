@@ -1,52 +1,51 @@
 {
-  "first_step_execution": {
-    "action": "generate_validation_landing_page",
-    "artifact": "index.html",
-    "checks": {
-      "assumption_label": true,
-      "compiler_marker": true,
-      "html_exists": true,
-      "no_external_assets": true,
-      "one_h1": true,
-      "one_primary_cta": true
-    },
-    "contract_id": "goal-3bf7ef9f70d2",
-    "external_side_effects": [],
-    "status": "PASS"
-  },
-  "human_review": {
-    "changed_fields": [
-      "strategy_gate.success_metrics[0]"
-    ],
-    "decision": "approved",
-    "previous_metric_statement": "好看",
-    "reason": "把主观的“好看”改成可用时间、文件、CTA 和结构检查验收的门槛。",
-    "review_id": "review-c754c277e9a7",
-    "reviewer": "参赛者人工复核",
-    "sign_off": "APPROVED BY HUMAN"
-  },
-  "negative_gate": {
-    "contract_id": "goal-3bf7ef9f70d2",
-    "error_count": 7,
+  "agent_preflight": {
+    "approval_context": null,
+    "contract_id": "goal-bd36a39a4aca",
+    "error_count": 4,
     "errors": [
-      "strategy_gate.success_metrics[0].statement: must describe an observable outcome",
-      "strategy_gate.success_metrics[0].statement: vague metric `好看` is not measurable",
-      "strategy_gate.success_metrics[0].measurement.target: must contain explicit thresholds",
-      "strategy_gate.success_metrics[0].evidence_path: is required",
-      "human_review.decision: must be `approved` before execution",
-      "human_review.reviewer: is required before execution",
-      "human_review.sign_off: must equal `APPROVED BY HUMAN`"
+      "evidence_bundle.sources: research-required contract needs recorded sources",
+      "evidence_bundle.claims: research-required contract needs source-backed claims",
+      "evidence_bundle.claims: missing claim_type `用户痛点或需求`",
+      "human_review.decision: must be `approved` before execution"
     ],
+    "evidence_required": true,
     "human_approval_required": true,
+    "next_action": "complete evidence first when required, then have the human edit and approve human-review.pending.json",
     "status": "FAIL"
   },
-  "positive_gate": {
-    "contract_id": "goal-3bf7ef9f70d2",
-    "error_count": 0,
-    "errors": [],
-    "human_approval_required": true,
-    "status": "PASS"
+  "execution": {
+    "attempted": false,
+    "reason": "evidence and exact human approval are pending"
   },
+  "human_review": {
+    "decision": "pending",
+    "record": "03-human-pending/human-review.pending.json"
+  },
+  "liveAiClaimed": false,
   "request": "给我做个 AI 网站，越快越好",
-  "status": "PASS"
+  "status": "HUMAN_PENDING",
+  "subjective_metric_gate": {
+    "approval_context": null,
+    "contract_id": "goal-bd81876dbbc9",
+    "error_count": 12,
+    "errors": [
+      "strategy_gate.success_metrics[0].statement: must describe an observable outcome",
+      "strategy_gate.success_metrics[0].statement: vague wording matched `好看`",
+      "strategy_gate.success_metrics[0].measurement.method: subjective method matched `主观`",
+      "strategy_gate.success_metrics[0].measurement.target: needs explicit number or boolean gates",
+      "strategy_gate.success_metrics[0].measurement.method: does not correspond to action `write_static_hypothesis_page`",
+      "strategy_gate.success_metrics[0].measurement.target.min_html_pages: expected 1 for action",
+      "strategy_gate.success_metrics[0].measurement.target.min_primary_cta: expected 1 for action",
+      "strategy_gate.success_metrics[0].measurement.target.assumption_label_required: expected True for action",
+      "evidence_bundle.sources: research-required contract needs recorded sources",
+      "evidence_bundle.claims: research-required contract needs source-backed claims",
+      "evidence_bundle.claims: missing claim_type `用户痛点或需求`",
+      "human_review.decision: must be `approved` before execution"
+    ],
+    "evidence_required": true,
+    "human_approval_required": true,
+    "next_action": "complete evidence first when required, then have the human edit and approve human-review.pending.json",
+    "status": "FAIL"
+  }
 }

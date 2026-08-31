@@ -56,15 +56,25 @@ machine-readable contract rather than presenting prose as execution evidence.
 
 Keep the judgment layers separate:
 
-- the agent performs semantic passes and proposes the router, strategy, metric,
-  disconfirming evidence, kill criteria, and first safe step
-- the deterministic validator rejects vague metrics and incomplete gates
-- a human must approve the measurable metric before execution
-- the executor may create only the contract's first safe artifact and check
-  report; it must not silently cross an authorization boundary
+- the Agent/Skill performs semantic passes and produces a complete semantic
+  JSON input: router, strategy, measurable metric, disconfirming evidence, kill
+  criteria, tool/evidence gate, domain-specific acceptance, and first safe step
+- the CLI does not invent missing semantics; `compile` requires
+  `--semantic-input` and rejects request/domain/action mismatches
+- for `research_required` work, recorded sources and source-backed claims must
+  pass before a human can approve anything
+- a real human edits the exact metric when needed and explicitly approves the
+  execution scope; examples marked pending or test-only are not approval
+- the CLI binds every execution-relevant field to
+  `approved_payload_sha256`; validation and execution recompute that digest
+- the executor may dispatch only one whitelisted, task-compatible text artifact
+  and its fixed checks; it must not execute generated code or cross an
+  authorization boundary
 
-Never report a draft contract as executed. Use the explicit states `FAIL`,
-`PENDING HUMAN SIGN-OFF`, `PASS`, and `EXECUTED`.
+Never report a draft contract as executed. A `FAIL.log` is failure evidence,
+not a partial pass. Write `PASS.log` only after strict validation really passes.
+The bundled contest fixture is deterministic (`liveAiClaimed:false`) and stops
+at `HUMAN_PENDING`; it is not a live model result or a human approval.
 
 ## Distribution Note
 

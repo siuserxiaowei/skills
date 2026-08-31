@@ -1,0 +1,31 @@
+{
+  "sources": [
+    {
+      "id": "seo-001",
+      "title": "Synthetic public SERP observation A",
+      "url": "https://example.com/source-a",
+      "source_type": "synthetic test fixture",
+      "tool_channel": "local test data",
+      "access_limit": "not a live source"
+    },
+    {
+      "id": "seo-002",
+      "title": "Synthetic public SERP observation B",
+      "url": "https://example.org/source-b",
+      "source_type": "synthetic test fixture",
+      "tool_channel": "local test data",
+      "access_limit": "not a live source"
+    }
+  ],
+  "claims": [
+    {
+      "claim_type": "SEO 搜索意图",
+      "statement": "Synthetic claim used only for evidence-gate regression testing.",
+      "source_ids": [
+        "seo-001",
+        "seo-002"
+      ]
+    }
+  ],
+  "notice": "TEST ONLY: URLs and claims are not research evidence for a real decision."
+}

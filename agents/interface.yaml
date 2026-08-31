@@ -1,7 +1,7 @@
 interface:
   display_name: "Goal Compiler｜需求编译器"
-  short_description: "Compile vague intent into evidence-gated, executable goals."
-  default_prompt: "Use $xiaowei-goal to compile this request with Smart Router, Strategy Gate, measurable success metrics, disconfirming evidence, kill criteria, tool/evidence gates, and a human-approved first safe step."
+  short_description: "Compile vague intent into evidence-gated goal contracts."
+  default_prompt: "Use $xiaowei-goal to produce complete task-specific semantics with Smart Router, Strategy Gate, measurable metrics, disconfirming evidence, kill criteria, tool/evidence gates, and a first step that remains pending until I approve it."
 compatibility:
   canonical_format: "agent-skills"
   adapter_targets:

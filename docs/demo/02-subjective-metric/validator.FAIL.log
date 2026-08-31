@@ -1,0 +1,13 @@
+VALIDATOR FAIL
+- strategy_gate.success_metrics[0].statement: must describe an observable outcome
+- strategy_gate.success_metrics[0].statement: vague wording matched `好看`
+- strategy_gate.success_metrics[0].measurement.method: subjective method matched `主观`
+- strategy_gate.success_metrics[0].measurement.target: needs explicit number or boolean gates
+- strategy_gate.success_metrics[0].measurement.method: does not correspond to action `write_static_hypothesis_page`
+- strategy_gate.success_metrics[0].measurement.target.min_html_pages: expected 1 for action
+- strategy_gate.success_metrics[0].measurement.target.min_primary_cta: expected 1 for action
+- strategy_gate.success_metrics[0].measurement.target.assumption_label_required: expected True for action
+- evidence_bundle.sources: research-required contract needs recorded sources
+- evidence_bundle.claims: research-required contract needs source-backed claims
+- evidence_bundle.claims: missing claim_type `用户痛点或需求`
+- human_review.decision: must be `approved` before execution

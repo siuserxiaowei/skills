@@ -3,15 +3,19 @@
 ## What this repository claims
 
 This repository claims authorship of its concrete implementation and of the
-following combined mechanism in `v0.12.0`:
+following combined mechanism in `v0.13.0`:
 
-1. compile a vague request into a versioned, machine-readable contract
-2. expose Smart Router and Strategy Gate decisions instead of hiding defaults
+1. require a complete Agent-authored semantic input instead of hiding
+   task-specific judgment inside the deterministic CLI
+2. reject request/domain/action/artifact/check mismatches, including website
+   leakage into coding work
 3. require measurable success metrics, disconfirming evidence, kill criteria,
-   tool/evidence gates, and a first safe step
-4. make a subjective metric fail deterministically
-5. require a recorded human metric patch and explicit sign-off
-6. execute only the approved first step and emit a machine check report
+   tool/evidence gates, and a task-specific first safe step
+4. block research-required approval until source-backed evidence is recorded
+5. bind every execution-relevant field to `approved_payload_sha256`, recomputed
+   by validation and execution
+6. dispatch only a whitelisted text artifact and emit the actual handler and
+   check results, while refusing existing output paths
 
 The implementation is in `scripts/goal_compiler.py`; behavior tests are in
 `tests/test_goal_compiler.py`; the fixed demo evidence is in
@@ -32,9 +36,11 @@ here. It does not claim global, category, or idea-level originality.
   routing, Agent Reach/tool routing, evidence quality gate, task/domain packs,
   Smart Router, Strategy Gate, business priority, feedback, output compression,
   validators, negative fixtures, and release guards.
-- 2026-08-31: `v0.12.0` added the executable Goal Compiler contract, strict
-  human-review gate, first-step executor, behavior tests, and contest evidence
-  pack.
+- 2026-08-31: `v0.12.0` added the first executable Goal Compiler contract,
+  human-review gate, first-step executor, behavior tests, and contest pack.
+- 2026-08-31: `v0.13.0` separated Agent semantics from deterministic CLI work,
+  added cross-domain rejection, research-evidence preconditions, approval
+  payload binding, refuse-existing writes, and an honest human-pending demo.
 
 Git history remains intact so these statements can be audited. No history was
 rewritten to obscure inspiration or third-party contribution.
@@ -44,17 +50,21 @@ rewritten to obscure inspiration or third-party contribution.
 - The installed Agent Skill and the invoking agent perform semantic judgment.
 - The Python CLI serializes, validates, and executes deterministic rules. It is
   not described as an LLM.
-- A human reviewer owns the measurable metric change and approval decision.
+- A human reviewer owns the exact measurable metric, evidence acceptance, and
+  approval decision. Pending and synthetic test fixtures are never presented as
+  real human sign-off.
 - The bundled fixed demo is a deterministic reference fixture and has
-  `liveAiClaimed: false`. A separate forward-test prompt is supplied so a real
-  Codex/Claude session can invoke `SKILL.md` without confusing that run with the
-  bundled fixture.
+  `liveAiClaimed: false`; it writes only FAIL logs and stops before execution.
+- A separate preserved forward-test transcript and JSON are labelled
+  `agent_result + human_pending`; they prove a Skill invocation, not a human
+  approval or market-evidence collection.
 
 ## Assets
 
 All contest HTML, CSS, copy, JSON fixtures, and diagrams in this repository were
-created for this project. They use system fonts and contain no external images,
-logos, characters, audio, video, or font files. See `ASSET_RIGHTS.csv`.
+created for this project. Test fixtures are explicitly labelled synthetic. The
+visual assets use system fonts and contain no external images, logos,
+characters, audio, video, or font files. See `ASSET_RIGHTS.csv`.
 
 ## License
 

@@ -1,7 +1,7 @@
 # Goal Compiler｜需求编译器
 
 [![Validate Xiaowei Goal](https://github.com/siuserxiaowei/xiaowei-goal/actions/workflows/validate.yml/badge.svg)](https://github.com/siuserxiaowei/xiaowei-goal/actions/workflows/validate.yml)
-![Version](https://img.shields.io/badge/version-0.12.0-blue)
+![Version](https://img.shields.io/badge/version-0.13.0-blue)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 <!-- SIUSER-REPO-GUIDE:START -->
@@ -11,7 +11,7 @@
 Research-first Agent Skill 与可执行需求编译器：把模糊任务收束成机器可读、人工审核、有反证和终止门槛的 /goal。
 
 ### English
-Agent Skill and executable compiler for turning vague intent into measurable, evidence-gated, human-reviewed goals with a first safe output.
+Agent Skill plus a deterministic validator/executor for turning vague intent into measurable, evidence-gated, human-reviewed goal contracts.
 
 ## 使用方式 / Usage
 
@@ -78,15 +78,15 @@ open /tmp/goal-compiler-demo/walkthrough.html
 
 
 
-`Goal Compiler｜需求编译器` 是 `xiaowei-goal` v0.12.0 的可执行产品形态：一个面向 App、网站、落地页、SaaS、SEO、增长和竞品分析的 Agent Skill，加上确定性 CLI 门禁。
+`Goal Compiler｜需求编译器` 是 `xiaowei-goal` v0.13.0 的可执行产品形态：Agent/Skill 生成完整领域语义，确定性 CLI 负责验证、审批绑定与白名单第一步执行。CLI 本身不是 AI，也不会把编程任务硬编译成网站目标。
 
 它的核心目标不是让 agent 立刻动手写代码，也不是把 Prompt 润色得更长，而是把模糊需求编译为：
 
 - Smart Router：任务类型、成熟度、风险、外部信息需求。
 - Strategy Gate：问题重构、最小验证、可测量成功指标、反证、终止条件。
 - Tool / Evidence Gate：什么证据允许什么结论，什么操作必须暂停。
-- Human Sign-off：人工把“好看”这类主观词改成可验收门槛后，CLI 才允许执行。
-- First Real Output：不停在方案，真正生成第一个 HTML 产物和检查报告。
+- Human Sign-off：研究型任务先补齐来源，再由真人编辑精确指标、审批执行 payload。
+- First Safe Output：仅在真实审批后才调度与领域一致的 HTML、Python 或 Markdown 文本产物，并生成检查报告。
 
 一句话：
 
@@ -94,7 +94,7 @@ open /tmp/goal-compiler-demo/walkthrough.html
 
 ## 70 秒可复现 Demo
 
-一条命令生成固定证据链：Router JSON、主观指标 `FAIL`、人工 metric patch、严格 `PASS`、真实静态页和 execution report。
+一条命令生成诚实的录制 fixture：完整 semantic JSON、Router/Strategy JSON、证据缺口 `FAIL`、主观指标 `FAIL` 与待人工审批记录。固定 Demo 不伪造来源、不伪造真人签字、不写 `PASS.log`、不执行第一步。
 
 ```bash
 python3 scripts/goal_compiler.py demo --output /tmp/goal-compiler-demo
@@ -111,25 +111,33 @@ open /tmp/goal-compiler-demo/walkthrough.html
 
 ```text
 模糊需求
-  → Smart Router + Strategy Gate JSON
-  → 成功指标“好看”被 validator 拒绝
-  → 人工改为 60 分钟 / 1 页 / 1 CTA / 假设标记
-  → 严格校验 PASS
-  → first-output/index.html + execution-report.json
+  → Agent semantic result + Smart Router + Strategy Gate
+  → 缺研究来源：validator.FAIL.log
+  → 主观指标变体：validator.FAIL.log
+  → 真人编辑指标与审批：HUMAN PENDING
+  → 证据和真人审批齐备后，才可 validate / execute
 ```
 
 已冻结的比赛 Demo 位于 `contest/demo-output/`；在线演示页位于 [GitHub Pages](https://siuserxiaowei.github.io/xiaowei-goal/)。
 
-### 四个 CLI 状态
+### CLI 责任边界
 
 ```bash
-python3 scripts/goal_compiler.py compile --request-file contest/demo-fixtures/request.txt --output /tmp/goal-draft
-python3 scripts/goal_compiler.py apply-review /tmp/goal-draft/goal-contract.json --review contest/demo-fixtures/human-review.json --output /tmp/goal-reviewed.json
+python3 scripts/goal_compiler.py compile \
+  --request-file contest/demo-fixtures/request.txt \
+  --semantic-input contest/demo-fixtures/semantic-input.demo.json \
+  --output /tmp/goal-draft
+
+# 研究型任务：先 attach-evidence；然后由真实审批者编辑待审文件。
+python3 scripts/goal_compiler.py attach-evidence /tmp/goal-draft/goal-contract.json \
+  --evidence /path/to/real-evidence.json --output /tmp/goal-with-evidence.json
+python3 scripts/goal_compiler.py apply-review /tmp/goal-with-evidence.json \
+  --review /path/to/human-review.json --output /tmp/goal-reviewed.json
 python3 scripts/goal_compiler.py validate /tmp/goal-reviewed.json
 python3 scripts/goal_compiler.py execute /tmp/goal-reviewed.json --output /tmp/goal-first-output
 ```
 
-`execute` 对未审批契约直接返回非零退出码，且不会创建输出目录。
+`compile` 强制读取 Agent 已生成的完整语义结果；便捷 Demo 只是 `deterministic_demo_fixture` 且 `liveAiClaimed:false`。`apply-review` 把所有执行字段绑定为 `approved_payload_sha256`；任一字段在审批后被篡改，`validate` / `execute` 都会拒绝。所有文件输出默认拒绝覆盖已存在路径。
 
 如果当前环境安装了 [Agent Reach](https://github.com/Panniantong/Agent-Reach)，`xiaowei-goal` 会把它作为广域调研的首选能力层，用来路由 X、Reddit、YouTube、GitHub、小红书、抖音、B站、微信公众号、V2EX、RSS、Exa 搜索等公开或用户授权来源。
 
@@ -386,7 +394,7 @@ Deep Research 不是多搜几个链接，而是从来源池里筛出高价值资
 
 ### 4. 每日进化模式
 
-`v0.12.0` 保留并继续验证定时审计入口：
+`v0.13.0` 保留并继续验证定时审计入口：
 
 ```text
 .github/workflows/daily-evolution.yml
@@ -567,8 +575,7 @@ Goal Compiler 行为测试与完整 Demo：
 ```bash
 python3 -m unittest discover -s tests -p "test_*.py" -v
 python3 scripts/goal_compiler.py demo --output /tmp/goal-compiler-demo
-python3 scripts/validate_xiaowei_goal.py /tmp/goal-compiler-demo/02-reviewed-contract/goal.md
-python3 scripts/evaluate_goal_output.py /tmp/goal-compiler-demo/02-reviewed-contract/goal.md
+python3 scripts/validate_contest_pack.py
 ```
 
 ## 目录结构
