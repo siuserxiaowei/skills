@@ -13,6 +13,7 @@ const PROJECT_ROOT = path.basename(ENGINE) === "macos" ? path.dirname(ENGINE) : 
 const SKILL = path.join(PROJECT_ROOT, "skills", "codex-bugfire-customizer");
 const CREATE = path.join(SKILL, "scripts", "create-pack.mjs");
 const FIND_ENGINE = path.join(SKILL, "scripts", "find-engine.sh");
+const BUILD_SKILL_RELEASE = path.join(ENGINE, "scripts", "build-skill-release.sh");
 const INSTALLER = await fs.readFile(path.join(ENGINE, "scripts", "install-dream-skin-macos.sh"), "utf8");
 const VALIDATOR = process.env.SKILL_VALIDATOR || path.join(
   os.homedir(),
@@ -38,6 +39,37 @@ test("skill metadata and UI prompt validate", async () => {
   assert.doesNotMatch(await fs.readFile(path.join(SKILL, "SKILL.md"), "utf8"), /\[TODO/);
   assert.match(INSTALLER, /skills\/codex-bugfire-customizer/,
     "repository installs must bundle the customizer alongside the engine");
+});
+
+test("standalone skill archive carries its license and provenance bundle", async (t) => {
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-skill-release-"));
+  t.after(() => fs.rm(workspace, { recursive: true, force: true }));
+  const archive = path.join(workspace, "codex-bugfire-customizer.skill.zip");
+  await execFileAsync("/bin/bash", [BUILD_SKILL_RELEASE, archive], {
+    env: { ...process.env, SKILL_VALIDATOR: VALIDATOR },
+    encoding: "utf8",
+  });
+  const { stdout: listing } = await execFileAsync("/usr/bin/unzip", ["-Z1", archive], {
+    encoding: "utf8",
+  });
+  for (const evidence of [
+    "LICENSE",
+    "NOTICE.md",
+    "PROVENANCE.md",
+    "SOURCES.md",
+    "THIRD_PARTY_NOTICES.md",
+    "ASSET_RIGHTS.csv",
+  ]) {
+    assert.match(listing, new RegExp(`^codex-bugfire-customizer/${evidence.replaceAll(".", "\\.")}$`, "m"));
+  }
+  const { stdout: license } = await execFileAsync("/usr/bin/unzip", [
+    "-p", archive, "codex-bugfire-customizer/LICENSE",
+  ], { encoding: "utf8" });
+  const { stdout: notices } = await execFileAsync("/usr/bin/unzip", [
+    "-p", archive, "codex-bugfire-customizer/THIRD_PARTY_NOTICES.md",
+  ], { encoding: "utf8" });
+  assert.match(license, /^MIT License/);
+  assert.match(notices, /Codex Dream Skin/);
 });
 
 test("skill wrapper finds this repository and completes a fresh pack journey", async () => {

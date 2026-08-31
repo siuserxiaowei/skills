@@ -12,12 +12,22 @@ const ROOT_PATH = fileURLToPath(ROOT);
 const INJECTOR = path.join(ROOT_PATH, "scripts", "injector.mjs");
 const BUNDLED_BACKGROUND = path.join(ROOT_PATH, "assets", "portal-hero.png");
 const execFileAsync = promisify(execFile);
-const [injector, common, packageSource, versionSource, renderer] = await Promise.all([
+const [
+  injector,
+  common,
+  packageSource,
+  versionSource,
+  renderer,
+  clientDeliveryReadme,
+  buildClientRelease,
+] = await Promise.all([
   readFile(new URL("scripts/injector.mjs", ROOT), "utf8"),
   readFile(new URL("scripts/common-macos.sh", ROOT), "utf8"),
   readFile(new URL("package.json", ROOT), "utf8"),
   readFile(new URL("VERSION", ROOT), "utf8"),
   readFile(new URL("assets/renderer-inject.js", ROOT), "utf8"),
+  readFile(new URL("client-delivery/使用说明.txt", ROOT), "utf8"),
+  readFile(new URL("scripts/build-client-release.sh", ROOT), "utf8"),
 ]);
 
 test("BUGFIRE uses one CDP runtime binding and no extra network listener", () => {
@@ -119,4 +129,7 @@ test("all user-visible runtime versions use the BUGFIRE prerelease", () => {
   assert.equal(versionSource.trim(), expected);
   assert.match(common, new RegExp(`SKIN_VERSION=["']${expected.replaceAll(".", "\\.")}["']`));
   assert.match(injector, new RegExp(`SKIN_VERSION = ["']${expected.replaceAll(".", "\\.")}["']`));
+  assert.equal(clientDeliveryReadme.split("\n", 1)[0], `Codex BUGFIRE 补丁兽 ${expected}`);
+  assert.match(buildClientRelease, /VERSION="\$\(\/usr\/bin\/tr -d '\[:space:\]' < "\$ROOT\/VERSION"\)"/);
+  assert.match(buildClientRelease, /"Codex BUGFIRE 补丁兽 \$VERSION"/);
 });

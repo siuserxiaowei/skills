@@ -25,6 +25,8 @@
 - `review` 与 `materialize` 也分别强制重新读取操作员 brief 并核对摘要和 exact rights，阻断跳过 fixture 校验的 plan-only 持久化链
 - `materialize` 会重建 canonical AI draft 并严格校验 `humanReview.draftSha256`，同时拒绝调用方可控输出路径中的 symlink 祖先
 - Character Director 纳入 lines / branches / functions 均 80% 的独立覆盖率门禁；测试路径改用 `fileURLToPath`，支持含空格与中文的 Client ZIP 解包目录
+- Client 包内外的用户说明统一读取 `VERSION`，并以回归测试阻止旧版号重新进入发布 ZIP
+- 独立 Customizer Skill ZIP 随包携带 MIT 许可证、上游归属、来源记录与素材权利边界
 - 保持既有 loopback-only CDP、官方应用不修改、Build 仅演示与一键恢复边界
 
 ## 1.2.0-bugfire.1 — 2026-07-16
