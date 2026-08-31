@@ -136,8 +136,12 @@ ACTION_POLICIES: dict[str, dict[str, Any]] = {
     },
 }
 
+COMPILER_NAME = "Goal Compiler | 需求编译器"
+COMPILER_KIND = "deterministic-cli"
+
 EXECUTION_BOUND_FIELDS = (
     "schema_version",
+    "compiler",
     "contract_id",
     "request",
     "semantic_compilation",
@@ -169,6 +173,14 @@ class CompilerError(ValueError):
 def compiler_version() -> str:
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
     return str(manifest["version"])
+
+
+def expected_compiler_metadata() -> dict[str, str]:
+    return {
+        "name": COMPILER_NAME,
+        "version": compiler_version(),
+        "kind": COMPILER_KIND,
+    }
 
 
 def canonical_json(value: Any) -> str:
@@ -537,7 +549,7 @@ def build_contract(
     provenance = copy.deepcopy(semantic["provenance"])
     return {
         "schema_version": SCHEMA_VERSION,
-        "compiler": {"name": "Goal Compiler | 需求编译器", "version": compiler_version(), "kind": "deterministic-cli"},
+        "compiler": expected_compiler_metadata(),
         "contract_id": stable_id("goal", identity),
         "request": {"raw": request_text, "request_sha256": request_hash},
         "semantic_compilation": {
@@ -607,6 +619,8 @@ def _identity_errors(contract: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if contract.get("schema_version") != SCHEMA_VERSION:
         errors.append(f"schema_version: expected {SCHEMA_VERSION}")
+    if contract.get("compiler") != expected_compiler_metadata():
+        errors.append("compiler: metadata must exactly match the running implementation and manifest version")
     request = contract.get("request")
     if not isinstance(request, dict):
         errors.append("request: must be an object")
@@ -1214,17 +1228,46 @@ class ArtifactHTMLInspector(HTMLParser):
         self.h1_count = 0
         self.primary_cta_count = 0
         self.external_urls: list[str] = []
+        self.active_content: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag.lower() == "h1":
+        normalized_tag = tag.lower()
+        if normalized_tag == "h1":
             self.h1_count += 1
         normalized = {name.lower(): (value or "").strip() for name, value in attrs}
         if normalized.get("data-primary-cta", "").lower() == "true":
             self.primary_cta_count += 1
-        for name in ("src", "href"):
+        for name in ("src", "href", "action", "formaction", "poster", "data", "ping"):
             value = normalized.get(name, "")
             if value.lower().startswith(("http://", "https://", "//")):
                 self.external_urls.append(value)
+        srcset = normalized.get("srcset", "")
+        for candidate in srcset.split(","):
+            value = candidate.strip().split(maxsplit=1)[0] if candidate.strip() else ""
+            if value.lower().startswith(("http://", "https://", "//")):
+                self.external_urls.append(value)
+        if normalized_tag == "script" or any(name.startswith("on") for name in normalized):
+            self.active_content.append(normalized_tag)
+
+
+def decoded_external_url_tokens(content: str) -> list[str]:
+    """Find literal external URLs after HTML and common CSS escape decoding."""
+    decoded = html.unescape(content)
+
+    def decode_css_escape(match: re.Match[str]) -> str:
+        hexadecimal = match.group(1)
+        if hexadecimal:
+            try:
+                return chr(int(hexadecimal, 16))
+            except (ValueError, OverflowError):
+                return match.group(0)
+        return match.group(2) or ""
+
+    decoded = re.sub(r"\\(?:([0-9a-fA-F]{1,6})\s?|(.))", decode_css_escape, decoded)
+    return re.findall(
+        r"(?i)(?:https?:)?//(?:[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?|\[[0-9a-f:]+\])(?::\d+)?(?:[/#?][^\s<>'\"]*)?",
+        decoded,
+    )
 
 
 def artifact_source_ids(content: str) -> set[str]:
@@ -1302,7 +1345,11 @@ def inspect_artifact(contract: dict[str, Any], artifact_path: Path, content: str
         elif validator == "assumption_label":
             checks[validator] = "NOT A MARKET CLAIM" in content and "假设待验证" in content
         elif validator == "no_external_urls":
-            checks[validator] = not html_inspector.external_urls
+            checks[validator] = not (
+                html_inspector.external_urls
+                or html_inspector.active_content
+                or decoded_external_url_tokens(content)
+            )
         elif validator == "no_unresolved_template":
             checks[validator] = "{{" not in content and "}}" not in content
         elif validator == "python_syntax":

