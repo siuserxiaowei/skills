@@ -17,8 +17,10 @@ The submitted mechanism is the concrete workflow implemented here:
 ```text
 original brief
   -> recorded or live AI structured draft
+  -> same brief rebound at review
   -> explicit rejection + bounded replacement
   -> human-approved plan
+  -> same brief rebound at materialize
   -> deterministic pack validator
   -> compiled local assets + offline preview
   -> optional live install / verify / restore
@@ -36,15 +38,17 @@ From the repository root:
 
 The offline run:
 
-1. verifies the recorded AI fixture and SHA-256;
-2. applies the scripted rejection of `alert-first-palette`;
+1. verifies the recorded AI fixture, SHA-256, brief digest, and exact brief rights;
+2. rebinds that operator-controlled brief while applying the scripted rejection of `alert-first-palette`;
 3. proves the accent changed from `#ff7a1a` to `#35d9d1`;
-4. materializes `bugfire-pack.json` only after the review gate;
+4. rebinds the brief again and materializes `bugfire-pack.json` only after the review gate;
 5. runs the independent pack validator and builder;
 6. creates an interactive six-state `preview.html`;
 7. checks the renderer payload without changing Codex.
 
 The fixture is real AI-authored output from the repository's Codex agent session, but the replay is not called a live API request. The review JSON is a scripted demo input, not proof of a named person's approval. During recording, the operator must type or explicitly confirm the rejection.
+
+`brief.json` is an independent, operator-controlled trust root at fixture verification, review, and materialization. The implementation proves that each plan remains consistent with the chosen brief digest and rights; it does not authenticate the brief's author or prove legal ownership. SHA-256 is used as an integrity digest, not a signature.
 
 ## Real live-AI path
 
@@ -69,6 +73,7 @@ The automated test starts a real loopback HTTP server, observes the request, and
 |---|---|---|
 | AI director has a real network path | `bugfire-director.test.mjs` observes a loopback OpenAI-compatible HTTP request | Mock endpoint proves transport/contract, not model quality |
 | Offline fixture came from an AI agent | fixture metadata + checksum + repository task provenance | Checksum proves integrity, not independent model attestation |
+| A forged draft cannot bypass the brief via direct review/materialize | both commands require the independent brief and recheck digest + exact rights; full-chain regression test | The caller still chooses the trusted brief; this is not identity or legal-rights attestation |
 | An AI draft cannot build directly | `materializeReviewedPlan` rejects `ai-draft`; automated test covers it | A scripted review is not personal approval |
 | Rejection changes the product | orange `#ff7a1a` becomes cyan `#35d9d1`; checked reviewed plan | Operator must confirm the choice before saying “人工否决” publicly |
 | Builder is independently gated | original `bugfire-pack` schema/image/path/rights validator and tests | It validates declared local inputs, not artistic quality |

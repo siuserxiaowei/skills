@@ -19,8 +19,8 @@ This is a new director-flow video. The older V2 release video may appear for at 
 | 14–23 s | Run `verify-fixture`; zoom `recorded-agent-fixture` and checksum | “这是 Codex agent 实际产出的离线 AI 草案；重放不冒充实时 API。” |
 | 23–31 s | Show AI decision `alert-first-palette`, orange `#ff7a1a` | “AI 选告警橙当主色，但待机界面会一直像故障。” |
 | 31–40 s | Operator edits/confirms `human-review.json`, cyan `#35d9d1` | “我否决这项，改成电路青，橙色只留给真正警报。” |
-| 40–47 s | Run `review`; show `human-approved` and decision ID | “没有这一步，AI draft 不能 materialize。” |
-| 47–57 s | Run `materialize`, then `bugfire-pack validate` | “人工改完也不能绕过确定性校验：字段、路径、图片和权利都要通过。” |
+| 40–47 s | Run `review` with the same brief; show `human-approved` and decision ID | “review 会重新绑定 brief；跳过 fixture 校验也不能换掉 rights。” |
+| 47–57 s | Run `materialize` with the brief again, then `bugfire-pack validate` | “materialize 再核一次 brief；人工改完也不能绕过字段、路径、图片和权利校验。” |
 | 57–65 s | Run build; open `preview.html`; click idle / bug / fire / success | “同一份 plan 生成本地包和六态离线预览。” |
 | 65–69 s | Show renderer payload `pass: true` | “只有 verifier 返回 pass，才叫可运行证据。” |
 | 69–72 s | Restore command / offline no-change notice + GitHub URL | “离线模式不改 Codex；live 录制结束立即 restore。” |

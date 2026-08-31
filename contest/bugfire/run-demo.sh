@@ -28,7 +28,9 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ -z "$OUTPUT" ]; then
-  OUTPUT="$(/usr/bin/mktemp -d /tmp/bugfire-vibelab-demo.XXXXXX)"
+  DEMO_TEMP_ROOT="${TMPDIR:-/private/tmp}"
+  DEMO_TEMP_ROOT="$(cd "$DEMO_TEMP_ROOT" && pwd -P)"
+  OUTPUT="$(/usr/bin/mktemp -d "$DEMO_TEMP_ROOT/bugfire-vibelab-demo.XXXXXX")"
 else
   OUTPUT="$(cd "$(dirname "$OUTPUT")" && pwd -P)/$(basename "$OUTPUT")"
   if [ -d "$OUTPUT" ] && [ -n "$(/bin/ls -A "$OUTPUT")" ]; then
@@ -55,13 +57,15 @@ printf 'Output: %s\n' "$OUTPUT"
 run node "$DIRECTOR" verify-fixture \
   "$DEMO_ROOT/ai-draft-plan.json" "$DEMO_ROOT/ai-draft-plan.sha256" "$DEMO_ROOT/brief.json"
 run node "$DIRECTOR" review \
-  "$DEMO_ROOT/ai-draft-plan.json" "$DEMO_ROOT/human-review.json" "$OUTPUT/reviewed-plan.json"
+  "$DEMO_ROOT/ai-draft-plan.json" "$DEMO_ROOT/human-review.json" \
+  "$DEMO_ROOT/brief.json" "$OUTPUT/reviewed-plan.json"
 run /usr/bin/cmp "$OUTPUT/reviewed-plan.json" "$DEMO_ROOT/reviewed-plan.json"
 
 /bin/mkdir -p "$OUTPUT/pack-source/assets"
 run /bin/cp "$DEMO_ROOT/assets/background.png" "$OUTPUT/pack-source/assets/background.png"
 run /bin/cp "$DEMO_ROOT/assets/pet-idle.png" "$OUTPUT/pack-source/assets/pet-idle.png"
-run node "$DIRECTOR" materialize "$OUTPUT/reviewed-plan.json" "$OUTPUT/pack-source"
+run node "$DIRECTOR" materialize \
+  "$OUTPUT/reviewed-plan.json" "$DEMO_ROOT/brief.json" "$OUTPUT/pack-source"
 run node "$COMPILER" validate "$OUTPUT/pack-source"
 run node "$COMPILER" build "$OUTPUT/pack-source" "$OUTPUT/compiled-pack"
 run node "$CUSTOMIZER" preview "$OUTPUT/compiled-pack" "$OUTPUT/preview.html"

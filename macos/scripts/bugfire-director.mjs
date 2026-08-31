@@ -356,6 +356,18 @@ export function validateDirectorPlan(raw, { requiredStatus } = {}) {
   return validated;
 }
 
+function validatePlanBriefBinding(plan, rawBrief, stage) {
+  if (!rawBrief) invalid(`${stage} requires the operator-controlled human brief`);
+  const brief = validateDirectorBrief(rawBrief);
+  if (sha256(stableJson(brief)) !== plan.provenance.briefSha256) {
+    invalid(`${stage} brief digest does not match the director plan`);
+  }
+  if (stableJson(plan.manifestProposal.rights) !== stableJson(brief.rights)) {
+    invalid(`${stage} plan rights do not exactly match the validated human brief rights`);
+  }
+  return brief;
+}
+
 function setJsonPointer(target, pointer, value) {
   const segments = pointer.slice(1).split("/");
   let cursor = target;
@@ -453,6 +465,48 @@ function responseText(payload, apiMode) {
   invalid("AI endpoint returned no supported text payload");
 }
 
+function responseLimitError() {
+  return new Error(`AI endpoint response exceeded ${MAX_AI_RESPONSE_BYTES} bytes`);
+}
+
+async function readBoundedResponse(response) {
+  const contentLength = response.headers?.get?.("content-length");
+  const normalizedLength = typeof contentLength === "string" ? contentLength.trim() : "";
+  if (/^\d+$/.test(normalizedLength) &&
+      BigInt(normalizedLength) > BigInt(MAX_AI_RESPONSE_BYTES)) {
+    await response.body?.cancel?.().catch(() => {});
+    throw responseLimitError();
+  }
+  if (!response.body) return Buffer.alloc(0);
+  if (typeof response.body.getReader !== "function") {
+    throw new Error("AI endpoint response body is not a readable byte stream");
+  }
+
+  const reader = response.body.getReader();
+  const chunks = [];
+  let total = 0;
+  let completed = false;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        completed = true;
+        break;
+      }
+      if (!(value instanceof Uint8Array)) {
+        throw new Error("AI endpoint response body returned a non-byte chunk");
+      }
+      if (value.byteLength > MAX_AI_RESPONSE_BYTES - total) throw responseLimitError();
+      chunks.push(Buffer.from(value));
+      total += value.byteLength;
+    }
+  } finally {
+    if (!completed) await reader.cancel().catch(() => {});
+    reader.releaseLock?.();
+  }
+  return Buffer.concat(chunks, total);
+}
+
 export async function draftWithOpenAI({ brief: rawBrief, baseUrl, apiKey, model, apiMode = "chat-completions", fetchImpl = fetch }) {
   const brief = validateDirectorBrief(rawBrief);
   const prompt = directorPrompt();
@@ -476,10 +530,7 @@ export async function draftWithOpenAI({ brief: rawBrief, baseUrl, apiKey, model,
     redirect: "error",
     signal: AbortSignal.timeout(60_000),
   });
-  const responseBytes = Buffer.from(await response.arrayBuffer());
-  if (responseBytes.length > MAX_AI_RESPONSE_BYTES) {
-    throw new Error(`AI endpoint response exceeded ${MAX_AI_RESPONSE_BYTES} bytes`);
-  }
+  const responseBytes = await readBoundedResponse(response);
   const responseBody = decodeUtf8(responseBytes, "AI endpoint response");
   if (!response.ok) {
     const message = responseBody.slice(0, 500).replaceAll(credential, "[REDACTED]");
@@ -563,8 +614,9 @@ function validateReviewRequest(raw) {
   };
 }
 
-export function applyHumanReview(rawDraft, rawReview) {
+export function applyHumanReview(rawDraft, rawReview, rawBrief) {
   const draft = validateDirectorPlan(rawDraft, { requiredStatus: "ai-draft" });
+  validatePlanBriefBinding(draft, rawBrief, "human review");
   const review = validateReviewRequest(rawReview);
   const index = draft.creativeDecisions.findIndex(({ id }) => id === review.rejectedDecisionId);
   if (index < 0) invalid(`rejected decision does not exist: ${review.rejectedDecisionId}`);
@@ -600,8 +652,9 @@ export function applyHumanReview(rawDraft, rawReview) {
   }, { requiredStatus: "human-approved" });
 }
 
-export async function materializeReviewedPlan(rawPlan, packDirectory) {
+export async function materializeReviewedPlan(rawPlan, packDirectory, rawBrief) {
   const plan = validateDirectorPlan(rawPlan, { requiredStatus: "human-approved" });
+  validatePlanBriefBinding(plan, rawBrief, "materialize");
   const root = path.resolve(packDirectory);
   await assertNoSymlinkAncestors(root, "pack output");
   const entry = await fs.lstat(root).catch((error) => {
@@ -649,12 +702,8 @@ export async function verifyRecordedFixture(planFile, checksumFile, briefFile) {
   if (plan.provenance.promptSha256 !== sha256(directorPrompt())) {
     invalid("fixture prompt digest does not match the current director contract");
   }
-  const brief = validateDirectorBrief((await readJson(briefFile, "fixture brief")).value);
-  const briefDigest = sha256(stableJson(brief));
-  if (briefDigest !== plan.provenance.briefSha256) invalid("fixture brief digest mismatch");
-  if (stableJson(plan.manifestProposal.rights) !== stableJson(brief.rights)) {
-    invalid("recorded fixture manifestProposal.rights must exactly match the validated human brief rights");
-  }
+  const brief = (await readJson(briefFile, "fixture brief")).value;
+  validatePlanBriefBinding(plan, brief, "recorded fixture verification");
   return {
     pass: true,
     mode: plan.provenance.mode,
@@ -696,33 +745,37 @@ async function cli(argv) {
   if (command === "verify-fixture" && first && second && third && rest.length === 0) {
     return verifyRecordedFixture(first, second, third);
   }
-  if (command === "review" && first && second && third && rest.length === 0) {
-    await assertOutputAbsent(third, "reviewed plan output");
+  if (command === "review" && first && second && third && rest.length === 1) {
+    const output = rest[0];
+    await assertOutputAbsent(output, "reviewed plan output");
     const draft = (await readJson(first, "AI draft")).value;
     const review = (await readJson(second, "human review")).value;
-    const approved = applyHumanReview(draft, review);
-    await writeJsonNoClobber(third, approved, "reviewed plan output");
+    const brief = (await readJson(third, "human brief")).value;
+    const approved = applyHumanReview(draft, review, brief);
+    await writeJsonNoClobber(output, approved, "reviewed plan output");
     return {
       pass: true,
       status: approved.status,
       rejectedDecisionId: approved.humanReview.rejectedDecisionId,
-      output: path.resolve(third),
+      output: path.resolve(output),
     };
   }
   if (command === "validate" && first && !second) {
     const plan = validateDirectorPlan((await readJson(first, "director plan")).value);
     return { pass: true, status: plan.status, mode: plan.provenance.mode, decisions: plan.creativeDecisions.length };
   }
-  if (command === "materialize" && first && second && !third) {
-    return materializeReviewedPlan((await readJson(first, "reviewed plan")).value, second);
+  if (command === "materialize" && first && second && third && rest.length === 0) {
+    const plan = (await readJson(first, "reviewed plan")).value;
+    const brief = (await readJson(second, "human brief")).value;
+    return materializeReviewedPlan(plan, third, brief);
   }
   throw new Error([
     "Usage:",
     "  bugfire-director.mjs draft-live <brief.json> <draft.json> --model <id> [--base-url <url>] [--api-mode chat-completions|responses]",
     "  bugfire-director.mjs verify-fixture <draft.json> <draft.sha256> <brief.json>",
-    "  bugfire-director.mjs review <draft.json> <review.json> <reviewed.json>",
+    "  bugfire-director.mjs review <draft.json> <review.json> <brief.json> <reviewed.json>",
     "  bugfire-director.mjs validate <plan.json>",
-    "  bugfire-director.mjs materialize <reviewed.json> <pack-dir>",
+    "  bugfire-director.mjs materialize <reviewed.json> <brief.json> <pack-dir>",
   ].join("\n"));
 }
 

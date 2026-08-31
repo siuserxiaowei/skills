@@ -38,7 +38,9 @@ BUGFIRE 不读取或保存：
 
 ### 可选 AI 角色导演的网络边界
 
-桌宠运行时与 pack validator 仍然离线。只有用户主动执行 `bugfire-director.mjs draft-live` 时，CLI 才会把用户提供的角色 brief 发给配置的 OpenAI-compatible endpoint。Key 只从环境变量读取，不接受命令行 secret；解析后的响应和最终 plan 在写盘前都会递归扫描 Key 的精确值，恶意端点即使把凭据回显进合法字段也会失败且不生成文件。live `manifestProposal.rights` 一律从已校验的人工 brief 派生；recorded fixture 则强制携带 brief 并同时核对摘要和 rights 完全一致。产物只记录 endpoint origin、model ID、时间和摘要。远程 endpoint 必须是 HTTPS，HTTP 只允许本机 loopback 模型或测试服务。
+桌宠运行时与 pack validator 仍然离线。只有用户主动执行 `bugfire-director.mjs draft-live` 时，CLI 才会把用户提供的角色 brief 发给配置的 OpenAI-compatible endpoint。Key 只从环境变量读取，不接受命令行 secret；解析后的响应和最终 plan 在写盘前都会递归扫描 Key 的精确值，恶意端点即使把凭据回显进合法字段也会失败且不生成文件。响应声明的 `Content-Length` 若超过 1 MiB 会在读取 body 前拒绝；随后无论是否有该 header，body reader 都逐 chunk 累计，并在首个越界 chunk 主动取消。这个边界限制的是应用层累计，HTTP/运行时仍可能在交付单个 chunk 前自行缓冲。live `manifestProposal.rights` 一律从已校验的人工 brief 派生；recorded fixture、review 和 materialize 都强制重新提供由操作员控制的 brief，并分别核对摘要和 rights 完全一致，因此不能靠跳过 fixture 校验从 plan 单独持久化伪造 rights。产物只记录 endpoint origin、model ID、时间和摘要。远程 endpoint 必须是 HTTPS，HTTP 只允许本机 loopback 模型或测试服务。
+
+这份 brief 是调用者自行选择和保管的信任根。上述机制验证的是 plan 与该文件的一致性，不认证作者身份、不证明法律权利；普通 SHA-256 是完整性摘要，不是数字签名。
 
 仓库内的 recorded fixture 不联网，并明确标注它不是实时调用。AI draft 无法直接 materialize；人工替换后会先重建 canonical draft 并严格核对 `draftSha256`，再通过原 pack validator。materialize 会在建目录前后拒绝调用方可控路径段中的 symlink；受限于 Node 缺少可移植的 directory-fd `openat` 链，同一用户恶意进程在检查与写入之间抢占替换祖先路径仍属于残余竞态，建议只在私有输出目录运行。
 

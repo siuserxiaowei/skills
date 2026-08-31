@@ -33,10 +33,46 @@ async function json(file) {
 
 function chatResponse(payload, { ok = true, status = 200 } = {}) {
   const envelope = { choices: [{ message: { content: JSON.stringify(payload) } }] };
+  const bytes = Buffer.from(JSON.stringify(envelope));
+  let delivered = false;
   return {
     ok,
     status,
-    arrayBuffer: async () => Buffer.from(JSON.stringify(envelope)),
+    headers: { get: () => null },
+    body: {
+      getReader: () => ({
+        read: async () => {
+          if (delivered) return { done: true, value: undefined };
+          delivered = true;
+          return { done: false, value: bytes };
+        },
+        cancel: async () => {},
+        releaseLock: () => {},
+      }),
+    },
+  };
+}
+
+function byteResponse(bytes, { ok = true, status = 200, contentLength = null } = {}) {
+  const payload = Buffer.from(bytes);
+  let delivered = false;
+  return {
+    ok,
+    status,
+    headers: {
+      get: (name) => name.toLowerCase() === "content-length" ? contentLength : null,
+    },
+    body: {
+      getReader: () => ({
+        read: async () => {
+          if (delivered) return { done: true, value: undefined };
+          delivered = true;
+          return { done: false, value: payload };
+        },
+        cancel: async () => {},
+        releaseLock: () => {},
+      }),
+    },
   };
 }
 
@@ -74,6 +110,79 @@ test("a checksum-valid recorded fixture cannot replace the human brief rights", 
   ), /rights.*brief|brief.*rights/i);
 });
 
+test("a forged recorded plan cannot bypass brief binding through review and materialize", async () => {
+  const brief = await json(path.join(DEMO, "brief.json"));
+  const draft = structuredClone(await json(path.join(DEMO, "ai-draft-plan.json")));
+  const review = await json(path.join(DEMO, "human-review.json"));
+  draft.manifestProposal.rights = {
+    declaration: "A forged draft replaces the operator-controlled rights declaration.",
+    sourceUrl: "https://malicious.example.test/bypass-rights",
+  };
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-bypass-"));
+  const forgedPlanFile = path.join(workspace, "forged-plan.json");
+  const reviewedOutput = path.join(workspace, "reviewed.json");
+  await fs.writeFile(forgedPlanFile, `${JSON.stringify(draft, null, 2)}\n`);
+
+  assert.throws(() => applyHumanReview(draft, review, brief), /brief.*rights|rights.*brief/i);
+  await assert.rejects(execFileAsync(process.execPath, [
+    DIRECTOR,
+    "review",
+    forgedPlanFile,
+    path.join(DEMO, "human-review.json"),
+    path.join(DEMO, "brief.json"),
+    reviewedOutput,
+  ]), (error) => {
+    assert.match(error.stderr, /brief.*rights|rights.*brief/i);
+    return true;
+  });
+  await assert.rejects(fs.access(reviewedOutput));
+
+  await assert.rejects(execFileAsync(process.execPath, [
+    DIRECTOR,
+    "review",
+    forgedPlanFile,
+    path.join(DEMO, "human-review.json"),
+    reviewedOutput,
+  ]), (error) => {
+    assert.match(error.stderr, /Usage:.*brief\.json/s);
+    return true;
+  });
+
+  const attackerBrief = structuredClone(brief);
+  attackerBrief.rights = structuredClone(draft.manifestProposal.rights);
+  const attackerDraft = structuredClone(draft);
+  attackerDraft.provenance.briefSha256 = sha256(stableJson(validateDirectorBrief(attackerBrief)));
+  const attackerReviewed = applyHumanReview(attackerDraft, review, attackerBrief);
+  const attackerReviewedFile = path.join(workspace, "attacker-reviewed.json");
+  await fs.writeFile(attackerReviewedFile, `${JSON.stringify(attackerReviewed, null, 2)}\n`);
+
+  await assert.rejects(
+    materializeReviewedPlan(attackerReviewed, path.join(workspace, "pack"), brief),
+    /brief digest|brief.*rights|rights.*brief/i,
+  );
+  await assert.rejects(execFileAsync(process.execPath, [
+    DIRECTOR,
+    "materialize",
+    attackerReviewedFile,
+    path.join(DEMO, "brief.json"),
+    path.join(workspace, "cli-pack"),
+  ]), (error) => {
+    assert.match(error.stderr, /brief digest|brief.*rights|rights.*brief/i);
+    return true;
+  });
+  await assert.rejects(execFileAsync(process.execPath, [
+    DIRECTOR,
+    "materialize",
+    attackerReviewedFile,
+    path.join(workspace, "cli-pack-without-brief"),
+  ]), (error) => {
+    assert.match(error.stderr, /Usage:.*brief\.json/s);
+    return true;
+  });
+  await assert.rejects(fs.access(path.join(workspace, "pack", "bugfire-pack.json")));
+  await assert.rejects(fs.access(path.join(workspace, "cli-pack", "bugfire-pack.json")));
+});
+
 test("director inputs and endpoint envelopes reject malformed UTF-8", async () => {
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-utf8-"));
   const malformedPlan = path.join(workspace, "malformed-plan.json");
@@ -90,11 +199,7 @@ test("director inputs and endpoint envelopes reject malformed UTF-8", async () =
     baseUrl: "http://127.0.0.1:1/v1",
     apiKey: "test-secret-never-persist",
     model: "local-contract-model",
-    fetchImpl: async () => ({
-      ok: true,
-      status: 200,
-      arrayBuffer: async () => Uint8Array.of(0xff).buffer,
-    }),
+    fetchImpl: async () => byteResponse(Uint8Array.of(0xff)),
   }), /AI endpoint response is not valid UTF-8/i);
 });
 
@@ -119,7 +224,8 @@ test("contest boards are offline 16:9 artifacts with rights-table hashes", async
 test("human review must reject and materially replace exactly one decision surface", async () => {
   const draft = await json(path.join(DEMO, "ai-draft-plan.json"));
   const review = await json(path.join(DEMO, "human-review.json"));
-  const approved = applyHumanReview(draft, review);
+  const brief = await json(path.join(DEMO, "brief.json"));
+  const approved = applyHumanReview(draft, review, brief);
   assert.equal(approved.status, "human-approved");
   assert.equal(approved.humanReview.rejectedDecisionId, "alert-first-palette");
   assert.equal(approved.humanReview.originalDecision.manifestPatch["/theme/colors/accent"], "#ff7a1a");
@@ -131,11 +237,12 @@ test("human review must reject and materially replace exactly one decision surfa
 
   const unchanged = structuredClone(review);
   unchanged.replacementDecision = approved.humanReview.originalDecision;
-  await assert.rejects(async () => applyHumanReview(draft, unchanged), /materially change/i);
+  await assert.rejects(async () => applyHumanReview(draft, unchanged, brief), /materially change/i);
 });
 
 test("approved plan materializes, then the independent pack validator builds it", async () => {
   const plan = await json(path.join(DEMO, "reviewed-plan.json"));
+  const brief = await json(path.join(DEMO, "brief.json"));
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-build-"));
   const source = path.join(workspace, "source");
   const output = path.join(workspace, "output");
@@ -143,7 +250,7 @@ test("approved plan materializes, then the independent pack validator builds it"
   await fs.copyFile(path.join(DEMO, "assets", "background.png"), path.join(source, "assets", "background.png"));
   await fs.copyFile(path.join(DEMO, "assets", "pet-idle.png"), path.join(source, "assets", "pet-idle.png"));
 
-  const materialized = await materializeReviewedPlan(plan, source);
+  const materialized = await materializeReviewedPlan(plan, source, brief);
   assert.match(materialized.boundary, /AI proposes.*human.*deterministic/i);
   assert.equal((await fs.stat(path.join(source, "bugfire-pack.json"))).mode & 0o777, 0o600);
   assert.equal((await fs.stat(path.join(source, "director-report.json"))).mode & 0o777, 0o600);
@@ -171,7 +278,10 @@ test("draft, review, and materialize outputs refuse to overwrite existing files"
 
   for (const args of [
     ["draft-live", path.join(DEMO, "brief.json"), existingOutput, "--model", "unused-model"],
-    ["review", path.join(DEMO, "ai-draft-plan.json"), path.join(DEMO, "human-review.json"), existingOutput],
+    [
+      "review", path.join(DEMO, "ai-draft-plan.json"), path.join(DEMO, "human-review.json"),
+      path.join(DEMO, "brief.json"), existingOutput,
+    ],
   ]) {
     await assert.rejects(execFileAsync(process.execPath, [DIRECTOR, ...args], {
       env: { ...process.env, BUGFIRE_OPENAI_API_KEY: "" },
@@ -183,17 +293,24 @@ test("draft, review, and materialize outputs refuse to overwrite existing files"
   }
 
   const reviewed = await json(path.join(DEMO, "reviewed-plan.json"));
+  const brief = await json(path.join(DEMO, "brief.json"));
   const manifestExists = path.join(workspace, "manifest-exists");
   await fs.mkdir(manifestExists);
   await fs.writeFile(path.join(manifestExists, "bugfire-pack.json"), sentinel);
-  await assert.rejects(materializeReviewedPlan(reviewed, manifestExists), /already exists; refusing to overwrite/i);
+  await assert.rejects(
+    materializeReviewedPlan(reviewed, manifestExists, brief),
+    /already exists; refusing to overwrite/i,
+  );
   assert.equal(await fs.readFile(path.join(manifestExists, "bugfire-pack.json"), "utf8"), sentinel);
   await assert.rejects(fs.access(path.join(manifestExists, "director-report.json")));
 
   const reportExists = path.join(workspace, "report-exists");
   await fs.mkdir(reportExists);
   await fs.writeFile(path.join(reportExists, "director-report.json"), sentinel);
-  await assert.rejects(materializeReviewedPlan(reviewed, reportExists), /already exists; refusing to overwrite/i);
+  await assert.rejects(
+    materializeReviewedPlan(reviewed, reportExists, brief),
+    /already exists; refusing to overwrite/i,
+  );
   assert.equal(await fs.readFile(path.join(reportExists, "director-report.json"), "utf8"), sentinel);
   await assert.rejects(fs.access(path.join(reportExists, "bugfire-pack.json")));
 });
@@ -336,11 +453,12 @@ test("AI manifest rights are forcibly derived from the human brief", async () =>
 
 test("materialize recomputes and enforces the canonical AI draft digest", async () => {
   const reviewed = await json(path.join(DEMO, "reviewed-plan.json"));
+  const brief = await json(path.join(DEMO, "brief.json"));
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-digest-"));
   const forged = structuredClone(reviewed);
   forged.humanReview.draftSha256 = "0".repeat(64);
   await assert.rejects(
-    materializeReviewedPlan(forged, path.join(workspace, "forged")),
+    materializeReviewedPlan(forged, path.join(workspace, "forged"), brief),
     /draftSha256|draft digest|canonical draft/i,
   );
   await assert.rejects(fs.access(path.join(workspace, "forged", "bugfire-pack.json")));
@@ -348,13 +466,14 @@ test("materialize recomputes and enforces the canonical AI draft digest", async 
   const tampered = structuredClone(reviewed);
   tampered.productionNotes = [...tampered.productionNotes, "Unbound post-review mutation"];
   await assert.rejects(
-    materializeReviewedPlan(tampered, path.join(workspace, "tampered")),
+    materializeReviewedPlan(tampered, path.join(workspace, "tampered"), brief),
     /draftSha256|draft digest|canonical draft/i,
   );
 });
 
 test("materialize refuses a symlink ancestor before creating pack artifacts", async () => {
   const reviewed = await json(path.join(DEMO, "reviewed-plan.json"));
+  const brief = await json(path.join(DEMO, "brief.json"));
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-symlink-"));
   const outside = path.join(workspace, "outside");
   const linked = path.join(workspace, "linked");
@@ -362,7 +481,7 @@ test("materialize refuses a symlink ancestor before creating pack artifacts", as
   await fs.symlink(outside, linked, "dir");
 
   await assert.rejects(
-    materializeReviewedPlan(reviewed, path.join(linked, "pack")),
+    materializeReviewedPlan(reviewed, path.join(linked, "pack"), brief),
     /symbolic link|symlink/i,
   );
   await assert.rejects(fs.access(path.join(outside, "pack", "bugfire-pack.json")));
@@ -387,6 +506,7 @@ test("director CLI covers fixture verification, review, validation, and material
     "review",
     path.join(DEMO, "ai-draft-plan.json"),
     path.join(DEMO, "human-review.json"),
+    path.join(DEMO, "brief.json"),
     reviewed,
   ])).stdout);
   assert.equal(reviewResult.status, "human-approved");
@@ -402,6 +522,7 @@ test("director CLI covers fixture verification, review, validation, and material
     DIRECTOR,
     "materialize",
     reviewed,
+    path.join(DEMO, "brief.json"),
     pack,
   ])).stdout);
   assert.equal(materialized.pass, true);
@@ -450,11 +571,7 @@ test("director rejects malformed briefs, endpoints, API envelopes, and fixture c
     baseUrl: "http://127.0.0.1:1/v1",
     apiKey: "test-key",
     model: "test-model",
-    fetchImpl: async () => ({
-      ok: false,
-      status: 429,
-      arrayBuffer: async () => Buffer.from("test-key quota exceeded"),
-    }),
+    fetchImpl: async () => byteResponse("test-key quota exceeded", { ok: false, status: 429 }),
   }), (error) => {
     assert.match(error.message, /HTTP 429.*\[REDACTED\]/i);
     assert.doesNotMatch(error.message, /test-key/);
@@ -465,22 +582,14 @@ test("director rejects malformed briefs, endpoints, API envelopes, and fixture c
     baseUrl: "http://127.0.0.1:1/v1",
     apiKey: "test-key",
     model: "test-model",
-    fetchImpl: async () => ({
-      ok: true,
-      status: 200,
-      arrayBuffer: async () => Buffer.from("not-json"),
-    }),
+    fetchImpl: async () => byteResponse("not-json"),
   }), /envelope was not valid JSON/i);
   await assert.rejects(draftWithOpenAI({
     brief,
     baseUrl: "http://127.0.0.1:1/v1",
     apiKey: "test-key",
     model: "test-model",
-    fetchImpl: async () => ({
-      ok: true,
-      status: 200,
-      arrayBuffer: async () => Buffer.from(JSON.stringify({ choices: [] })),
-    }),
+    fetchImpl: async () => byteResponse(JSON.stringify({ choices: [] })),
   }), /no supported text payload/i);
 
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-checksum-"));
@@ -496,6 +605,7 @@ test("director rejects malformed briefs, endpoints, API envelopes, and fixture c
 test("director validators reject broken plan, provenance, and review bindings", async () => {
   const draft = await json(path.join(DEMO, "ai-draft-plan.json"));
   const review = await json(path.join(DEMO, "human-review.json"));
+  const brief = await json(path.join(DEMO, "brief.json"));
 
   assert.throws(() => validateDirectorPlan({}), /schema|artifactType/i);
   assert.throws(() => validateDirectorPlan({
@@ -522,19 +632,21 @@ test("director validators reject broken plan, provenance, and review bindings", 
   const unknownDecision = structuredClone(review);
   unknownDecision.rejectedDecisionId = "does-not-exist";
   unknownDecision.replacementDecision.id = "does-not-exist";
-  assert.throws(() => applyHumanReview(draft, unknownDecision), /does not exist/i);
+  assert.throws(() => applyHumanReview(draft, unknownDecision, brief), /does not exist/i);
   const changedId = structuredClone(review);
   changedId.replacementDecision.id = "different-id";
-  assert.throws(() => applyHumanReview(draft, changedId), /keep the rejected decision id/i);
+  assert.throws(() => applyHumanReview(draft, changedId, brief), /keep the rejected decision id/i);
   const changedSurface = structuredClone(review);
   changedSurface.replacementDecision.manifestPatch = {
     "/theme/colors/accent": "#35d9d1",
   };
-  assert.throws(() => applyHumanReview(draft, changedSurface), /exactly the same manifest fields/i);
+  assert.throws(() => applyHumanReview(draft, changedSurface, brief), /exactly the same manifest fields/i);
 });
 
 test("live response size and JSON-content boundaries fail closed", async () => {
   const brief = await json(path.join(DEMO, "brief.json"));
+  let preflightRead = false;
+  let preflightCancelled = false;
   await assert.rejects(draftWithOpenAI({
     brief,
     baseUrl: "http://127.0.0.1:1/v1",
@@ -543,21 +655,26 @@ test("live response size and JSON-content boundaries fail closed", async () => {
     fetchImpl: async () => ({
       ok: true,
       status: 200,
-      arrayBuffer: async () => Buffer.alloc(1024 * 1024 + 1, 0x20),
+      headers: { get: () => String(1024 * 1024 + 1) },
+      body: {
+        cancel: async () => { preflightCancelled = true; },
+        getReader: () => {
+          preflightRead = true;
+          throw new Error("oversized Content-Length must be rejected before streaming");
+        },
+      },
     }),
   }), /response exceeded/i);
+  assert.equal(preflightRead, false);
+  assert.equal(preflightCancelled, true);
   await assert.rejects(draftWithOpenAI({
     brief,
     baseUrl: "http://127.0.0.1:1/v1",
     apiKey: "test-key",
     model: "test-model",
-    fetchImpl: async () => ({
-      ok: true,
-      status: 200,
-      arrayBuffer: async () => Buffer.from(JSON.stringify({
-        choices: [{ message: { content: "not-json" } }],
-      })),
-    }),
+    fetchImpl: async () => byteResponse(JSON.stringify({
+      choices: [{ message: { content: "not-json" } }],
+    })),
   }), /AI response was not valid JSON/i);
 
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-input-errors-"));
@@ -573,6 +690,58 @@ test("live response size and JSON-content boundaries fail closed", async () => {
     path.join(DEMO, "ai-draft-plan.sha256"),
     path.join(DEMO, "brief.json"),
   ), /is missing/i);
+});
+
+test("a loopback response is cancelled while streaming just beyond the byte limit", async (context) => {
+  const brief = await json(path.join(DEMO, "brief.json"));
+  const chunk = Buffer.alloc(64 * 1024, 0x20);
+  const plannedBytes = 2 * 1024 * 1024;
+  let attemptedBytes = 0;
+  let completed = false;
+  let closedBeforeCompletion = false;
+  let resolveClosed;
+  const closed = new Promise((resolve) => { resolveClosed = resolve; });
+  const server = http.createServer(async (request, response) => {
+    for await (const _chunk of request) {
+      // Drain the request before sending a deliberately oversized chunked response.
+    }
+    response.writeHead(200, { "content-type": "application/json" });
+    response.once("close", () => {
+      closedBeforeCompletion = !completed;
+      resolveClosed();
+    });
+    while (!response.destroyed && attemptedBytes < plannedBytes) {
+      response.write(chunk);
+      attemptedBytes += chunk.length;
+      await new Promise((resolve) => setTimeout(resolve, 4));
+    }
+    if (!response.destroyed) {
+      completed = true;
+      response.end();
+    }
+  });
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  context.after(() => new Promise((resolve) => {
+    server.close(resolve);
+    server.closeAllConnections?.();
+  }));
+  const address = server.address();
+
+  await assert.rejects(draftWithOpenAI({
+    brief,
+    baseUrl: `http://127.0.0.1:${address.port}/v1`,
+    apiKey: "stream-limit-test-key",
+    model: "local-contract-model",
+  }), /response exceeded/i);
+  await Promise.race([
+    closed,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("stream was not cancelled")), 2_000)),
+  ]);
+  assert.equal(closedBeforeCompletion, true);
+  assert.ok(attemptedBytes < plannedBytes, `server sent all ${attemptedBytes} planned bytes`);
 });
 
 test("live mode fails closed without a key and rejects non-TLS remote endpoints", async () => {
