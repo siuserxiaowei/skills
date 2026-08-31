@@ -1,0 +1,8 @@
+path,asset_type,creator_or_source,rights_basis,external_dependency,notes
+docs/index.html,HTML/CSS landing page,Xiaowei project,First-party original implementation,no,System fonts only
+contest/demo-output/walkthrough.html,HTML/CSS demo walkthrough,Xiaowei project,First-party original implementation,no,Generated deterministically by scripts/goal_compiler.py
+contest/demo-output/03-first-output/index.html,HTML/CSS validation page,Xiaowei project,First-party original implementation,no,Contains an explicit hypothesis label
+contest/demo-script.md,Script and shot plan,Xiaowei project,First-party original writing,no,No music or stock footage included
+contest/weibo-copy.md,Submission copy,Xiaowei project,First-party original writing,no,Links and event tags must be verified at posting time
+scripts/goal_compiler.py,Python source,Xiaowei project,First-party original implementation,no,Python standard library only
+contest/goal-compiler-board-1920x1080.png,Rendered PNG board,Xiaowei project,First-party original layout and copy,no,Rendered locally from evidence using system fonts

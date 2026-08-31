@@ -1,0 +1,21 @@
+{
+  "productName": "Goal Compiler｜需求编译器",
+  "track": "VibeWork",
+  "repository": "https://github.com/siuserxiaowei/xiaowei-goal",
+  "livePage": "https://siuserxiaowei.github.io/xiaowei-goal/",
+  "demoInput": "给我做个 AI 网站，越快越好",
+  "demoProvenance": {
+    "liveAiClaimed": false,
+    "semanticLayer": "Agent/Skill performs semantic compilation in a real invocation; the bundled fixture records deterministic reference decisions.",
+    "humanLayer": "A named human review record replaces the vague metric and approves execution.",
+    "deterministicLayer": "The Python CLI validates, returns exit codes, creates the first safe artifact, and writes evidence reports."
+  },
+  "claims": [
+    "The bundled negative metric fails strict validation.",
+    "The reviewed metric passes strict validation.",
+    "The executor creates a static HTML artifact and a six-check report.",
+    "The fixed demo has no network, account, form-submission, or production side effect."
+  ],
+  "originalityClaim": "Concrete implementation and combined contract-review-gate-execute mechanism; no global or category-first claim.",
+  "assetRightsFile": "../ASSET_RIGHTS.csv"
+}

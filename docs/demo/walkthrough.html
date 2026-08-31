@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Goal Compiler · 失败到可执行的证据链</title>
+  <style>
+    :root { --ink:#111827; --paper:#fffdf5; --lime:#d9ff57; --red:#ff5c5c; --green:#2dd4a7; --violet:#7557ff; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#ebe9e1; color:var(--ink); font-family:ui-sans-serif,system-ui,-apple-system,"PingFang SC",sans-serif; }
+    main { width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:40px 0 70px; }
+    header { display:flex; justify-content:space-between; gap:24px; align-items:flex-start; }
+    h1 { margin:10px 0 12px; font-size:clamp(40px,7vw,78px); line-height:.95; letter-spacing:-.06em; }
+    .kicker { color:var(--violet); font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+    .overall { padding:10px 14px; background:var(--lime); border:2px solid var(--ink); border-radius:999px; font-weight:950; }
+    .flow { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:40px; }
+    article { min-height:310px; display:flex; flex-direction:column; background:var(--paper); border:2px solid var(--ink); border-radius:20px; padding:24px; box-shadow:6px 6px 0 var(--ink); }
+    .step { font-size:14px; font-weight:900; }
+    h2 { margin:34px 0 12px; font-size:26px; line-height:1.05; }
+    p,li { color:#475467; line-height:1.55; }
+    ul { padding-left:18px; }
+    .status { margin-top:auto; padding:9px 12px; width:max-content; border-radius:8px; font-weight:950; color:white; }
+    .fail { background:var(--red); } .pass { background:var(--green); color:var(--ink); } .human { background:var(--violet); }
+    .links { margin-top:32px; padding:24px; background:var(--ink); color:white; border-radius:18px; }
+    .links a { color:var(--lime); margin-right:18px; font-weight:900; }
+    @media(max-width:900px) { .flow { grid-template-columns:1fr 1fr; } }
+    @media(max-width:560px) { .flow { grid-template-columns:1fr; } header { display:block; } .overall { display:inline-block; margin-top:14px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div><div class="kicker">Goal Compiler / 需求编译器</div><h1>不润色 Prompt。<br>把模糊需求编译成可停止的执行。</h1></div>
+      <span class="overall">完整 Demo PASS</span>
+    </header>
+    <section class="flow">
+      <article><span class="step">01 / ROUTER</span><h2>“给我做个 AI 网站，越快越好”</h2><p>路由为 website / 模糊想法 / 中风险 / 标准外部信息需求。</p><span class="status human">COMPILED</span></article>
+      <article><span class="step">02 / NEGATIVE GATE</span><h2>成功指标：“好看”</h2><ul><li>strategy_gate.success_metrics[0].statement: must describe an observable outcome</li><li>strategy_gate.success_metrics[0].statement: vague metric `好看` is not measurable</li><li>strategy_gate.success_metrics[0].measurement.target: must contain explicit thresholds</li><li>strategy_gate.success_metrics[0].evidence_path: is required</li><li>human_review.decision: must be `approved` before execution</li><li>human_review.reviewer: is required before execution</li><li>human_review.sign_off: must equal `APPROVED BY HUMAN`</li></ul><span class="status fail">VALIDATOR FAIL</span></article>
+      <article><span class="step">03 / HUMAN PATCH</span><h2>60 分钟 · 1 页 · 1 CTA · 假设标记</h2><p>人工替换主观指标，明确测量方法、数字门槛和证据路径。</p><span class="status pass">VALIDATOR PASS</span></article>
+      <article><span class="step">04 / FIRST REAL OUTPUT</span><h2>真正生成页面，再跑 6 项结构检查</h2><p>无外部资产、无表单提交、无生产变更。产物和检查报告都可直接打开。</p><span class="status pass">EXECUTION PASS</span></article>
+    </section>
+    <nav class="links">
+      <a href="./01-invalid-draft/router.json">Router JSON</a>
+      <a href="./01-invalid-draft/validator.FAIL.log">FAIL log</a>
+      <a href="./human-metric-patch.json">Human patch</a>
+      <a href="./02-reviewed-contract/validator.PASS.log">PASS log</a>
+      <a href="./03-first-output/index.html">First output</a>
+      <a href="./03-first-output/execution-report.json">Execution report</a>
+    </nav>
+  </main>
+</body>
+</html>

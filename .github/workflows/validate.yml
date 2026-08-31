@@ -31,6 +31,18 @@ jobs:
       - name: Run negative validator tests
         run: python3 scripts/test_validator_negative_cases.py
 
+      - name: Test Goal Compiler runtime
+        run: python3 -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: Run reproducible Goal Compiler demo
+        run: |
+          python3 scripts/goal_compiler.py demo --output /tmp/goal-compiler-demo
+          python3 scripts/validate_xiaowei_goal.py /tmp/goal-compiler-demo/02-reviewed-contract/goal.md
+          python3 scripts/evaluate_goal_output.py /tmp/goal-compiler-demo/02-reviewed-contract/goal.md
+
+      - name: Validate committed contest evidence
+        run: python3 scripts/validate_contest_pack.py
+
       - name: Validate manifest JSON
         run: python3 -m json.tool manifest.json > /tmp/xiaowei-goal-manifest.json
 
@@ -42,7 +54,7 @@ jobs:
 
       - name: Validate YAML files
         run: |
-          ruby -e 'require "yaml"; YAML.load_file("agents/interface.yaml"); YAML.load_file(".github/workflows/validate.yml"); YAML.load_file(".github/workflows/daily-evolution.yml")'
+          ruby -e 'require "yaml"; YAML.load_file("agents/interface.yaml"); YAML.load_file("agents/openai.yaml"); YAML.load_file(".github/workflows/validate.yml"); YAML.load_file(".github/workflows/daily-evolution.yml")'
 
       - name: Compile Python scripts
-        run: python3 -m py_compile scripts/validate_xiaowei_goal.py scripts/evaluate_goal_output.py scripts/daily_evolution_audit.py scripts/check_release_consistency.py scripts/check_readme_topics.py scripts/check_installed_skill.py scripts/test_validator_negative_cases.py
+        run: python3 -m py_compile scripts/*.py tests/test_goal_compiler.py

@@ -1,0 +1,3 @@
+Use $xiaowei-goal from this repository to compile the following request. Do not merely polish the wording. Run Smart Router and Strategy Gate, expose default assumptions, define a measurable success metric, at least two disconfirming signals, at least two kill criteria, a tool/evidence gate, and one safe first step. Return both a concise human-readable /goal and a JSON object suitable for comparison with the deterministic contract. Do not execute, browse, or claim live market evidence. Clearly mark which decisions came from your semantic judgment and which still need human approval.
+
+Request: 给我做个 AI 网站，越快越好

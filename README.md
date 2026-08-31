@@ -1,17 +1,17 @@
-# xiaowei-goal
+# Goal Compiler｜需求编译器
 
 [![Validate Xiaowei Goal](https://github.com/siuserxiaowei/xiaowei-goal/actions/workflows/validate.yml/badge.svg)](https://github.com/siuserxiaowei/xiaowei-goal/actions/workflows/validate.yml)
-![Version](https://img.shields.io/badge/version-0.11.0-blue)
+![Version](https://img.shields.io/badge/version-0.12.0-blue)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 <!-- SIUSER-REPO-GUIDE:START -->
 ## 项目介绍 / Project Introduction
 
 ### 中文
-Research-first Agent Skill：把 App、网站、SEO、增长和竞品任务收束成证据驱动的 /goal 工作流。
+Research-first Agent Skill 与可执行需求编译器：把模糊任务收束成机器可读、人工审核、有反证和终止门槛的 /goal。
 
 ### English
-Strategy-gated Agent Skill for turning app, website, SEO, growth, competitor, and search-first tasks into evidence-backed /goal commands.
+Agent Skill and executable compiler for turning vague intent into measurable, evidence-gated, human-reviewed goals with a first safe output.
 
 ## 使用方式 / Usage
 
@@ -33,14 +33,15 @@ Strategy-gated Agent Skill for turning app, website, SEO, growth, competitor, an
 - 主要语言 / Primary language: `Python`
 - 可见性 / Visibility: `public`
 - 仓库类型 / Repository type: `source`
-- Topics / 主题：`agent-reach`, `agent-research`, `agent-skill`, `codex`, `goal`, `browser-use`, `claude-for-chrome`, `competitor-analysis`, `deep-research`, `growth`, `prompt-engineering`, `research-agent`, `scrapling`, `seo`, `web-research`
+- Topics: `agent-reach`, `agent-research`, `agent-skill`, `codex`, `goal`, `goal-compiler`, `human-in-the-loop`, `browser-use`, `claude-for-chrome`, `competitor-analysis`, `deep-research`, `growth`, `prompt-engineering`, `research-agent`, `requirements-engineering`, `scrapling`, `seo`, `web-research`
 
 ## 本地运行 / Local Run
 
 ```bash
 git clone https://github.com/siuserxiaowei/xiaowei-goal.git
 cd xiaowei-goal
-# Read SKILL.md first, then install or copy the skill into your local agent skill directory.
+python3 scripts/goal_compiler.py demo --output /tmp/goal-compiler-demo
+open /tmp/goal-compiler-demo/walkthrough.html
 ```
 
 ## 仓库结构 / Repository Map
@@ -77,13 +78,58 @@ cd xiaowei-goal
 
 
 
-`xiaowei-goal` 是一个面向 App、网站、落地页、SaaS、SEO、增长和竞品分析的 Agent Skill。
+`Goal Compiler｜需求编译器` 是 `xiaowei-goal` v0.12.0 的可执行产品形态：一个面向 App、网站、落地页、SaaS、SEO、增长和竞品分析的 Agent Skill，加上确定性 CLI 门禁。
 
-它的核心目标不是让 agent 立刻动手写代码，而是先把模糊业务需求变成一个 **先调研、再 Deep Research、最后应用到业务** 的 `/goal`。
+它的核心目标不是让 agent 立刻动手写代码，也不是把 Prompt 润色得更长，而是把模糊需求编译为：
+
+- Smart Router：任务类型、成熟度、风险、外部信息需求。
+- Strategy Gate：问题重构、最小验证、可测量成功指标、反证、终止条件。
+- Tool / Evidence Gate：什么证据允许什么结论，什么操作必须暂停。
+- Human Sign-off：人工把“好看”这类主观词改成可验收门槛后，CLI 才允许执行。
+- First Real Output：不停在方案，真正生成第一个 HTML 产物和检查报告。
 
 一句话：
 
-> 先看外部世界，再深度研究证据，最后把资料变成自己的业务动作。
+> 先把想要的结果编译成会失败、能反证、知道何时停止的契约，再动手。
+
+## 70 秒可复现 Demo
+
+一条命令生成固定证据链：Router JSON、主观指标 `FAIL`、人工 metric patch、严格 `PASS`、真实静态页和 execution report。
+
+```bash
+python3 scripts/goal_compiler.py demo --output /tmp/goal-compiler-demo
+open /tmp/goal-compiler-demo/walkthrough.html
+```
+
+固定输入：
+
+```text
+给我做个 AI 网站，越快越好
+```
+
+证据链：
+
+```text
+模糊需求
+  → Smart Router + Strategy Gate JSON
+  → 成功指标“好看”被 validator 拒绝
+  → 人工改为 60 分钟 / 1 页 / 1 CTA / 假设标记
+  → 严格校验 PASS
+  → first-output/index.html + execution-report.json
+```
+
+已冻结的比赛 Demo 位于 `contest/demo-output/`；在线演示页位于 [GitHub Pages](https://siuserxiaowei.github.io/xiaowei-goal/)。
+
+### 四个 CLI 状态
+
+```bash
+python3 scripts/goal_compiler.py compile --request-file contest/demo-fixtures/request.txt --output /tmp/goal-draft
+python3 scripts/goal_compiler.py apply-review /tmp/goal-draft/goal-contract.json --review contest/demo-fixtures/human-review.json --output /tmp/goal-reviewed.json
+python3 scripts/goal_compiler.py validate /tmp/goal-reviewed.json
+python3 scripts/goal_compiler.py execute /tmp/goal-reviewed.json --output /tmp/goal-first-output
+```
+
+`execute` 对未审批契约直接返回非零退出码，且不会创建输出目录。
 
 如果当前环境安装了 [Agent Reach](https://github.com/Panniantong/Agent-Reach)，`xiaowei-goal` 会把它作为广域调研的首选能力层，用来路由 X、Reddit、YouTube、GitHub、小红书、抖音、B站、微信公众号、V2EX、RSS、Exa 搜索等公开或用户授权来源。
 
@@ -91,6 +137,9 @@ cd xiaowei-goal
 
 - `Smart Router`：先判断任务类型、成熟度、外部信息需求、风险和输出长度，再决定要不要三阶段研究。
 - `Goal Compiler`：生成前先暴露默认假设、选择理由和工具取舍，避免死板套模板。
+- `Executable Contract`：把路由、策略、指标、反证、终止条件、工具/证据门槛和第一步固化为 JSON。
+- `Human Review Gate`：未完成人工指标修订与签字时，不允许执行。
+- `First-step Executor`：严格校验通过后才生成第一个安全产物和机器检查报告。
 - `Strategy Gate`：先重构真实问题，定义最小验证、成功指标、反证信号和终止/暂缓条件，避免把每个想法都写成大工程。
 - `小伟偏好`：默认把研究落到页面、功能、内容、增长和实现目标，优先小闭环、工具站、AI 产品、SEO 和出海方向。
 - `商业优先级`：如果价值低、证据弱或成本高，会建议先小实验、暂缓或不建议做。
@@ -337,7 +386,7 @@ Deep Research 不是多搜几个链接，而是从来源池里筛出高价值资
 
 ### 4. 每日进化模式
 
-`v0.11.0` 继续强化了定时入口：
+`v0.12.0` 保留并继续验证定时审计入口：
 
 ```text
 .github/workflows/daily-evolution.yml
@@ -513,6 +562,15 @@ Release 一致性检查：
 python3 scripts/check_release_consistency.py
 ```
 
+Goal Compiler 行为测试与完整 Demo：
+
+```bash
+python3 -m unittest discover -s tests -p "test_*.py" -v
+python3 scripts/goal_compiler.py demo --output /tmp/goal-compiler-demo
+python3 scripts/validate_xiaowei_goal.py /tmp/goal-compiler-demo/02-reviewed-contract/goal.md
+python3 scripts/evaluate_goal_output.py /tmp/goal-compiler-demo/02-reviewed-contract/goal.md
+```
+
 ## 目录结构
 
 ```text
@@ -521,7 +579,11 @@ xiaowei-goal/
 ├── README.md
 ├── manifest.json
 ├── agents/
-│   └── interface.yaml
+│   ├── interface.yaml
+│   └── openai.yaml
+├── contest/
+│   ├── demo-fixtures/
+│   └── demo-output/
 ├── examples/
 │   ├── app-research-goal.en.txt
 │   ├── app-research-goal.zh.txt
@@ -540,6 +602,7 @@ xiaowei-goal/
 │   ├── business-priority.md
 │   ├── domain-packs.md
 │   ├── feedback-loop.md
+│   ├── compiler-runtime.md
 │   ├── goal-compiler.md
 │   ├── goal-contract.md
 │   ├── output-compression.md
@@ -557,15 +620,17 @@ xiaowei-goal/
 │   ├── check_readme_topics.py
 │   ├── daily_evolution_audit.py
 │   ├── evaluate_goal_output.py
+│   ├── goal_compiler.py
 │   ├── test_validator_negative_cases.py
 │   └── validate_xiaowei_goal.py
 └── tests/
-    └── invalid-goals/
+    ├── invalid-goals/
+    └── test_goal_compiler.py
 ```
 
 ## 分发说明
 
-Skill 的核心分发内容是 `SKILL.md`、`references/`、`examples/`、`agents/interface.yaml`、`manifest.json` 和 `scripts/`。`docs/` 目录主要服务 GitHub Pages 和历史报告展示，默认不应被 agent 当作当前 skill 行为规范来读取。
+Skill 的核心分发内容是 `SKILL.md`、`references/`、`examples/`、`agents/`、`manifest.json` 和 `scripts/`。`contest/` 是可复现投稿证据，`docs/` 是 GitHub Pages 和历史报告展示；它们不替代 Skill 行为规范。
 
 ## 设计原则
 
@@ -579,7 +644,7 @@ Skill 的核心分发内容是 `SKILL.md`、`references/`、`examples/`、`agent
 
 ## 和乔木老师案例的关系
 
-这个 Skill 参考了乔木老师公开的 `qiaomu-goal-meta-skill` 这个案例：它启发了“把模糊需求改写成可执行 `/goal`”这个方向。
+这个 Skill 参考了乔木老师公开的 [qiaomu-goal-meta-skill](https://github.com/joeseesun/qiaomu-goal-meta-skill) 案例：它启发了“把模糊需求改写成可执行 `/goal`”这个方向。
 
 但 `xiaowei-goal` 不是对原 Skill 的改名或换皮。它重新围绕我的使用场景设计：
 
@@ -587,9 +652,10 @@ Skill 的核心分发内容是 `SKILL.md`、`references/`、`examples/`、`agent
 - 更强调 Agent Reach 或其他联网能力
 - 更强调“事实 -> 推断 -> 可执行动作”
 - 更强调广域调研、Deep Research、业务应用和下一阶段执行目标
+- 新增机器可读契约、反证/终止门槛、人工 metric patch、严格 validator 和 first-step executor
 - 重新编写了 `SKILL.md`、reference、示例和校验脚本
 
-保留致谢，是为了尊重启发来源；重新设计，是为了服务我自己的业务工作流。
+保留致谢，是为了尊重启发来源；具体来源、时间线、自己的实现边界和不主张的“全球/类别首创”见 `PROVENANCE.md`。
 
 ## License
 

@@ -17,6 +17,8 @@ CHECK_COMMANDS = [
     ("validate examples", ["python3", "scripts/validate_xiaowei_goal.py", *sorted(str(path) for path in (ROOT / "examples").glob("*.txt"))]),
     ("evaluate examples", ["python3", "scripts/evaluate_goal_output.py", *sorted(str(path) for path in (ROOT / "examples").glob("*.txt"))]),
     ("negative tests", ["python3", "scripts/test_validator_negative_cases.py"]),
+    ("goal compiler tests", ["python3", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]),
+    ("contest evidence", ["python3", "scripts/validate_contest_pack.py"]),
     ("installed self-check", ["python3", "scripts/check_installed_skill.py", "."]),
     ("manifest json", ["python3", "-m", "json.tool", "manifest.json"]),
     ("README topics", ["python3", "scripts/check_readme_topics.py"]),
@@ -30,6 +32,8 @@ REQUIRED_MARKERS = {
     "daily audit script": ["scripts/daily_evolution_audit.py"],
     "release consistency script": ["scripts/check_release_consistency.py"],
     "strategy gate reference": ["references/strategy-gate.md"],
+    "compiler runtime reference": ["references/compiler-runtime.md"],
+    "goal compiler CLI": ["scripts/goal_compiler.py"],
     "self-evolution example": ["examples/self-evolution-goal.zh.txt"],
     "daily evolution example": ["examples/daily-self-evolution-goal.zh.txt"],
 }

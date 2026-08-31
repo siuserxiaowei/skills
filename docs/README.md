@@ -1,7 +1,7 @@
-# Docs Archive
+# Docs and Live Demo
 
-This directory is for GitHub Pages output and historical research/report
-artifacts.
+This directory is for the Goal Compiler GitHub Pages landing/demo and historical
+research/report artifacts.
 
 It is not part of the core xiaowei-goal skill runtime. Agents should treat the
 current skill behavior as defined by:

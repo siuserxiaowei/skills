@@ -1,7 +1,7 @@
 interface:
-  display_name: "Xiaowei Goal"
-  short_description: "Turn app, website, growth, SEO, competitor, and vague business tasks into strategy-gated research /goal commands."
-  default_prompt: "Use $xiaowei-goal to turn this task into a Xiaowei-style executable /goal. Start with Smart Router and Strategy Gate: reframe the real problem, define the smallest useful bet, success metric, counter-evidence, and kill criteria before choosing research depth or implementation. For app, website, SaaS, landing page, SEO, growth, product, competitor, or search-first tasks, create a three-stage goal when evidence is needed: broad research, Deep Research, then business application. Prefer Agent Reach when installed: confirm channel availability, route X/Reddit/YouTube/GitHub/LinkedIn/Instagram/Bilibili/XiaoHongShu/Douyin/Weibo/WeChat/V2EX/RSS/Exa/podcast/web sources through it when available, define source count, record tool/channel and access limitations, choose the right tool stack (Agent Reach, web reader/browser, Scrapling, browser-use, Claude for Chrome), choose the right task pack, add a quality gate requiring 2 independent sources per key conclusion, source strength labels, downgrade rules for outdated/promotional/inaccessible sources, contradiction handling, separate facts from inferences, and turn all collected, deduplicated, relevant, source-backed material into business actions before implementation. Use Chinese first when the user writes Chinese."
+  display_name: "Goal Compiler｜需求编译器"
+  short_description: "Compile vague intent into evidence-gated, executable goals."
+  default_prompt: "Use $xiaowei-goal to compile this request with Smart Router, Strategy Gate, measurable success metrics, disconfirming evidence, kill criteria, tool/evidence gates, and a human-approved first safe step."
 compatibility:
   canonical_format: "agent-skills"
   adapter_targets:

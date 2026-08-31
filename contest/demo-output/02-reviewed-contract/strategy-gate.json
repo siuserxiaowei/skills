@@ -1,0 +1,55 @@
+{
+  "disconfirming_evidence": [
+    {
+      "response": "停止加功能，先重写用户和问题定义。",
+      "signal": "少于 2/5 名目标用户能复述页面承诺",
+      "threshold": {
+        "max_comprehension_count": 1,
+        "sample_size": 5
+      }
+    },
+    {
+      "response": "把方向降级为待验证假设，不进入完整开发。",
+      "signal": "在 5 次访谈中没有人愿意点击 CTA 或留下下一步联系",
+      "threshold": {
+        "max_cta_intent_count": 0,
+        "sample_size": 5
+      }
+    }
+  ],
+  "kill_criteria": [
+    {
+      "action": "pause_full_build",
+      "condition": "连续两轮文案/人群调整后仍无 CTA 意图",
+      "threshold": {
+        "max_cta_intent_count": 0,
+        "max_rounds": 2
+      }
+    },
+    {
+      "action": "stop_and_request_authorization",
+      "condition": "首个页面需要未授权数据、账号或付费服务才能证明",
+      "threshold": {
+        "unauthorized_dependencies": 1
+      }
+    }
+  ],
+  "problem_reframe": "不是立刻做完整 AI 网站，而是先验证一个具体人群、一个高频问题和一个可点击承诺能否形成首个需求证据。",
+  "smallest_bet": "先产出一个标注为假设的单页和一个 CTA，然后用 5 次目标用户反馈决定是否扩大实现。",
+  "success_metrics": [
+    {
+      "evidence_path": "first-output/execution-report.json",
+      "id": "first-validation-page",
+      "measurement": {
+        "method": "本地 HTML 结构检查",
+        "target": {
+          "assumption_label_required": true,
+          "max_minutes": 60,
+          "min_html_pages": 1,
+          "min_primary_cta": 1
+        }
+      },
+      "statement": "在 60 分钟内生成 1 个可打开的单页，页面包含 1 个明确价值承诺、1 个 CTA 和假设标记。"
+    }
+  ]
+}

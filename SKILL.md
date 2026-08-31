@@ -48,6 +48,24 @@ Use Chinese output by default for Chinese users. Keep the slash command as `/goa
 Always run Smart Router before drafting. Do not default to the heaviest
 three-stage template when a direct or light goal is enough.
 
+## Executable Contract Mode
+
+When the user asks to compile, validate, demonstrate, or execute a vague goal,
+read `references/compiler-runtime.md`. Use `scripts/goal_compiler.py` to create a
+machine-readable contract rather than presenting prose as execution evidence.
+
+Keep the judgment layers separate:
+
+- the agent performs semantic passes and proposes the router, strategy, metric,
+  disconfirming evidence, kill criteria, and first safe step
+- the deterministic validator rejects vague metrics and incomplete gates
+- a human must approve the measurable metric before execution
+- the executor may create only the contract's first safe artifact and check
+  report; it must not silently cross an authorization boundary
+
+Never report a draft contract as executed. Use the explicit states `FAIL`,
+`PENDING HUMAN SIGN-OFF`, `PASS`, and `EXECUTED`.
+
 ## Distribution Note
 
 If a local installed copy behaves like an older version and does not mention
@@ -262,6 +280,8 @@ Bad goals:
 - `references/source-map.md`: platform routing and query patterns for app, website, SEO, growth, and technical tasks.
 - `references/task-packs.md`: App MVP, website/landing page, SEO cluster, competitor analysis, and growth experiment packs.
 - `references/goal-contract.md`: compact templates for executable goals and validation rules.
+- `references/compiler-runtime.md`: machine-readable contract, human review, strict validation, and first-step execution protocol.
+- `scripts/goal_compiler.py`: deterministic CLI for compile, validate, apply-review, execute, and reproducible demo modes.
 - `scripts/validate_xiaowei_goal.py`: local validator for generated goal examples.
 - `scripts/evaluate_goal_output.py`: local scorer for generated goal completeness, proportionality, and business application signals.
 - `scripts/daily_evolution_audit.py`: deterministic daily audit for scheduled evolution checks and GitHub issue handoff.

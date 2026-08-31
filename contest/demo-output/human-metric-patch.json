@@ -1,0 +1,19 @@
+{
+  "decision": "approved",
+  "reason": "把主观的“好看”改成可用时间、文件、CTA 和结构检查验收的门槛。",
+  "reviewer": "参赛者人工复核",
+  "success_metric_override": {
+    "evidence_path": "first-output/execution-report.json",
+    "id": "first-validation-page",
+    "measurement": {
+      "method": "本地 HTML 结构检查",
+      "target": {
+        "assumption_label_required": true,
+        "max_minutes": 60,
+        "min_html_pages": 1,
+        "min_primary_cta": 1
+      }
+    },
+    "statement": "在 60 分钟内生成 1 个可打开的单页，页面包含 1 个明确价值承诺、1 个 CTA 和假设标记。"
+  }
+}

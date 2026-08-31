@@ -1,0 +1,15 @@
+{
+  "action": "generate_validation_landing_page",
+  "artifact": "index.html",
+  "checks": {
+    "assumption_label": true,
+    "compiler_marker": true,
+    "html_exists": true,
+    "no_external_assets": true,
+    "one_h1": true,
+    "one_primary_cta": true
+  },
+  "contract_id": "goal-3bf7ef9f70d2",
+  "external_side_effects": [],
+  "status": "PASS"
+}

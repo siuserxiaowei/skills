@@ -1,0 +1,15 @@
+{
+  "contract_id": "goal-3bf7ef9f70d2",
+  "error_count": 7,
+  "errors": [
+    "strategy_gate.success_metrics[0].statement: must describe an observable outcome",
+    "strategy_gate.success_metrics[0].statement: vague metric `好看` is not measurable",
+    "strategy_gate.success_metrics[0].measurement.target: must contain explicit thresholds",
+    "strategy_gate.success_metrics[0].evidence_path: is required",
+    "human_review.decision: must be `approved` before execution",
+    "human_review.reviewer: is required before execution",
+    "human_review.sign_off: must equal `APPROVED BY HUMAN`"
+  ],
+  "human_approval_required": true,
+  "status": "FAIL"
+}

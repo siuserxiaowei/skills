@@ -1,0 +1,52 @@
+{
+  "first_step_execution": {
+    "action": "generate_validation_landing_page",
+    "artifact": "index.html",
+    "checks": {
+      "assumption_label": true,
+      "compiler_marker": true,
+      "html_exists": true,
+      "no_external_assets": true,
+      "one_h1": true,
+      "one_primary_cta": true
+    },
+    "contract_id": "goal-3bf7ef9f70d2",
+    "external_side_effects": [],
+    "status": "PASS"
+  },
+  "human_review": {
+    "changed_fields": [
+      "strategy_gate.success_metrics[0]"
+    ],
+    "decision": "approved",
+    "previous_metric_statement": "好看",
+    "reason": "把主观的“好看”改成可用时间、文件、CTA 和结构检查验收的门槛。",
+    "review_id": "review-c754c277e9a7",
+    "reviewer": "参赛者人工复核",
+    "sign_off": "APPROVED BY HUMAN"
+  },
+  "negative_gate": {
+    "contract_id": "goal-3bf7ef9f70d2",
+    "error_count": 7,
+    "errors": [
+      "strategy_gate.success_metrics[0].statement: must describe an observable outcome",
+      "strategy_gate.success_metrics[0].statement: vague metric `好看` is not measurable",
+      "strategy_gate.success_metrics[0].measurement.target: must contain explicit thresholds",
+      "strategy_gate.success_metrics[0].evidence_path: is required",
+      "human_review.decision: must be `approved` before execution",
+      "human_review.reviewer: is required before execution",
+      "human_review.sign_off: must equal `APPROVED BY HUMAN`"
+    ],
+    "human_approval_required": true,
+    "status": "FAIL"
+  },
+  "positive_gate": {
+    "contract_id": "goal-3bf7ef9f70d2",
+    "error_count": 0,
+    "errors": [],
+    "human_approval_required": true,
+    "status": "PASS"
+  },
+  "request": "给我做个 AI 网站，越快越好",
+  "status": "PASS"
+}
