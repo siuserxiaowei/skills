@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTEST = ROOT / "contest"
 DEMO = CONTEST / "demo-output"
 DOCS_DEMO = ROOT / "docs" / "demo"
+RECORDED_DEMO_WORKSPACE = "/private/tmp/xiaowei-goal-demo-execution-workspace"
 
 SYNCED_DEMO_FILES = (
     Path("walkthrough.html"),
@@ -102,8 +103,14 @@ def main() -> int:
     if contract.get("semantic_input_snapshot") != semantic:
         errors.append("goal contract must embed the exact saved semantic snapshot")
     workspace = contract.get("execution_workspace", {})
-    expected_demo_workspace = str(Path("/tmp/xiaowei-goal-demo-execution-workspace").resolve())
-    if not isinstance(workspace, dict) or workspace.get("root") != expected_demo_workspace:
+    # Validate the committed recording verbatim; resolving /tmp here would rewrite
+    # the macOS /private/tmp evidence differently on a Linux CI runner.
+    recorded_workspace_hash = hashlib.sha256(RECORDED_DEMO_WORKSPACE.encode("utf-8")).hexdigest()
+    if (
+        not isinstance(workspace, dict)
+        or workspace.get("root") != RECORDED_DEMO_WORKSPACE
+        or workspace.get("root_sha256") != recorded_workspace_hash
+    ):
         errors.append("fixed demo contract must record the deterministic execution workspace")
 
     demo_report = load_json(DEMO / "demo-report.json")
