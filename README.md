@@ -78,7 +78,7 @@ open /tmp/goal-compiler-demo/walkthrough.html
 
 
 
-`Goal Compiler｜需求编译器` 是 `xiaowei-goal` v0.13.0 的可执行产品形态：Agent/Skill 生成完整领域语义，确定性 CLI 负责验证、审批绑定与白名单第一步执行。CLI 本身不是 AI，也不会把编程任务硬编译成网站目标。
+`Goal Compiler｜需求编译器` 是 `xiaowei-goal` v0.13.0 的可执行产品形态：Agent/Skill 生成完整领域语义，确定性 CLI 负责验证、审批记录与当前 payload 的一致性检查，以及白名单第一步执行。CLI 本身不是 AI，也不会把编程任务硬编译成网站目标。
 
 它的核心目标不是让 agent 立刻动手写代码，也不是把 Prompt 润色得更长，而是把模糊需求编译为：
 
@@ -126,6 +126,7 @@ open /tmp/goal-compiler-demo/walkthrough.html
 python3 scripts/goal_compiler.py compile \
   --request-file contest/demo-fixtures/request.txt \
   --semantic-input contest/demo-fixtures/semantic-input.demo.json \
+  --workspace-root /tmp/goal-workspace \
   --output /tmp/goal-draft
 
 # 研究型任务：先 attach-evidence；然后由真实审批者编辑待审文件。
@@ -134,10 +135,12 @@ python3 scripts/goal_compiler.py attach-evidence /tmp/goal-draft/goal-contract.j
 python3 scripts/goal_compiler.py apply-review /tmp/goal-with-evidence.json \
   --review /path/to/human-review.json --output /tmp/goal-reviewed.json
 python3 scripts/goal_compiler.py validate /tmp/goal-reviewed.json
-python3 scripts/goal_compiler.py execute /tmp/goal-reviewed.json --output /tmp/goal-first-output
+python3 scripts/goal_compiler.py execute /tmp/goal-reviewed.json
 ```
 
-`compile` 强制读取 Agent 已生成的完整语义结果；便捷 Demo 只是 `deterministic_demo_fixture` 且 `liveAiClaimed:false`。`apply-review` 把所有执行字段绑定为 `approved_payload_sha256`；任一字段在审批后被篡改，`validate` / `execute` 都会拒绝。所有文件输出默认拒绝覆盖已存在路径。
+`compile` 强制读取 Agent 已生成的完整语义结果，并把完整 semantic snapshot 与明确的绝对 workspace root 保存进合同。Router、Strategy、Tool/Evidence Gate、Goal Plan 和 First Step 必须能从该快照逐字段重建；执行位置只能是已记录 workspace root 加已审批的相对 `output_directory`。便捷 Demo 只是 `deterministic_demo_fixture` 且 `liveAiClaimed:false`。
+
+`apply-review` 记录 `approved_payload_sha256`，供 `validate` / `execute` 检查当前 payload 是否仍与保存的审批记录一致。它和可重算的 `review_id` 都是**无密钥一致性摘要，不是数字签名，也不提供恶意改写者身份认证**；能同时改写合同和摘要的人可以形成新的内部一致记录。需要对抗性防伪时，应另用受控存储、Git 签名或真人私钥签名。所有文件输出默认拒绝覆盖已存在路径。
 
 如果当前环境安装了 [Agent Reach](https://github.com/Panniantong/Agent-Reach)，`xiaowei-goal` 会把它作为广域调研的首选能力层，用来路由 X、Reddit、YouTube、GitHub、小红书、抖音、B站、微信公众号、V2EX、RSS、Exa 搜索等公开或用户授权来源。
 

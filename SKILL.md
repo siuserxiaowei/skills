@@ -65,11 +65,15 @@ Keep the judgment layers separate:
   pass before a human can approve anything
 - a real human edits the exact metric when needed and explicitly approves the
   execution scope; examples marked pending or test-only are not approval
-- the CLI binds every execution-relevant field to
-  `approved_payload_sha256`; validation and execution recompute that digest
+- the CLI saves the complete semantic input, reconstructs every derived field,
+  and records `approved_payload_sha256` so validation and execution can detect
+  drift between the retained review record and the current payload
+- `approved_payload_sha256` and `review_id` are unkeyed consistency values, not
+  signatures or proof against an actor who can rewrite both data and digests
 - the executor may dispatch only one whitelisted, task-compatible text artifact
-  and its fixed checks; it must not execute generated code or cross an
-  authorization boundary
+  inside the approved absolute workspace plus relative output directory, with
+  fixed checks; it must not execute generated code or cross an authorization
+  boundary
 
 Never report a draft contract as executed. A `FAIL.log` is failure evidence,
 not a partial pass. Write `PASS.log` only after strict validation really passes.

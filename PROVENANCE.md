@@ -12,8 +12,8 @@ following combined mechanism in `v0.13.0`:
 3. require measurable success metrics, disconfirming evidence, kill criteria,
    tool/evidence gates, and a task-specific first safe step
 4. block research-required approval until source-backed evidence is recorded
-5. bind every execution-relevant field to `approved_payload_sha256`, recomputed
-   by validation and execution
+5. save the complete semantic input, reconstruct its derived fields, and record
+   an unkeyed `approved_payload_sha256` for review/current-payload drift checks
 6. dispatch only a whitelisted text artifact and emit the actual handler and
    check results, while refusing existing output paths
 
@@ -40,7 +40,12 @@ here. It does not claim global, category, or idea-level originality.
   human-review gate, first-step executor, behavior tests, and contest pack.
 - 2026-08-31: `v0.13.0` separated Agent semantics from deterministic CLI work,
   added cross-domain rejection, research-evidence preconditions, approval
-  payload binding, refuse-existing writes, and an honest human-pending demo.
+  review/payload consistency checks, refuse-existing writes, and an honest
+  human-pending demo.
+- 2026-08-31: subsequent audit hardening saved the full semantic snapshot,
+  bound the execution workspace, verified artifact source IDs and configured
+  source record fields, and replaced security overclaims with the exact
+  unkeyed-digest boundary.
 
 Git history remains intact so these statements can be audited. No history was
 rewritten to obscure inspiration or third-party contribution.
@@ -53,6 +58,10 @@ rewritten to obscure inspiration or third-party contribution.
 - A human reviewer owns the exact measurable metric, evidence acceptance, and
   approval decision. Pending and synthetic test fixtures are never presented as
   real human sign-off.
+- `approved_payload_sha256` and `review_id` are deterministic, unkeyed
+  consistency values. They detect drift while the saved review record remains
+  fixed; they are not digital signatures and do not authenticate a reviewer or
+  stop someone who can rewrite both the payload and the consistency values.
 - The bundled fixed demo is a deterministic reference fixture and has
   `liveAiClaimed: false`; it writes only FAIL logs and stops before execution.
 - A separate preserved forward-test transcript and JSON are labelled

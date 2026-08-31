@@ -1,6 +1,6 @@
 {
   "approval_context": null,
-  "contract_id": "goal-bd81876dbbc9",
+  "contract_id": "goal-4736a5b9cdb4",
   "error_count": 12,
   "errors": [
     "strategy_gate.success_metrics[0].statement: must describe an observable outcome",

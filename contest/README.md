@@ -12,7 +12,7 @@ Live page: https://siuserxiaowei.github.io/xiaowei-goal/
 
 Agent/Skill turns a vague request into task-specific semantics; a human owns
 the exact metric and approval; a deterministic CLI enforces sources, identity,
-approval binding, and one whitelisted first-step dispatch.
+saved-semantic/review consistency, and one whitelisted first-step dispatch.
 
 ## Recorded demo chain
 
@@ -59,6 +59,8 @@ does not pretend that a fixture is a human signature or live model call.
 - `test-evidence/coding-first-output/`: real deterministic CLI dispatch under a
   `synthetic_test` approval that is accepted only for `test_fixture` contracts;
   it proves cross-domain behavior, not real human approval or a production fix.
+  The checked directory is a preserved copy; its execution report records the
+  actual approved `/private/tmp/.../first-output` target.
 - `goal-compiler-board-1920x1080.png`: 16:9 overview board.
 
 ## Three-layer boundary
@@ -67,8 +69,11 @@ does not pretend that a fixture is a human signature or live model call.
   run must preserve its transcript; deterministic fixtures say so explicitly.
 - **Human:** source review, exact metric edits, and explicit execution approval.
   The repository does not sign on the reviewer's behalf.
-- **CLI validator/executor:** deterministic identity, source and payload-hash
-  gates; task/action/artifact/check whitelist; refuse-existing writes.
+- **CLI validator/executor:** deterministic saved-semantic, source and
+  review/current-payload consistency gates; approved-workspace plus relative
+  output derivation; task/action/artifact/check whitelist; refuse-existing
+  writes. Its unkeyed SHA-256 and review ID are not signatures and do not
+  authenticate a reviewer.
 
 Cross-domain regressions prove that a coding request cannot inherit CTA,
 `15-25 个候选来源`, IdeaSignal, or the website action. The coding test

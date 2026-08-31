@@ -22,8 +22,10 @@ SYNCED_DEMO_FILES = (
     Path("01-agent-result/semantic-input.snapshot.json"),
     Path("01-agent-result/router.json"),
     Path("01-agent-result/strategy-gate.json"),
+    Path("01-agent-result/goal-contract.json"),
     Path("01-agent-result/validator.FAIL.log"),
     Path("02-subjective-metric/strategy-gate.json"),
+    Path("02-subjective-metric/goal-contract.json"),
     Path("02-subjective-metric/validator.FAIL.log"),
     Path("03-human-pending/human-review.pending.json"),
     Path("03-human-pending/NOTICE.md"),
@@ -88,6 +90,7 @@ def main() -> int:
         errors.append("submission.json: bundled fixture must set liveAiClaimed=false")
 
     semantic = load_json(DEMO / "01-agent-result" / "semantic-input.snapshot.json")
+    contract = load_json(DEMO / "01-agent-result" / "goal-contract.json")
     semantic_provenance = semantic.get("provenance", {})
     if not isinstance(semantic_provenance, dict):
         errors.append("semantic snapshot: missing provenance object")
@@ -96,6 +99,12 @@ def main() -> int:
             errors.append("semantic snapshot: fixed demo must be deterministic_demo_fixture")
         if semantic_provenance.get("live_ai_claimed") is not False or semantic_provenance.get("liveAiClaimed") is not False:
             errors.append("semantic snapshot: both live AI provenance flags must be false")
+    if contract.get("semantic_input_snapshot") != semantic:
+        errors.append("goal contract must embed the exact saved semantic snapshot")
+    workspace = contract.get("execution_workspace", {})
+    expected_demo_workspace = str(Path("/tmp/xiaowei-goal-demo-execution-workspace").resolve())
+    if not isinstance(workspace, dict) or workspace.get("root") != expected_demo_workspace:
+        errors.append("fixed demo contract must record the deterministic execution workspace")
 
     demo_report = load_json(DEMO / "demo-report.json")
     if demo_report.get("status") != "HUMAN_PENDING":
@@ -142,6 +151,7 @@ def main() -> int:
 
     coding_validation = load_json(CONTEST / "test-evidence" / "coding-validation.PASS.json")
     coding_execution = load_json(CONTEST / "test-evidence" / "coding-first-output" / "execution-report.json")
+    coding_reviewed = load_json(CONTEST / "test-evidence" / "coding-reviewed.test.json")
     coding_goal = (CONTEST / "test-evidence" / "coding-compile" / "goal.md").read_text(encoding="utf-8")
     if coding_validation.get("status") != "PASS" or coding_validation.get("approval_context") != "synthetic_test":
         errors.append("coding test evidence must pass only under explicit synthetic_test context")
@@ -157,6 +167,10 @@ def main() -> int:
         or not all(checks.values())
     ):
         errors.append("coding test evidence does not prove the domain-correct Python dispatch")
+    if coding_reviewed.get("semantic_input_snapshot") is None or coding_reviewed.get("execution_workspace") is None:
+        errors.append("coding test evidence must preserve semantic snapshot and approved workspace")
+    if coding_execution.get("execution_workspace") != coding_reviewed.get("execution_workspace"):
+        errors.append("coding execution workspace must match the reviewed contract")
     for forbidden in ("CTA", "15-25 个候选来源", "IdeaSignal", "网站/落地页改版包"):
         if forbidden in coding_goal:
             errors.append(f"coding goal leaked website term: {forbidden}")

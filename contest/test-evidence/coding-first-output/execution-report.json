@@ -1,6 +1,6 @@
 {
   "approval_context": "synthetic_test",
-  "approved_payload_sha256": "eba36febc496ee708de92e59a241fd7e7503a7b42159211dbb0ca29f38a44b72",
+  "approved_payload_sha256": "476de648e2c9d20eaaff105342fe98f8e1b8aa5368a38dcd7237a8eb64ac903f",
   "artifact": "test_csv_empty_lines.py",
   "artifact_sha256": "73ad46bf15a1164320a3cfafb939b31ef7677ce576c2261c5f8b01fc247fd611",
   "checks": {
@@ -11,12 +11,17 @@
     "required_term:REGRESSION_FIXTURE": true,
     "required_term:parse_rows": true
   },
-  "contract_id": "goal-edec1a5e50bd",
+  "contract_id": "goal-1e732fabcca6",
   "dispatch": {
     "action": "write_python_regression_fixture",
     "artifact_kind": "python",
     "handler": "write_approved_text_artifact"
   },
+  "execution_workspace": {
+    "root": "/private/tmp/xiaowei-goal-coding-evidence-workspace",
+    "root_sha256": "41ef809acc094788fa929807e9c5fdb7f4cdec73d4a1ca3b2d1174c87c395919"
+  },
   "external_side_effects": [],
+  "resolved_output_directory": "/private/tmp/xiaowei-goal-coding-evidence-workspace/first-output",
   "status": "PASS"
 }

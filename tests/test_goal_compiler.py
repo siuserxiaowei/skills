@@ -22,6 +22,7 @@ import goal_compiler  # noqa: E402
 
 
 WEBSITE_REQUEST = "给我做个 AI 网站，越快越好"
+TEST_WORKSPACE = Path("/tmp/xiaowei-goal-unit-workspace")
 
 
 def load_fixture(name: str) -> dict:
@@ -38,6 +39,26 @@ def synthetic_review(metric_id: str) -> dict:
     return review
 
 
+def compile_semantic(
+    semantic: dict,
+    *,
+    request: str | None = None,
+    workspace_root: Path = TEST_WORKSPACE,
+    evidence_bundle: dict | None = None,
+) -> dict:
+    return goal_compiler.build_contract(
+        request or semantic["request"],
+        semantic,
+        workspace_root=workspace_root,
+        evidence_bundle=evidence_bundle,
+    )
+
+
+def set_first_step_content(semantic: dict, content: str) -> None:
+    semantic["first_step"]["content_template"] = content
+    semantic["first_step"]["content_sha256"] = goal_compiler.sha256_text(content)
+
+
 class GoalCompilerBoundaryTests(unittest.TestCase):
     def test_compile_requires_complete_semantic_input(self) -> None:
         result = subprocess.run(
@@ -50,10 +71,30 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("--semantic-input", result.stderr)
 
+        missing_workspace = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPTS / "goal_compiler.py"),
+                "compile",
+                "--request",
+                WEBSITE_REQUEST,
+                "--semantic-input",
+                str(DEMO_FIXTURES / "semantic-input.demo.json"),
+                "--output",
+                "/tmp/not-created",
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(missing_workspace.returncode, 2)
+        self.assertIn("--workspace-root", missing_workspace.stderr)
+
     def test_compile_is_deterministic_for_same_agent_payload(self) -> None:
         semantic = goal_compiler.load_semantic_input(DEMO_FIXTURES / "semantic-input.demo.json")
-        first = goal_compiler.build_contract(WEBSITE_REQUEST, semantic)
-        second = goal_compiler.build_contract(WEBSITE_REQUEST, semantic)
+        first = compile_semantic(semantic, request=WEBSITE_REQUEST)
+        second = compile_semantic(semantic, request=WEBSITE_REQUEST)
         self.assertEqual(first, second)
         self.assertEqual(first["smart_router"]["task_type"], "website")
         self.assertEqual(first["compiler"]["kind"], "deterministic-cli")
@@ -64,7 +105,7 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
         coding_request = "修复 CSV parser 忽略空行时崩溃的问题，并增加回归测试"
         semantic["request"] = coding_request
         with self.assertRaisesRegex(goal_compiler.CompilerError, "domain mismatch"):
-            goal_compiler.build_contract(coding_request, semantic)
+            compile_semantic(semantic, request=coding_request)
 
     def test_generic_programming_language_request_routes_as_coding(self) -> None:
         self.assertEqual(
@@ -78,29 +119,31 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
         semantic["request"] = request
         semantic["smart_router"]["task_type"] = "unknown"
         with self.assertRaisesRegex(goal_compiler.CompilerError, "unsupported task type"):
-            goal_compiler.build_contract(request, semantic)
+            compile_semantic(semantic, request=request)
 
     def test_coding_goal_has_no_website_leak_and_dispatches_python(self) -> None:
         semantic = load_semantic("coding-semantic-input.json")
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
-        rendered = goal_compiler.render_goal(contract)
-        for forbidden in ("CTA", "15-25 个候选来源", "IdeaSignal", "网站/落地页改版包"):
-            self.assertNotIn(forbidden, rendered)
-
-        approved = goal_compiler.apply_human_review(contract, synthetic_review("csv-empty-line-regression"))
         with tempfile.TemporaryDirectory() as temp_dir:
-            output = Path(temp_dir) / "coding-first-output"
-            report = goal_compiler.execute_first_step(approved, output)
+            workspace = Path(temp_dir)
+            contract = compile_semantic(semantic, workspace_root=workspace)
+            rendered = goal_compiler.render_goal(contract)
+            for forbidden in ("CTA", "15-25 个候选来源", "IdeaSignal", "网站/落地页改版包"):
+                self.assertNotIn(forbidden, rendered)
+
+            approved = goal_compiler.apply_human_review(contract, synthetic_review("csv-empty-line-regression"))
+            report = goal_compiler.execute_first_step(approved)
+            output = workspace / semantic["first_step"]["output_directory"]
             artifact = output / "test_csv_empty_lines.py"
             self.assertEqual(report["status"], "PASS")
             self.assertEqual(report["dispatch"]["action"], "write_python_regression_fixture")
+            self.assertEqual(report["resolved_output_directory"], str(output.resolve()))
             self.assertTrue(artifact.is_file())
             self.assertIn("REGRESSION_FIXTURE", artifact.read_text(encoding="utf-8"))
             self.assertTrue(report["checks"]["python_syntax"])
 
     def test_seo_requires_sources_before_human_approval(self) -> None:
         semantic = load_semantic("seo-semantic-input.json")
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
+        contract = compile_semantic(semantic)
         errors = goal_compiler.validate_contract(contract, require_human_approval=False, require_evidence=True)
         self.assertTrue(any("evidence_bundle.sources" in error for error in errors))
         with self.assertRaisesRegex(goal_compiler.CompilerError, "evidence-incomplete"):
@@ -121,7 +164,7 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
             "method": "人工主观感受",
             "target": {"reviewers": 1},
         }
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
+        contract = compile_semantic(semantic)
         joined = "\n".join(goal_compiler.validate_contract(contract, require_human_approval=False))
         self.assertIn("vague wording", joined)
         self.assertIn("subjective method", joined)
@@ -129,21 +172,21 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
 
     def test_pending_review_fixture_cannot_be_applied(self) -> None:
         semantic = load_semantic("coding-semantic-input.json")
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
+        contract = compile_semantic(semantic)
         pending = json.loads((DEMO_FIXTURES / "human-review.pending.json").read_text(encoding="utf-8"))
         with self.assertRaisesRegex(goal_compiler.CompilerError, "pending"):
             goal_compiler.apply_human_review(contract, pending)
 
     def test_synthetic_approval_cannot_bypass_non_test_contract(self) -> None:
         semantic = goal_compiler.load_semantic_input(DEMO_FIXTURES / "semantic-input.demo.json")
-        contract = goal_compiler.build_contract(WEBSITE_REQUEST, semantic)
+        contract = compile_semantic(semantic, request=WEBSITE_REQUEST)
         review = synthetic_review("first-validation-page")
         with self.assertRaisesRegex(goal_compiler.CompilerError, "test_fixture"):
             goal_compiler.apply_human_review(contract, review)
 
     def test_review_must_name_exact_metric(self) -> None:
         semantic = load_semantic("coding-semantic-input.json")
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
+        contract = compile_semantic(semantic)
         review = synthetic_review("wrong-metric")
         with self.assertRaisesRegex(goal_compiler.CompilerError, "metric_id"):
             goal_compiler.apply_human_review(contract, review)
@@ -152,26 +195,171 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
         semantic = load_semantic("seo-semantic-input.json")
         evidence = load_fixture("seo-evidence.json")
         evidence["sources"][1]["url"] = evidence["sources"][0]["url"]
-        contract = goal_compiler.build_contract(semantic["request"], semantic, evidence_bundle=evidence)
+        contract = compile_semantic(semantic, evidence_bundle=evidence)
         errors = "\n".join(goal_compiler.validate_contract(contract, require_human_approval=False))
         self.assertIn("duplicate URL", errors)
 
+    def test_saved_semantic_snapshot_rejects_each_derived_field_drift_before_review(self) -> None:
+        semantic = load_semantic("coding-semantic-input.json")
+        mutations = {
+            "router": lambda value: value["smart_router"].__setitem__("risk_level", "高"),
+            "strategy": lambda value: value["strategy_gate"].__setitem__("smallest_bet", "改成另一个未经 Agent 记录的最小验证。"),
+            "tool_gate": lambda value: value["tool_evidence_gate"]["permitted_tools"].append("new tool"),
+            "goal_plan": lambda value: value["goal_plan"].__setitem__("outcome", "改成另一个未经 Agent 记录的目标。"),
+            "first_step": lambda value: value["first_step"].__setitem__("purpose", "改成另一个未经 Agent 记录的动作目的。"),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(field=name):
+                contract = compile_semantic(semantic)
+                mutate(contract)
+                errors = "\n".join(goal_compiler.validate_contract(contract, require_human_approval=False))
+                self.assertIn("semantic_input_snapshot", errors)
+                with self.assertRaisesRegex(goal_compiler.CompilerError, "saved semantic snapshot"):
+                    goal_compiler.apply_human_review(contract, synthetic_review("csv-empty-line-regression"))
+
+    def test_seo_research_gate_cannot_be_downgraded_before_review_or_execution(self) -> None:
+        semantic = load_semantic("seo-semantic-input.json")
+        evidence = load_fixture("seo-evidence.json")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            contract = compile_semantic(semantic, workspace_root=workspace)
+            downgraded = copy.deepcopy(contract)
+            downgraded["tool_evidence_gate"]["research_required"] = False
+            errors = "\n".join(goal_compiler.validate_contract(downgraded, require_human_approval=False))
+            self.assertIn("tool_evidence_gate: derived value drifted", errors)
+            with self.assertRaisesRegex(goal_compiler.CompilerError, "saved semantic snapshot"):
+                goal_compiler.apply_human_review(
+                    downgraded,
+                    synthetic_review("seo-source-brief"),
+                    evidence_bundle=evidence,
+                )
+
+            approved = goal_compiler.apply_human_review(
+                contract,
+                synthetic_review("seo-source-brief"),
+                evidence_bundle=evidence,
+            )
+            post_review_drift = copy.deepcopy(approved)
+            post_review_drift["tool_evidence_gate"]["research_required"] = False
+            with self.assertRaises(goal_compiler.CompilerError):
+                goal_compiler.execute_first_step(post_review_drift)
+            self.assertFalse((workspace / semantic["first_step"]["output_directory"]).exists())
+
+    def test_evidence_record_fields_are_required_on_each_source(self) -> None:
+        semantic = load_semantic("seo-semantic-input.json")
+        semantic["tool_evidence_gate"]["evidence_requirements"][0]["record_fields"].append("published_at")
+        evidence = load_fixture("seo-evidence.json")
+        contract = compile_semantic(semantic, evidence_bundle=evidence)
+        errors = "\n".join(goal_compiler.validate_contract(contract, require_human_approval=False))
+        self.assertIn("published_at", errors)
+
+        for source in evidence["sources"]:
+            source["published_at"] = "2026-08-31"
+        complete_contract = compile_semantic(semantic, evidence_bundle=evidence)
+        approved = goal_compiler.apply_human_review(
+            complete_contract,
+            synthetic_review("seo-source-brief"),
+        )
+        self.assertEqual([], goal_compiler.validate_contract(approved))
+
+    def test_markdown_source_references_must_be_known_and_cover_claim_minimum(self) -> None:
+        evidence = load_fixture("seo-evidence.json")
+        cases = {
+            "unknown": "# SEO 验证简报\n\nsource_ids: totally-missing-id, seo-001\n",
+            "insufficient": "# SEO 验证简报\n\nsource_ids: seo-001\n",
+        }
+        for name, content in cases.items():
+            with self.subTest(case=name):
+                semantic = load_semantic("seo-semantic-input.json")
+                set_first_step_content(semantic, content)
+                contract = compile_semantic(semantic, evidence_bundle=evidence)
+                errors = "\n".join(goal_compiler.validate_contract(contract, require_human_approval=False))
+                self.assertIn("validator `source_reference` failed", errors)
+                with self.assertRaisesRegex(goal_compiler.CompilerError, "source_reference"):
+                    goal_compiler.apply_human_review(contract, synthetic_review("seo-source-brief"))
+
+    def test_execution_output_is_derived_from_approved_workspace(self) -> None:
+        semantic = load_semantic("coding-semantic-input.json")
+        with self.assertRaisesRegex(goal_compiler.CompilerError, "explicit absolute"):
+            compile_semantic(semantic, workspace_root=Path("relative-workspace"))
+        with tempfile.TemporaryDirectory() as temp_dir:
+            parent = Path(temp_dir)
+            approved_workspace = parent / "approved-workspace"
+            other_workspace = parent / "other-workspace"
+            contract = compile_semantic(semantic, workspace_root=approved_workspace)
+            approved = goal_compiler.apply_human_review(contract, synthetic_review("csv-empty-line-regression"))
+            expected = approved_workspace / semantic["first_step"]["output_directory"]
+
+            for unapproved in (other_workspace / "first-output", parent / "absolute-other-output"):
+                with self.subTest(path=unapproved):
+                    with self.assertRaisesRegex(goal_compiler.CompilerError, "does not match the approved"):
+                        goal_compiler.execute_first_step(approved, unapproved.resolve())
+                    self.assertFalse(unapproved.exists())
+
+            report = goal_compiler.execute_first_step(approved, expected)
+            self.assertEqual(str(expected.resolve()), report["resolved_output_directory"])
+
+    def test_changed_fields_drift_breaks_review_record_consistency(self) -> None:
+        semantic = load_semantic("coding-semantic-input.json")
+        approved = goal_compiler.apply_human_review(
+            compile_semantic(semantic),
+            synthetic_review("csv-empty-line-regression"),
+        )
+        drifted = copy.deepcopy(approved)
+        drifted["human_review"]["changed_fields"].append("goal_plan.outcome")
+        errors = "\n".join(goal_compiler.validate_contract(drifted))
+        self.assertIn("human_review.changed_fields", errors)
+        self.assertIn("human_review.review_id", errors)
+
+        wrong_metric = copy.deepcopy(approved)
+        wrong_metric["human_review"]["metric_id"] = "another-metric"
+        metric_errors = "\n".join(goal_compiler.validate_contract(wrong_metric))
+        self.assertIn("human_review.metric_id", metric_errors)
+        self.assertIn("human_review.review_id", metric_errors)
+
+    def test_human_metric_override_is_reconstructed_from_snapshot(self) -> None:
+        semantic = load_semantic("coding-semantic-input.json")
+        review = synthetic_review("csv-empty-line-regression")
+        override = copy.deepcopy(semantic["strategy_gate"]["success_metrics"][0])
+        override["statement"] = "生成 1 个语法有效且包含回归标记的 Python 空行夹具。"
+        review["success_metric_override"] = override
+        approved = goal_compiler.apply_human_review(compile_semantic(semantic), review)
+        self.assertEqual(["strategy_gate.success_metrics[0]"], approved["human_review"]["changed_fields"])
+        self.assertEqual([], goal_compiler.validate_contract(approved))
+
+    def test_acceptance_required_terms_rejects_blank_entries(self) -> None:
+        semantic = load_semantic("coding-semantic-input.json")
+        semantic["first_step"]["acceptance"]["required_terms"].append("   ")
+        with self.assertRaisesRegex(goal_compiler.CompilerError, "entries must be non-empty strings"):
+            compile_semantic(semantic)
+
+    def test_html_external_url_parser_rejects_single_quotes_case_and_whitespace(self) -> None:
+        semantic = goal_compiler.load_semantic_input(DEMO_FIXTURES / "semantic-input.demo.json")
+        content = semantic["first_step"]["content_template"].replace(
+            "</main>",
+            "<img SRC = ' HTTPS://example.com/tracker.png ' alt='external'></main>",
+        )
+        set_first_step_content(semantic, content)
+        contract = compile_semantic(semantic, request=WEBSITE_REQUEST)
+        errors = "\n".join(goal_compiler.validate_contract(contract, require_human_approval=False))
+        self.assertIn("validator `no_external_urls` failed", errors)
+
     def test_request_hash_and_contract_id_are_verified(self) -> None:
         semantic = load_semantic("coding-semantic-input.json")
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
-        request_tamper = copy.deepcopy(contract)
-        request_tamper["request"]["raw"] += " tampered"
-        request_errors = "\n".join(goal_compiler.validate_contract(request_tamper, require_human_approval=False))
+        contract = compile_semantic(semantic)
+        request_drift = copy.deepcopy(contract)
+        request_drift["request"]["raw"] += " changed"
+        request_errors = "\n".join(goal_compiler.validate_contract(request_drift, require_human_approval=False))
         self.assertIn("request.request_sha256", request_errors)
 
-        id_tamper = copy.deepcopy(contract)
-        id_tamper["contract_id"] = "goal-tampered"
-        id_errors = "\n".join(goal_compiler.validate_contract(id_tamper, require_human_approval=False))
+        id_drift = copy.deepcopy(contract)
+        id_drift["contract_id"] = "goal-changed"
+        id_errors = "\n".join(goal_compiler.validate_contract(id_drift, require_human_approval=False))
         self.assertIn("contract_id", id_errors)
 
-    def test_every_execution_field_is_bound_after_approval(self) -> None:
+    def test_approval_digest_detects_unreviewed_execution_payload_drift(self) -> None:
         semantic = load_semantic("coding-semantic-input.json")
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
+        contract = compile_semantic(semantic)
         approved = goal_compiler.apply_human_review(contract, synthetic_review("csv-empty-line-regression"))
 
         mutations = {
@@ -186,9 +374,9 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
         }
         for name, mutate in mutations.items():
             with self.subTest(field=name):
-                tampered = copy.deepcopy(approved)
-                mutate(tampered)
-                errors = goal_compiler.validate_contract(tampered)
+                drifted = copy.deepcopy(approved)
+                mutate(drifted)
+                errors = goal_compiler.validate_contract(drifted)
                 self.assertTrue(
                     any("approved_payload_sha256" in error for error in errors),
                     f"{name} did not invalidate approval: {errors}",
@@ -196,48 +384,48 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
                 with tempfile.TemporaryDirectory() as temp_dir:
                     output = Path(temp_dir) / "blocked"
                     with self.assertRaises(goal_compiler.CompilerError):
-                        goal_compiler.execute_first_step(tampered, output)
+                        goal_compiler.execute_first_step(drifted, output)
                     self.assertFalse(output.exists())
 
-    def test_approval_digest_covers_declared_execution_bound_fields(self) -> None:
+    def test_approval_digest_detects_each_declared_execution_field_drift(self) -> None:
         semantic = load_semantic("coding-semantic-input.json")
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
+        contract = compile_semantic(semantic)
         approved = goal_compiler.apply_human_review(contract, synthetic_review("csv-empty-line-regression"))
         for field in goal_compiler.EXECUTION_BOUND_FIELDS:
             with self.subTest(field=field):
-                tampered = copy.deepcopy(approved)
-                current = tampered[field]
+                drifted = copy.deepcopy(approved)
+                current = drifted[field]
                 if isinstance(current, dict):
-                    current["_post_approval_tamper"] = True
+                    current["_post_approval_drift"] = True
                 elif isinstance(current, list):
-                    current.append("post approval tamper")
+                    current.append("post approval drift")
                 else:
-                    tampered[field] = f"{current}-tampered"
-                errors = goal_compiler.validate_contract(tampered)
+                    drifted[field] = f"{current}-changed"
+                errors = goal_compiler.validate_contract(drifted)
                 self.assertTrue(any("approved_payload_sha256" in error for error in errors), errors)
 
     def test_unknown_action_and_action_specific_checks_are_rejected(self) -> None:
         semantic = load_semantic("coding-semantic-input.json")
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
+        contract = compile_semantic(semantic)
         contract["first_step"]["action"] = "run_shell"
         errors = "\n".join(goal_compiler.validate_contract(contract, require_human_approval=False))
         self.assertIn("unsupported action", errors)
 
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
+        contract = compile_semantic(semantic)
         contract["first_step"]["validators"] = ["nonempty"]
         errors = "\n".join(goal_compiler.validate_contract(contract, require_human_approval=False))
         self.assertIn("must exactly match action whitelist", errors)
 
     def test_file_and_directory_outputs_refuse_existing_targets(self) -> None:
         semantic = load_semantic("coding-semantic-input.json")
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
-        approved = goal_compiler.apply_human_review(contract, synthetic_review("csv-empty-line-regression"))
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            existing_dir = root / "existing-output"
+            contract = compile_semantic(semantic, workspace_root=root)
+            approved = goal_compiler.apply_human_review(contract, synthetic_review("csv-empty-line-regression"))
+            existing_dir = root / semantic["first_step"]["output_directory"]
             existing_dir.mkdir()
             with self.assertRaisesRegex(goal_compiler.CompilerError, "already exists"):
-                goal_compiler.execute_first_step(approved, existing_dir)
+                goal_compiler.execute_first_step(approved)
 
             existing_file = root / "existing.json"
             existing_file.write_text("{}\n", encoding="utf-8")
@@ -262,7 +450,7 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
 
     def test_cli_validate_nonzero_for_pending_and_zero_for_synthetic_test_approval(self) -> None:
         semantic = load_semantic("coding-semantic-input.json")
-        contract = goal_compiler.build_contract(semantic["request"], semantic)
+        contract = compile_semantic(semantic)
         approved = goal_compiler.apply_human_review(contract, synthetic_review("csv-empty-line-regression"))
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

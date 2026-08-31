@@ -14,10 +14,10 @@ step. Ordinary `/goal` drafting does not need the runtime.
 2. **Human — decision.** Inspect sources when research is required; edit the
    exact metric and scope; explicitly acknowledge metric, evidence, action, and
    execution scope. A pending/example/test record is not a human approval.
-3. **CLI — deterministic gate and dispatch.** Serialize the Agent payload,
-   validate identity/domain/evidence, bind approval to every execution field,
-   and dispatch one whitelisted text artifact plus fixed checks. It is not an
-   LLM and does not execute generated Python.
+3. **CLI — deterministic gate and dispatch.** Save the Agent payload, rebuild
+   every derived field, validate identity/domain/evidence and review/payload
+   consistency, then dispatch one whitelisted text artifact plus fixed checks.
+   It is not an LLM and does not execute generated Python.
 
 The recorded contest fixture has both `live_ai_claimed:false` and
 `liveAiClaimed:false`. This makes the provenance easy to audit; it must not be
@@ -30,12 +30,18 @@ described as a live model call.
 not as a universal website template. Important invariants:
 
 - `request` must exactly match the CLI request after whitespace normalization.
+- the complete semantic input is saved inside the contract; router, assumptions,
+  strategy, tool/evidence gate, goal plan, and first step must match that source
+  snapshot except for the one explicitly recorded human metric override.
 - `smart_router.task_type` must match the request domain and a supported action.
 - `success_metrics[].measurement` needs an objective method plus numeric or
   boolean targets; the chosen metric's `evidence_path` must equal the first
   step's report path.
 - `first_step.action`, artifact kind, suffix, media type, validators, output
   path, and domain acceptance must match one immutable action policy.
+- `--workspace-root` is canonicalized and stored in contract identity. Execute
+  derives its only target from that approved root plus the relative
+  `first_step.output_directory`; a caller-supplied different target is rejected.
 - an Agent result records a transcript reference; deterministic and test
   fixtures explicitly label their mode and do not claim live AI.
 
@@ -45,6 +51,7 @@ Compile without execution:
 python3 scripts/goal_compiler.py compile \
   --request-file contest/demo-fixtures/request.txt \
   --semantic-input contest/demo-fixtures/semantic-input.demo.json \
+  --workspace-root /tmp/goal-compiler-workspace \
   --output /tmp/goal-compiler-draft
 ```
 
@@ -59,10 +66,12 @@ python3 scripts/goal_compiler.py attach-evidence \
 ```
 
 Each required claim type must reference the configured minimum number of
-recorded independent sources. Source records include ID, title, URL, source
-type, tool/channel, and access limitation. Missing evidence blocks approval.
+recorded independent sources. Every source must contain the fields configured
+by `evidence_requirements[].record_fields`. A Markdown artifact must cite known
+`source_ids` that belong to the relevant claim and meet its minimum; merely
+containing the word `source_ids` does not pass. Missing evidence blocks approval.
 
-## Human approval and payload binding
+## Human approval and payload consistency
 
 The generated `human-review.pending.json` is only a form. A real reviewer must
 fill a separate record with `decision: approved`, a reviewer identity, a
@@ -77,15 +86,20 @@ python3 scripts/goal_compiler.py apply-review \
 ```
 
 `apply-review` computes `approved_payload_sha256` over the schema, contract
-identity, request, semantic provenance, router, assumptions, strategy, tool
-gate, evidence, goal plan, and first step. `validate` and `execute` recompute it.
-Changing the request, metric, evidence, action, artifact, checks, content, or
-any other execution field after approval invalidates the approval.
+identity, saved semantic snapshot, approved workspace, request, router,
+assumptions, strategy, tool gate, evidence, goal plan, and first step. `validate`
+and `execute` recompute it. If the retained review record is left unchanged,
+later payload drift makes the consistency check fail.
+
+This SHA-256 value and `review_id` are unkeyed, reproducible identifiers. They
+are not signatures, do not authenticate the reviewer, and do not prevent an
+actor who can rewrite both the payload and the digest from creating another
+internally consistent record. Use external access control or real digital
+signatures when adversarial authenticity is required.
 
 ```bash
 python3 scripts/goal_compiler.py validate /tmp/goal-reviewed.json
-python3 scripts/goal_compiler.py execute /tmp/goal-reviewed.json \
-  --output /tmp/goal-compiler-first-output
+python3 scripts/goal_compiler.py execute /tmp/goal-reviewed.json
 ```
 
 Every CLI file target and output directory is refuse-existing. Choose a new
@@ -103,7 +117,8 @@ The current whitelist is deliberately small:
   `.md` file and heading/source-reference checks
 
 The execution report records the actual action, handler, artifact kind, content
-hash, approval payload hash, and every check result.
+hash, unkeyed review/payload consistency digest, resolved output directory, and
+every check result.
 
 ## Recorded demo
 

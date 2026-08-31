@@ -111,12 +111,12 @@
     },
     "deliverables": "语义 JSON、router/gate JSON、待审批 Goal Contract、失败日志和待执行 HTML 模板。",
     "quality_gate": "研究声明至少 2 个独立来源；记录来源强弱、工具/渠道和访问限制；过期、营销或不可访问证据降级；保留矛盾；低置信度只能写为假设。",
-    "verification": "先检查来源证据包，再核对人工签署的 payload SHA-256，最后运行 HTML 结构检查并保存日志。",
+    "verification": "先检查来源证据包，再核对人工审批记录与当前 payload 的无密钥 SHA-256 一致性，最后运行 HTML 结构检查并保存日志。",
     "limits": "不把 Agent Reach 描述成无限制全网访问；不使用私域、付费、登录资源或未授权外部操作。",
     "boundary": "Agent/Skill 负责语义编译与默认假设；真人编辑指标并批准；CLI 只做确定性验证与白名单执行。",
     "progress_rules": "先产出语义合同和证据缺口；证据未齐或人工未批准时立即停在门禁。",
     "stop_criteria": "产物通过行为检查并留下可复核报告，或终止阈值被触发。",
-    "pause_conditions": "缺来源、缺人工签署、payload 哈希不一致、需要登录/付费/对外变更或任一检查失败时暂停。"
+    "pause_conditions": "缺来源、缺人工签署、payload 与保存的审批记录不一致、需要登录/付费/对外变更或任一检查失败时暂停。"
   },
   "first_step": {
     "action": "write_static_hypothesis_page",

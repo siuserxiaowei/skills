@@ -53,7 +53,7 @@
       <div class="panel">
         <div class="kicker">VibeWork · Agent semantics + deterministic gates</div>
         <h1>不润色 Prompt。<br>把模糊需求编译成可停止的契约。</h1>
-        <p class="lead">Agent/Skill 生成语义，真人负责精确指标与审批，CLI 负责来源、哈希、领域一致性与白名单门禁。</p>
+        <p class="lead">Agent/Skill 生成语义，真人负责精确指标与审批，CLI 负责来源、保存快照、审批记录一致性与白名单门禁。</p>
         <div class="actions">
           <a class="button" href="./demo/walkthrough.html">打开录制 Demo →</a>
           <a class="button alt" href="https://github.com/siuserxiaowei/xiaowei-goal">查看源码与测试</a>
@@ -90,7 +90,7 @@ Execution: NOT ATTEMPTED
 <span class="green">liveAiClaimed:false · no PASS.log · no execution</span></pre>
     </section>
 
-    <section class="boundary"><strong>审批防篡改：</strong>真人批准时，请求、语义、router、策略、证据、指标、动作、产物、内容和检查会一起绑定为 <code>approved_payload_sha256</code>。审批后任一篡改都会使 validate / execute 失败。</section>
+    <section class="boundary"><strong>审批记录一致性：</strong>真人批准时保存 semantic snapshot、执行 workspace 与 <code>approved_payload_sha256</code>。审批记录保留不变时，payload 漂移会使 validate / execute 失败；该无密钥摘要不是数字签名。</section>
 
     <footer class="archive">
       历史报告：

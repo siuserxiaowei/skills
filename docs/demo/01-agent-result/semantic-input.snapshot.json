@@ -46,7 +46,7 @@
     "limits": "不把 Agent Reach 描述成无限制全网访问；不使用私域、付费、登录资源或未授权外部操作。",
     "outcome": "编译并验证一个待人工批准的 AI 网站最小假设页合同。",
     "output_length_reason": "需要保留路由、证据门禁、反证和执行边界，选择标准版。",
-    "pause_conditions": "缺来源、缺人工签署、payload 哈希不一致、需要登录/付费/对外变更或任一检查失败时暂停。",
+    "pause_conditions": "缺来源、缺人工签署、payload 与保存的审批记录不一致、需要登录/付费/对外变更或任一检查失败时暂停。",
     "preference_application": "默认中文、先给结论、对高影响执行保留人工批准。",
     "progress_rules": "先产出语义合同和证据缺口；证据未齐或人工未批准时立即停在门禁。",
     "quality_gate": "研究声明至少 2 个独立来源；记录来源强弱、工具/渠道和访问限制；过期、营销或不可访问证据降级；保留矛盾；低置信度只能写为假设。",
@@ -59,7 +59,7 @@
     "task_pack": "网站/落地页改版包",
     "task_pack_application": "仅使用单页承诺、主 CTA 和本地 HTML 检查，不扩展到完整站点。",
     "tool_stack": "广域来源优先 Agent Reach，先运行 agent-reach doctor 或确认渠道可用，不可用时回退公开网页阅读器；公开页面结构化抽取可用 Scrapling；动态页验证仅在授权后使用 browser-use；Claude for Chrome 仅作为用户授权的 Chrome 协作选项；CLI 只做确定性门禁与白名单文件写入。",
-    "verification": "先检查来源证据包，再核对人工签署的 payload SHA-256，最后运行 HTML 结构检查并保存日志。"
+    "verification": "先检查来源证据包，再核对人工审批记录与当前 payload 的无密钥 SHA-256 一致性，最后运行 HTML 结构检查并保存日志。"
   },
   "provenance": {
     "liveAiClaimed": false,

@@ -10,15 +10,15 @@
     "liveAiClaimed": false,
     "semanticLayer": "Agent/Skill owns semantic compilation. The bundled website payload is an explicitly recorded deterministic fixture, and a separate preserved forward test is labelled agent_result.",
     "humanLayer": "The exact metric, evidence acceptance, and execution approval remain pending; no repository fixture impersonates a real reviewer.",
-    "deterministicLayer": "The Python CLI validates identity/domain/evidence/action, binds approval payload hashes, refuses existing outputs, and dispatches only whitelisted text artifacts after strict approval."
+    "deterministicLayer": "The Python CLI rebuilds saved semantics, validates identity/domain/evidence/action and review/current-payload consistency, derives output from an approved workspace, refuses existing outputs, and dispatches only whitelisted text artifacts after strict approval. Its unkeyed digests are not signatures."
   },
   "claims": [
     "The bundled research-required contract fails without source-backed evidence.",
     "The bundled subjective metric statement and method fail strict validation.",
     "The bundled demo writes no PASS log and does not attempt execution.",
     "Cross-domain tests reject website semantics for coding and dispatch a domain-correct Python fixture under a clearly synthetic test approval.",
-    "Post-approval mutations to request, strategy, evidence, action, artifact, checks, or content invalidate the approval hash."
+    "With the recorded review left unchanged, post-review drift in request, strategy, evidence, action, artifact, checks, content, or workspace fails consistency validation."
   ],
-  "originalityClaim": "Concrete implementation and combined semantic-input/evidence/review-binding/whitelisted-dispatch mechanism; no global or category-first claim.",
+  "originalityClaim": "Concrete implementation and combined saved-semantic/evidence/review-consistency/whitelisted-dispatch mechanism; no global or category-first claim.",
   "assetRightsFile": "../ASSET_RIGHTS.csv"
 }

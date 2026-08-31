@@ -36,11 +36,11 @@ Visual: `03-human-pending/human-review.pending.json`; highlight false acknowledg
 
 Voice: “精确指标、证据确认和执行范围必须留给真人。本次记录是 pending，所以不会凭空写 PASS，也不会执行。”
 
-## 59–70s — Tamper-proof boundary
+## 59–70s — Review/payload consistency boundary
 
-Visual: `tests/test_goal_compiler.py` tamper test, then `PROVENANCE.md`.
+Visual: `tests/test_goal_compiler.py` payload-drift test, then `PROVENANCE.md`.
 
-Voice: “真人批准时，所有执行字段会绑定一个 SHA-256。审批后改请求、指标、证据、动作或产物都会被阻断。Agent 负责语义，人负责决定，CLI 负责确定性门禁。”
+Voice: “真人批准时会保存无密钥 SHA-256。审批记录不变时，字段漂移会失败；它不是签名。Agent 负责语义，人负责决定，CLI 负责确定性门禁。”
 
 ## Capture note
 

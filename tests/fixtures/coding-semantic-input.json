@@ -86,12 +86,12 @@
     "research_stages": null,
     "deliverables": "待审批技术合同、Python 夹具和 execution-report.json。",
     "quality_gate": "动作在白名单内，文件后缀为 .py，语法通过且含回归标记。",
-    "verification": "重算请求哈希、合同 ID 和审批 payload 哈希，再检查 Python 语法与回归标记。",
+    "verification": "重算请求、语义快照、合同 ID 与审批 payload 一致性摘要，再检查 Python 语法与回归标记。",
     "limits": "不执行生成的 Python，不修改生产代码，不使用网络或未授权资源。",
     "boundary": "Agent/Skill 提供领域语义，真人审查指标与范围，CLI 只写入已批准的文本并记录检查。",
     "progress_rules": "先编译合同，待人工审批后只写入一个夹具；任一门禁失败就停止。",
     "stop_criteria": "夹具写入且所有白名单检查为真，或出现未授权依赖。",
-    "pause_conditions": "缺人工批准、payload 被篡改、输出已存在或语法/回归标记检查失败时暂停。"
+    "pause_conditions": "缺人工批准、payload 与保存的审批记录不一致、输出已存在或语法/回归标记检查失败时暂停。"
   },
   "first_step": {
     "action": "write_python_regression_fixture",

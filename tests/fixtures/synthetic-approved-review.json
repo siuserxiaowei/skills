@@ -2,7 +2,7 @@
   "record_type": "synthetic_test_review",
   "decision": "approved",
   "reviewer": "Automated test fixture",
-  "reason": "Synthetic approval used only to exercise approval binding and deterministic dispatch in tests.",
+  "reason": "Synthetic approval used only to exercise review/payload consistency checks and deterministic dispatch in tests.",
   "metric_id": "csv-empty-line-regression",
   "success_metric_override": null,
   "acknowledgements": {

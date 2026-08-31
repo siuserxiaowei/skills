@@ -1,6 +1,6 @@
 {
   "approval_context": null,
-  "contract_id": "goal-edec1a5e50bd",
+  "contract_id": "goal-1e732fabcca6",
   "error_count": 1,
   "errors": [
     "human_review.decision: must be `approved` before execution"

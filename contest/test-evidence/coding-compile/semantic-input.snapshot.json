@@ -41,7 +41,7 @@
     "limits": "不执行生成的 Python，不修改生产代码，不使用网络或未授权资源。",
     "outcome": "产出一个可独立检查的 CSV 空行 Python 回归夹具。",
     "output_length_reason": "技术边界明确，一个文件与一份检查报告足以验收。",
-    "pause_conditions": "缺人工批准、payload 被篡改、输出已存在或语法/回归标记检查失败时暂停。",
+    "pause_conditions": "缺人工批准、payload 与保存的审批记录不一致、输出已存在或语法/回归标记检查失败时暂停。",
     "preference_application": "只建立可回归的最小技术证据，不扩大修改范围。",
     "progress_rules": "先编译合同，待人工审批后只写入一个夹具；任一门禁失败就停止。",
     "quality_gate": "动作在白名单内，文件后缀为 .py，语法通过且含回归标记。",
@@ -50,7 +50,7 @@
     "task_pack": "Coding 回归包",
     "task_pack_application": "将缺陷边界、最小夹具、回归标记与语法检查绑定到同一动作。",
     "tool_stack": "仅使用本地文件系统和 Python 标准库的语法编译检查。",
-    "verification": "重算请求哈希、合同 ID 和审批 payload 哈希，再检查 Python 语法与回归标记。"
+    "verification": "重算请求、语义快照、合同 ID 与审批 payload 一致性摘要，再检查 Python 语法与回归标记。"
   },
   "provenance": {
     "live_ai_claimed": false,

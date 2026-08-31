@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Validate Agent-authored semantics, bind human approval, and dispatch one safe step.
+"""Validate Agent-authored semantics, record review consistency, and dispatch one safe step.
 
 The CLI is deliberately not an AI model. `compile` requires a complete semantic
 input produced by an Agent/Skill (or an explicitly labelled deterministic demo
 fixture). The CLI serializes that input, rejects cross-domain or incomplete
-contracts, binds human approval to every execution-relevant field, and exposes a
+contracts, checks saved review/payload consistency, and exposes a
 small whitelist of deterministic text-artifact dispatches.
 """
 
@@ -17,6 +17,7 @@ import html
 import json
 import re
 import sys
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
@@ -24,7 +25,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DEMO_REQUEST = ROOT / "contest" / "demo-fixtures" / "request.txt"
 DEFAULT_DEMO_SEMANTIC = ROOT / "contest" / "demo-fixtures" / "semantic-input.demo.json"
-SCHEMA_VERSION = "1.1"
+DEFAULT_DEMO_WORKSPACE = Path("/tmp/xiaowei-goal-demo-execution-workspace")
+SCHEMA_VERSION = "1.2"
 SEMANTIC_SCHEMA_VERSION = "1.0"
 
 SUPPORTED_TASK_TYPES = {"website", "app", "SEO", "competitor", "growth", "coding", "docs", "mixed"}
@@ -139,11 +141,22 @@ EXECUTION_BOUND_FIELDS = (
     "contract_id",
     "request",
     "semantic_compilation",
+    "semantic_input_snapshot",
+    "execution_workspace",
     "smart_router",
     "default_assumptions",
     "strategy_gate",
     "tool_evidence_gate",
     "evidence_bundle",
+    "goal_plan",
+    "first_step",
+)
+
+SEMANTIC_DERIVED_FIELDS = (
+    "smart_router",
+    "default_assumptions",
+    "strategy_gate",
+    "tool_evidence_gate",
     "goal_plan",
     "first_step",
 )
@@ -464,8 +477,12 @@ def semantic_input_errors(request: str, semantic: dict[str, Any]) -> list[str]:
         errors.append("semantic_input.first_step.acceptance.task_type: must match router task_type")
     required_terms = acceptance.get("required_terms")
     forbidden_terms = acceptance.get("forbidden_terms")
-    if not isinstance(required_terms, list) or not required_terms:
-        errors.append("semantic_input.first_step.acceptance.required_terms: must be non-empty")
+    if (
+        not isinstance(required_terms, list)
+        or not required_terms
+        or any(not str(term).strip() for term in required_terms)
+    ):
+        errors.append("semantic_input.first_step.acceptance.required_terms: entries must be non-empty strings")
         required_terms = []
     if not isinstance(forbidden_terms, list):
         errors.append("semantic_input.first_step.acceptance.forbidden_terms: must be a list")
@@ -483,7 +500,23 @@ def semantic_input_errors(request: str, semantic: dict[str, Any]) -> list[str]:
     return errors
 
 
-def build_contract(request: str, semantic: dict[str, Any], evidence_bundle: dict[str, Any] | None = None) -> dict[str, Any]:
+def resolve_workspace_root(value: str | Path) -> Path:
+    raw_root = Path(value).expanduser()
+    if not raw_root.is_absolute():
+        raise CompilerError(f"execution workspace must be an explicit absolute directory: {value}")
+    root = raw_root.resolve()
+    if root in {Path("/").resolve(), Path.home().resolve()}:
+        raise CompilerError(f"execution workspace must be an explicit, non-home absolute directory: {root}")
+    return root
+
+
+def build_contract(
+    request: str,
+    semantic: dict[str, Any],
+    *,
+    workspace_root: str | Path,
+    evidence_bundle: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     request_text = normalized_request(request)
     if len(request_text) < 8:
         raise CompilerError("request must contain at least 8 non-whitespace characters")
@@ -493,7 +526,14 @@ def build_contract(request: str, semantic: dict[str, Any], evidence_bundle: dict
 
     semantic_hash = sha256_value(semantic)
     request_hash = sha256_text(request_text)
-    identity = {"schema_version": SCHEMA_VERSION, "request_sha256": request_hash, "semantic_input_sha256": semantic_hash}
+    workspace = resolve_workspace_root(workspace_root)
+    workspace_hash = sha256_text(str(workspace))
+    identity = {
+        "schema_version": SCHEMA_VERSION,
+        "request_sha256": request_hash,
+        "semantic_input_sha256": semantic_hash,
+        "execution_workspace_sha256": workspace_hash,
+    }
     provenance = copy.deepcopy(semantic["provenance"])
     return {
         "schema_version": SCHEMA_VERSION,
@@ -504,6 +544,11 @@ def build_contract(request: str, semantic: dict[str, Any], evidence_bundle: dict
             **provenance,
             "semantic_schema_version": semantic["semantic_schema_version"],
             "semantic_input_sha256": semantic_hash,
+        },
+        "semantic_input_snapshot": copy.deepcopy(semantic),
+        "execution_workspace": {
+            "root": str(workspace),
+            "root_sha256": workspace_hash,
         },
         "smart_router": copy.deepcopy(semantic["smart_router"]),
         "default_assumptions": copy.deepcopy(semantic["default_assumptions"]),
@@ -525,13 +570,123 @@ def build_contract(request: str, semantic: dict[str, Any], evidence_bundle: dict
 
 def expected_contract_id(contract: dict[str, Any]) -> str:
     request = contract.get("request", {})
-    semantic = contract.get("semantic_compilation", {})
+    snapshot = contract.get("semantic_input_snapshot")
+    workspace = contract.get("execution_workspace", {})
+    request_raw = str(request.get("raw", "")) if isinstance(request, dict) else ""
+    semantic_hash = sha256_value(snapshot) if isinstance(snapshot, dict) else None
+    workspace_root = str(workspace.get("root", "")) if isinstance(workspace, dict) else ""
     identity = {
         "schema_version": contract.get("schema_version"),
-        "request_sha256": request.get("request_sha256") if isinstance(request, dict) else None,
-        "semantic_input_sha256": semantic.get("semantic_input_sha256") if isinstance(semantic, dict) else None,
+        "request_sha256": sha256_text(request_raw),
+        "semantic_input_sha256": semantic_hash,
+        "execution_workspace_sha256": sha256_text(workspace_root),
     }
     return stable_id("goal", identity)
+
+
+def expected_output_directory(contract: dict[str, Any]) -> Path:
+    workspace = contract.get("execution_workspace")
+    first_step = contract.get("first_step")
+    if not isinstance(workspace, dict) or not isinstance(first_step, dict):
+        raise CompilerError("execution_workspace and first_step must be objects")
+    root = resolve_workspace_root(str(workspace.get("root", "")))
+    relative = str(first_step.get("output_directory", ""))
+    if not safe_relative_path(relative):
+        raise CompilerError("first_step.output_directory must be a safe relative path")
+    target = (root / relative).resolve()
+    try:
+        target.relative_to(root)
+    except ValueError as exc:
+        raise CompilerError("resolved output directory escapes the approved execution workspace") from exc
+    if target == root:
+        raise CompilerError("resolved output directory must be below the approved execution workspace")
+    return target
+
+
+def _identity_errors(contract: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if contract.get("schema_version") != SCHEMA_VERSION:
+        errors.append(f"schema_version: expected {SCHEMA_VERSION}")
+    request = contract.get("request")
+    if not isinstance(request, dict):
+        errors.append("request: must be an object")
+    else:
+        raw = str(request.get("raw", ""))
+        if request.get("request_sha256") != sha256_text(raw):
+            errors.append("request.request_sha256: does not match request.raw")
+    semantic = contract.get("semantic_compilation")
+    if not isinstance(semantic, dict) or not re.fullmatch(r"[0-9a-f]{64}", str(semantic.get("semantic_input_sha256", ""))):
+        errors.append("semantic_compilation.semantic_input_sha256: must be a SHA-256 digest")
+    workspace = contract.get("execution_workspace")
+    if not isinstance(workspace, dict):
+        errors.append("execution_workspace: must be an object")
+    else:
+        try:
+            root = resolve_workspace_root(str(workspace.get("root", "")))
+        except CompilerError as exc:
+            errors.append(f"execution_workspace.root: {exc}")
+        else:
+            if str(root) != str(workspace.get("root", "")):
+                errors.append("execution_workspace.root: must be canonical and absolute")
+            if workspace.get("root_sha256") != sha256_text(str(root)):
+                errors.append("execution_workspace.root_sha256: does not match root")
+    if contract.get("contract_id") != expected_contract_id(contract):
+        errors.append("contract_id: inconsistent with request, saved semantic snapshot, schema, or execution workspace")
+    try:
+        expected_output_directory(contract)
+    except CompilerError as exc:
+        errors.append(f"execution_workspace: {exc}")
+    return errors
+
+
+def _expected_semantic_compilation(snapshot: dict[str, Any]) -> dict[str, Any]:
+    provenance = snapshot.get("provenance")
+    return {
+        **(copy.deepcopy(provenance) if isinstance(provenance, dict) else {}),
+        "semantic_schema_version": snapshot.get("semantic_schema_version"),
+        "semantic_input_sha256": sha256_value(snapshot),
+    }
+
+
+def _semantic_snapshot_errors(contract: dict[str, Any]) -> list[str]:
+    """Rebuild all semantic derivatives from the saved source snapshot."""
+    snapshot = contract.get("semantic_input_snapshot")
+    if not isinstance(snapshot, dict):
+        return ["semantic_input_snapshot: must be the complete saved Agent semantic object"]
+
+    errors: list[str] = []
+    request = contract.get("request")
+    raw_request = str(request.get("raw", "")) if isinstance(request, dict) else ""
+    for error in semantic_input_errors(raw_request, snapshot):
+        errors.append(error.replace("semantic_input", "semantic_input_snapshot", 1))
+
+    semantic_compilation = contract.get("semantic_compilation")
+    expected_compilation = _expected_semantic_compilation(snapshot)
+    if semantic_compilation != expected_compilation:
+        errors.append("semantic_compilation: does not match the saved semantic input snapshot")
+
+    expected_fields = {field: copy.deepcopy(snapshot.get(field)) for field in SEMANTIC_DERIVED_FIELDS}
+    review = contract.get("human_review")
+    if isinstance(review, dict) and review.get("decision") == "approved":
+        metric_override = review.get("success_metric_override")
+        expected_changed_fields: list[str] = []
+        if metric_override is not None:
+            metrics = expected_fields.get("strategy_gate", {}).get("success_metrics", [])
+            metric_id = review.get("metric_id")
+            matches = [index for index, metric in enumerate(metrics) if isinstance(metric, dict) and metric.get("id") == metric_id]
+            if not isinstance(metric_override, dict) or len(matches) != 1:
+                errors.append("human_review.success_metric_override: cannot be reconstructed from the saved semantic snapshot")
+            else:
+                index = matches[0]
+                metrics[index] = copy.deepcopy(metric_override)
+                expected_changed_fields.append(f"strategy_gate.success_metrics[{index}]")
+        if review.get("changed_fields") != expected_changed_fields:
+            errors.append("human_review.changed_fields: does not match the recorded metric override")
+
+    for field, expected in expected_fields.items():
+        if contract.get(field) != expected:
+            errors.append(f"{field}: derived value drifted from semantic_input_snapshot")
+    return errors
 
 
 def approved_payload(contract: dict[str, Any]) -> dict[str, Any]:
@@ -551,6 +706,9 @@ def expected_review_id(contract: dict[str, Any]) -> str:
         "reason": review.get("reason") if isinstance(review, dict) else None,
         "decision": review.get("decision") if isinstance(review, dict) else None,
         "review_kind": review.get("review_kind") if isinstance(review, dict) else None,
+        "metric_id": review.get("metric_id") if isinstance(review, dict) else None,
+        "success_metric_override": review.get("success_metric_override") if isinstance(review, dict) else None,
+        "changed_fields": review.get("changed_fields") if isinstance(review, dict) else None,
         "acknowledgements": review.get("acknowledgements") if isinstance(review, dict) else None,
         "sign_off": review.get("sign_off") if isinstance(review, dict) else None,
     }
@@ -640,12 +798,28 @@ def _evidence_errors(contract: dict[str, Any]) -> list[str]:
 
     source_map: dict[str, dict[str, Any]] = {}
     source_urls: set[str] = set()
-    required_source_fields = {"id", "title", "url", "source_type", "tool_channel", "access_limit"}
+    requirements = gate.get("evidence_requirements", [])
+    configured_record_fields: set[str] = set()
+    for requirement in requirements if isinstance(requirements, list) else []:
+        if not isinstance(requirement, dict):
+            continue
+        record_fields = requirement.get("record_fields")
+        if isinstance(record_fields, list):
+            configured_record_fields.update(str(field).strip() for field in record_fields if str(field).strip())
+    required_source_fields = {
+        "id",
+        "title",
+        "url",
+        "source_type",
+        "tool_channel",
+        "access_limit",
+        *configured_record_fields,
+    }
     for index, source in enumerate(sources):
         if not isinstance(source, dict):
             errors.append(f"evidence_bundle.sources[{index}]: must be an object")
             continue
-        missing = [key for key in required_source_fields if not str(source.get(key, "")).strip()]
+        missing = [key for key in sorted(required_source_fields) if not str(source.get(key, "")).strip()]
         if missing:
             errors.append(f"evidence_bundle.sources[{index}]: missing {missing}")
         source_id = str(source.get("id", ""))
@@ -661,7 +835,6 @@ def _evidence_errors(contract: dict[str, Any]) -> list[str]:
         elif source_id:
             source_map[source_id] = source
 
-    requirements = gate.get("evidence_requirements", [])
     for index, claim in enumerate(claims):
         if not isinstance(claim, dict):
             errors.append(f"evidence_bundle.claims[{index}]: must be an object")
@@ -748,10 +921,18 @@ def _domain_action_errors(contract: dict[str, Any]) -> list[str]:
     if not isinstance(acceptance, dict) or acceptance.get("task_type") != task_type:
         errors.append("first_step.acceptance.task_type: must match router")
         acceptance = {}
+    required_terms = acceptance.get("required_terms")
+    if (
+        not isinstance(required_terms, list)
+        or not required_terms
+        or any(not str(term).strip() for term in required_terms)
+    ):
+        errors.append("first_step.acceptance.required_terms: entries must be non-empty strings")
+        required_terms = []
     domain_first_step = copy.deepcopy(first_step)
     domain_first_step.pop("acceptance", None)
     domain_text = searchable_text({"goal_plan": goal_plan, "first_step": domain_first_step})
-    for term in acceptance.get("required_terms", []) if isinstance(acceptance.get("required_terms"), list) else []:
+    for term in required_terms:
         if str(term) not in domain_text:
             errors.append(f"first_step.acceptance: required term `{term}` absent")
     forbidden = acceptance.get("forbidden_terms", []) if isinstance(acceptance.get("forbidden_terms"), list) else []
@@ -767,22 +948,8 @@ def validate_contract(
     require_human_approval: bool = True,
     require_evidence: bool = True,
 ) -> list[str]:
-    errors: list[str] = []
-    if contract.get("schema_version") != SCHEMA_VERSION:
-        errors.append(f"schema_version: expected {SCHEMA_VERSION}")
-    request = contract.get("request")
-    if not isinstance(request, dict):
-        errors.append("request: must be an object")
-    else:
-        raw = str(request.get("raw", ""))
-        expected_request_hash = sha256_text(raw)
-        if request.get("request_sha256") != expected_request_hash:
-            errors.append("request.request_sha256: does not match request.raw")
-    semantic = contract.get("semantic_compilation")
-    if not isinstance(semantic, dict) or not re.fullmatch(r"[0-9a-f]{64}", str(semantic.get("semantic_input_sha256", ""))):
-        errors.append("semantic_compilation.semantic_input_sha256: must be a SHA-256 digest")
-    if contract.get("contract_id") != expected_contract_id(contract):
-        errors.append("contract_id: inconsistent with request/schema/semantic input hashes")
+    errors = _identity_errors(contract)
+    errors.extend(_semantic_snapshot_errors(contract))
 
     errors.extend(_domain_action_errors(contract))
     errors.extend(_metric_errors(contract))
@@ -798,6 +965,7 @@ def validate_contract(
                     errors.append(f"strategy_gate.{key}[{index}].threshold: must be measurable")
     if require_evidence:
         errors.extend(_evidence_errors(contract))
+    errors.extend(_artifact_template_errors(contract))
 
     review = contract.get("human_review")
     if not isinstance(review, dict):
@@ -831,9 +999,13 @@ def validate_contract(
                     errors.append("human_review.sign_off: must equal `APPROVED BY HUMAN`")
             else:
                 errors.append("human_review.review_kind: must be `human` (or `synthetic_test` for test_fixture only)")
+            first_step = contract.get("first_step")
+            reviewed_metric_id = first_step.get("metric_id") if isinstance(first_step, dict) else None
+            if review.get("metric_id") != reviewed_metric_id:
+                errors.append("human_review.metric_id: must match the exact first-step success metric")
             current_payload_hash = approved_payload_sha256(contract)
             if review.get("approved_payload_sha256") != current_payload_hash:
-                errors.append("human_review.approved_payload_sha256: execution payload changed after approval")
+                errors.append("human_review.approved_payload_sha256: current execution payload differs from the recorded review digest")
             if review.get("review_id") != expected_review_id(contract):
                 errors.append("human_review.review_id: inconsistent with approval record")
     return errors
@@ -889,6 +1061,12 @@ def attach_evidence(contract: dict[str, Any], evidence: dict[str, Any]) -> dict[
     review = contract.get("human_review", {})
     if isinstance(review, dict) and review.get("decision") == "approved":
         raise CompilerError("cannot attach evidence after approval; create a new review cycle")
+    structural_errors = [*_identity_errors(contract), *_semantic_snapshot_errors(contract)]
+    if structural_errors:
+        raise CompilerError(
+            "cannot attach evidence to a contract that drifted from its saved semantic snapshot:\n- "
+            + "\n- ".join(structural_errors)
+        )
     updated = copy.deepcopy(contract)
     updated["evidence_bundle"] = copy.deepcopy(evidence)
     return updated
@@ -911,6 +1089,15 @@ def apply_human_review(
     )
     if record_type == "synthetic_test_review" and semantic_mode != "test_fixture":
         raise CompilerError("synthetic test approval is allowed only for a test_fixture contract")
+    current_review = contract.get("human_review")
+    if not isinstance(current_review, dict) or current_review.get("decision") != "pending":
+        raise CompilerError("apply-review requires a pending contract and a new review cycle")
+    structural_errors = [*_identity_errors(contract), *_semantic_snapshot_errors(contract)]
+    if structural_errors:
+        raise CompilerError(
+            "cannot review a contract that drifted from its saved semantic snapshot:\n- "
+            + "\n- ".join(structural_errors)
+        )
     reviewer = str(review_record.get("reviewer", "")).strip()
     reason = str(review_record.get("reason", "")).strip()
     if len(reviewer) < 2 or len(reason) < 8:
@@ -940,20 +1127,22 @@ def apply_human_review(
         reviewed["strategy_gate"]["success_metrics"][index] = copy.deepcopy(metric_override)
         changed_fields.append(f"strategy_gate.success_metrics[{index}]")
 
-    preapproval_errors = validate_contract(reviewed, require_human_approval=False, require_evidence=True)
-    if preapproval_errors:
-        raise CompilerError("cannot approve an invalid/evidence-incomplete payload:\n- " + "\n- ".join(preapproval_errors))
-
     reviewed["human_review"] = {
         "decision": "approved",
         "reviewer": reviewer,
         "reason": reason,
         "review_kind": "synthetic_test" if record_type == "synthetic_test_review" else "human",
+        "metric_id": reviewed_metric_id,
+        "success_metric_override": copy.deepcopy(metric_override),
         "changed_fields": changed_fields,
         "acknowledgements": copy.deepcopy(acknowledgements),
         "approved_payload_sha256": None,
         "sign_off": "SYNTHETIC TEST APPROVAL" if record_type == "synthetic_test_review" else "APPROVED BY HUMAN",
     }
+    preapproval_errors = validate_contract(reviewed, require_human_approval=False, require_evidence=True)
+    if preapproval_errors:
+        raise CompilerError("cannot approve an invalid/evidence-incomplete payload:\n- " + "\n- ".join(preapproval_errors))
+
     reviewed["human_review"]["approved_payload_sha256"] = approved_payload_sha256(reviewed)
     reviewed["human_review"]["review_id"] = expected_review_id(reviewed)
     strict_errors = validate_contract(reviewed, require_human_approval=True, require_evidence=True)
@@ -973,9 +1162,9 @@ def render_goal(contract: dict[str, Any]) -> str:
     disconfirm = strategy["disconfirming_evidence"][0]
     kill = strategy["kill_criteria"][0]
     if review.get("decision") == "approved" and review.get("review_kind") == "synthetic_test":
-        review_text = f"仅测试用的合成批准，payload {review['approved_payload_sha256'][:12]}；不是真人签字。"
+        review_text = f"仅测试用的合成批准，payload 一致性摘要 {review['approved_payload_sha256'][:12]}；不是真人签字。"
     elif review.get("decision") == "approved":
-        review_text = f"已由 {review['reviewer']} 批准，审批绑定 payload {review['approved_payload_sha256'][:12]}。"
+        review_text = f"已记录 {review['reviewer']} 的批准，payload 一致性摘要 {review['approved_payload_sha256'][:12]}（非签名）。"
     else:
         review_text = "Agent 语义结果已记录，精确指标与执行范围仍待人工批准。"
     lines = [
@@ -1017,21 +1206,103 @@ def render_goal(contract: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+class ArtifactHTMLInspector(HTMLParser):
+    """Collect structural HTML facts without relying on quote-sensitive regexes."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.h1_count = 0
+        self.primary_cta_count = 0
+        self.external_urls: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() == "h1":
+            self.h1_count += 1
+        normalized = {name.lower(): (value or "").strip() for name, value in attrs}
+        if normalized.get("data-primary-cta", "").lower() == "true":
+            self.primary_cta_count += 1
+        for name in ("src", "href"):
+            value = normalized.get(name, "")
+            if value.lower().startswith(("http://", "https://", "//")):
+                self.external_urls.append(value)
+
+
+def artifact_source_ids(content: str) -> set[str]:
+    """Parse explicit `source_ids:` lines from a Markdown validation brief."""
+    source_ids: set[str] = set()
+    for match in re.finditer(r"(?im)^\s*source_ids\s*:\s*(.*?)\s*$", content):
+        raw = match.group(1).strip().strip("[]")
+        for token in re.split(r"[,，]", raw):
+            source_id = token.strip().strip("`'\"")
+            if source_id:
+                source_ids.add(source_id)
+    return source_ids
+
+
+def source_reference_details(contract: dict[str, Any], content: str) -> dict[str, Any]:
+    referenced = artifact_source_ids(content)
+    bundle = contract.get("evidence_bundle", {})
+    sources = bundle.get("sources", []) if isinstance(bundle, dict) else []
+    claims = bundle.get("claims", []) if isinstance(bundle, dict) else []
+    known_ids = {
+        str(source.get("id"))
+        for source in sources
+        if isinstance(source, dict) and str(source.get("id", "")).strip()
+    }
+    unknown_ids = referenced.difference(known_ids)
+    gate = contract.get("tool_evidence_gate")
+    requirements = gate.get("evidence_requirements", []) if isinstance(gate, dict) else []
+    coverage: list[dict[str, Any]] = []
+    for requirement in requirements if isinstance(requirements, list) else []:
+        if not isinstance(requirement, dict):
+            continue
+        claim_type = requirement.get("claim_type")
+        minimum = requirement.get("minimum_independent_sources")
+        supporting_ids: set[str] = set()
+        for claim in claims if isinstance(claims, list) else []:
+            if not isinstance(claim, dict) or claim.get("claim_type") != claim_type:
+                continue
+            claim_source_ids = claim.get("source_ids")
+            if isinstance(claim_source_ids, list):
+                supporting_ids.update(str(source_id) for source_id in claim_source_ids)
+        cited_supporting_ids = referenced.intersection(known_ids, supporting_ids)
+        passed = isinstance(minimum, int) and not isinstance(minimum, bool) and len(cited_supporting_ids) >= minimum
+        coverage.append(
+            {
+                "claim_type": claim_type,
+                "minimum_independent_sources": minimum,
+                "cited_supporting_ids": sorted(cited_supporting_ids),
+                "passed": passed,
+            }
+        )
+    return {
+        "referenced_ids": sorted(referenced),
+        "unknown_ids": sorted(unknown_ids),
+        "coverage": coverage,
+        "passed": bool(referenced) and not unknown_ids and all(item["passed"] for item in coverage),
+    }
+
+
 def inspect_artifact(contract: dict[str, Any], artifact_path: Path, content: str) -> dict[str, bool]:
     first_step = contract["first_step"]
     validators = first_step["validators"]
     checks: dict[str, bool] = {}
+    html_inspector = ArtifactHTMLInspector()
+    if any(validator.startswith("html_") or validator == "no_external_urls" for validator in validators):
+        html_inspector.feed(content)
+        html_inspector.close()
+    source_details = source_reference_details(contract, content) if "source_reference" in validators else None
     for validator in validators:
         if validator == "nonempty":
-            checks[validator] = artifact_path.is_file() and bool(content.strip())
+            checks[validator] = bool(content.strip())
         elif validator == "html_single_h1":
-            checks[validator] = len(re.findall(r"<h1(?:\s|>)", content, flags=re.IGNORECASE)) == 1
+            checks[validator] = html_inspector.h1_count == 1
         elif validator == "html_primary_cta":
-            checks[validator] = len(re.findall(r'data-primary-cta="true"', content, flags=re.IGNORECASE)) == 1
+            checks[validator] = html_inspector.primary_cta_count == 1
         elif validator == "assumption_label":
             checks[validator] = "NOT A MARKET CLAIM" in content and "假设待验证" in content
         elif validator == "no_external_urls":
-            checks[validator] = not bool(re.search(r'(?:src|href)="https?://', content, flags=re.IGNORECASE))
+            checks[validator] = not html_inspector.external_urls
         elif validator == "no_unresolved_template":
             checks[validator] = "{{" not in content and "}}" not in content
         elif validator == "python_syntax":
@@ -1046,7 +1317,7 @@ def inspect_artifact(contract: dict[str, Any], artifact_path: Path, content: str
         elif validator == "markdown_heading":
             checks[validator] = bool(re.search(r"^#\s+\S", content, flags=re.MULTILINE))
         elif validator == "source_reference":
-            checks[validator] = "source_ids" in content or "来源" in content
+            checks[validator] = bool(source_details and source_details["passed"])
         else:
             checks[f"unknown_validator:{validator}"] = False
     acceptance = first_step.get("acceptance", {})
@@ -1057,24 +1328,48 @@ def inspect_artifact(contract: dict[str, Any], artifact_path: Path, content: str
     return checks
 
 
-def execute_first_step(contract: dict[str, Any], output: Path) -> dict[str, Any]:
+def _artifact_template_errors(contract: dict[str, Any]) -> list[str]:
+    first_step = contract.get("first_step")
+    if not isinstance(first_step, dict):
+        return ["first_step.content_template: cannot validate a non-object first step"]
+    content = str(first_step.get("content_template", "")).replace("{{CONTRACT_ID}}", str(contract.get("contract_id", "")))
+    artifact = Path(str(first_step.get("primary_artifact", "artifact.txt")))
+    try:
+        checks = inspect_artifact(contract, artifact, content)
+    except (AttributeError, KeyError, TypeError, ValueError) as exc:
+        return [f"first_step.content_template: validator setup failed: {exc}"]
+    return [f"first_step.content_template: validator `{name}` failed" for name, passed in checks.items() if not passed]
+
+
+def execute_first_step(contract: dict[str, Any], output: Path | None = None) -> dict[str, Any]:
     errors = validate_contract(contract, require_human_approval=True, require_evidence=True)
     if errors:
         raise CompilerError("contract failed strict validation:\n- " + "\n- ".join(errors))
     first_step = contract["first_step"]
     action = first_step["action"]
     policy = ACTION_POLICIES[action]
-    output_dir = prepare_new_directory(output)
+    approved_output_dir = expected_output_directory(contract)
+    if output is not None and output.expanduser().resolve() != approved_output_dir:
+        raise CompilerError(
+            "caller-supplied output does not match the approved execution workspace and relative output_directory: "
+            f"expected {approved_output_dir}"
+        )
     artifact_name = Path(first_step["primary_artifact"]).name
-    artifact_path = output_dir / artifact_name
+    artifact_path = approved_output_dir / artifact_name
     content = str(first_step["content_template"]).replace("{{CONTRACT_ID}}", str(contract["contract_id"]))
-    write_text(artifact_path, content, refuse_existing=True)
     checks = inspect_artifact(contract, artifact_path, content)
+    if not checks or not all(checks.values()):
+        failed = [name for name, passed in checks.items() if not passed]
+        raise CompilerError(f"approved artifact content failed checks before write: {failed}")
+    output_dir = prepare_new_directory(approved_output_dir)
+    write_text(artifact_path, content, refuse_existing=True)
     report = {
-        "status": "PASS" if checks and all(checks.values()) else "FAIL",
+        "status": "PASS",
         "contract_id": contract["contract_id"],
         "approved_payload_sha256": approved_payload_sha256(contract),
         "approval_context": contract["human_review"].get("review_kind"),
+        "execution_workspace": copy.deepcopy(contract["execution_workspace"]),
+        "resolved_output_directory": str(approved_output_dir),
         "dispatch": {
             "action": action,
             "handler": policy["dispatch"],
@@ -1085,9 +1380,9 @@ def execute_first_step(contract: dict[str, Any], output: Path) -> dict[str, Any]
         "checks": checks,
         "external_side_effects": [],
     }
+    if "source_reference" in first_step["validators"]:
+        report["source_reference_details"] = source_reference_details(contract, content)
     write_json(output_dir / "execution-report.json", report, refuse_existing=True)
-    if report["status"] != "PASS":
-        raise CompilerError("dispatched artifact failed its approved checks")
     return report
 
 
@@ -1096,7 +1391,7 @@ def write_validation_log(directory: Path, report: dict[str, Any]) -> Path:
     path = directory / f"validator.{status}.log"
     lines = [f"VALIDATOR {status}"]
     if status == "PASS":
-        lines.extend(("- contract identity: PASS", "- domain/action policy: PASS", "- metric/evidence correspondence: PASS", "- evidence precondition: PASS", "- human payload binding: PASS"))
+        lines.extend(("- contract identity: PASS", "- domain/action policy: PASS", "- metric/evidence correspondence: PASS", "- evidence precondition: PASS", "- review/payload consistency: PASS"))
     else:
         lines.extend(f"- {error}" for error in report["errors"])
     write_text(path, "\n".join(lines) + "\n")
@@ -1123,12 +1418,13 @@ def write_compile_bundle(
     output: Path,
     request: str,
     semantic: dict[str, Any],
+    workspace_root: Path,
     evidence_bundle: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     output_dir = output.expanduser().resolve()
     if output_dir.exists():
         raise CompilerError(f"output already exists; choose a new directory: {output_dir}")
-    contract = build_contract(request, semantic, evidence_bundle=evidence_bundle)
+    contract = build_contract(request, semantic, workspace_root=workspace_root, evidence_bundle=evidence_bundle)
     report = _write_bundle(output_dir, request, semantic, contract)
     return contract, report
 
@@ -1147,7 +1443,7 @@ def render_demo_walkthrough(report: dict[str, Any]) -> str:
 <article><span class="step">01 / SEMANTIC INPUT</span><h2>完整 Agent 结果进入 CLI</h2><p>Router、Strategy、Metric、反证、Kill criteria、工具/证据门禁与任务专属验收一次传入。</p><span class="status agent">AGENT_RESULT</span></article>
 <article><span class="step">02 / STRICT METRIC</span><h2>“好看”仍然会被拒绝</h2><p>主观 statement、主观 method、空 threshold 都只能写 FAIL.log，不会写 PASS.log。</p><span class="status fail">VALIDATOR FAIL</span></article>
 <article><span class="step">03 / EVIDENCE PRECONDITION</span><h2>研究型任务不能跳过来源</h2><p>{evidence_text}</p><span class="status pending">EVIDENCE PENDING</span></article>
-<article><span class="step">04 / HUMAN APPROVAL</span><h2>精确指标和执行 payload 留给人</h2><p>人工审批后写入 approved_payload_sha256；任一执行字段被篡改，validate/execute 都拒绝。</p><span class="status pending">HUMAN PENDING</span></article>
+<article><span class="step">04 / HUMAN APPROVAL</span><h2>精确指标和执行 payload 留给人</h2><p>人工审批后记录无密钥 SHA-256；审批记录不变时，payload 漂移会被拒绝。它不是数字签名。</p><span class="status pending">HUMAN PENDING</span></article>
 </section><nav class="links"><a href="./01-agent-result/semantic-input.snapshot.json">Agent semantic JSON</a><a href="./01-agent-result/validator.FAIL.log">Preflight FAIL</a><a href="./02-subjective-metric/validator.FAIL.log">Metric FAIL</a><a href="./03-human-pending/human-review.pending.json">Human pending</a></nav>
 </main></body></html>"""
 
@@ -1156,14 +1452,14 @@ def run_demo(output: Path, request_file: Path, semantic_file: Path) -> dict[str,
     output_dir = prepare_new_directory(output)
     request = request_file.read_text(encoding="utf-8").strip()
     semantic = load_semantic_input(semantic_file)
-    agent_contract = build_contract(request, semantic)
+    agent_contract = build_contract(request, semantic, workspace_root=DEFAULT_DEMO_WORKSPACE)
     agent_report = _write_bundle(output_dir / "01-agent-result", request, semantic, agent_contract)
 
     negative_semantic = copy.deepcopy(semantic)
     metric = negative_semantic["strategy_gate"]["success_metrics"][0]
     metric["statement"] = "看起来足够好看"
     metric["measurement"] = {"method": "主观感受", "target": {}}
-    negative_contract = build_contract(request, negative_semantic)
+    negative_contract = build_contract(request, negative_semantic, workspace_root=DEFAULT_DEMO_WORKSPACE)
     negative_dir = output_dir / "02-subjective-metric"
     negative_report = _write_bundle(negative_dir, request, negative_semantic, negative_contract)
 
@@ -1207,7 +1503,13 @@ def command_compile(args: argparse.Namespace) -> int:
     request = args.request or Path(args.request_file).read_text(encoding="utf-8")
     semantic = load_semantic_input(Path(args.semantic_input))
     evidence = load_json(Path(args.evidence_input)) if args.evidence_input else None
-    contract, report = write_compile_bundle(Path(args.output), request, semantic, evidence_bundle=evidence)
+    contract, report = write_compile_bundle(
+        Path(args.output),
+        request,
+        semantic,
+        Path(args.workspace_root),
+        evidence_bundle=evidence,
+    )
     print(f"Compiled {contract['contract_id']} from semantic input -> {Path(args.output).resolve()}")
     print(f"Preflight: {report['status']} / HUMAN SIGN-OFF PENDING")
     return 0
@@ -1233,7 +1535,7 @@ def command_attach_evidence(args: argparse.Namespace) -> int:
     write_json(Path(args.output), updated, refuse_existing=True)
     report = validation_report(updated, require_human_approval=False, require_evidence=True)
     print(json.dumps(report, ensure_ascii=False, indent=2))
-    return 0 if not _evidence_errors(updated) else 1
+    return 0 if report["status"] == "PASS" else 1
 
 
 def command_apply_review(args: argparse.Namespace) -> int:
@@ -1244,13 +1546,13 @@ def command_apply_review(args: argparse.Namespace) -> int:
     write_json(Path(args.output), reviewed, refuse_existing=True)
     context = reviewed["human_review"]["review_kind"]
     label = "Human approval" if context == "human" else "Synthetic test approval (not human)"
-    print(f"{label} bound to payload {reviewed['human_review']['approved_payload_sha256']} -> {Path(args.output).resolve()}")
+    print(f"{label} recorded payload consistency digest {reviewed['human_review']['approved_payload_sha256']} -> {Path(args.output).resolve()}")
     return 0
 
 
 def command_execute(args: argparse.Namespace) -> int:
     contract = load_json(Path(args.contract))
-    report = execute_first_step(contract, Path(args.output))
+    report = execute_first_step(contract, Path(args.output) if args.output else None)
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0
 
@@ -1276,10 +1578,11 @@ def build_parser() -> argparse.ArgumentParser:
     request_group.add_argument("--request-file")
     compile_parser.add_argument("--semantic-input", required=True, help="complete Agent/Skill semantic result JSON")
     compile_parser.add_argument("--evidence-input", help="optional evidence bundle JSON collected before human review")
+    compile_parser.add_argument("--workspace-root", required=True, help="absolute execution workspace bound into the contract")
     compile_parser.add_argument("--output", required=True, help="new output directory")
     compile_parser.set_defaults(handler=command_compile)
 
-    validate_parser = subparsers.add_parser("validate", help="validate identity, domain, evidence, approval hash, and action")
+    validate_parser = subparsers.add_parser("validate", help="validate identity, domain, evidence, review/payload consistency, and action")
     validate_parser.add_argument("contract")
     validate_parser.add_argument("--report", help="new JSON report path")
     validate_parser.add_argument("--allow-pending-review", action="store_true")
@@ -1292,7 +1595,7 @@ def build_parser() -> argparse.ArgumentParser:
     evidence_parser.add_argument("--output", required=True, help="new contract JSON path")
     evidence_parser.set_defaults(handler=command_attach_evidence)
 
-    review_parser = subparsers.add_parser("apply-review", help="bind an exact human approval to the execution payload")
+    review_parser = subparsers.add_parser("apply-review", help="record an exact review plus an unkeyed payload consistency digest")
     review_parser.add_argument("contract")
     review_parser.add_argument("--review", required=True)
     review_parser.add_argument("--evidence", help="optional evidence bundle to attach before approval")
@@ -1301,7 +1604,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     execute_parser = subparsers.add_parser("execute", help="dispatch one whitelisted first step from an approved contract")
     execute_parser.add_argument("contract")
-    execute_parser.add_argument("--output", required=True, help="new output directory")
+    execute_parser.add_argument(
+        "--output",
+        help="optional path assertion; must equal approved workspace root + first_step.output_directory",
+    )
     execute_parser.set_defaults(handler=command_execute)
 
     demo_parser = subparsers.add_parser("demo", help="create an honest agent-result/evidence/human-pending demo")
