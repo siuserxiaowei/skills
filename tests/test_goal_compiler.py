@@ -353,6 +353,9 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
             "encoded URL": '<form action="https:&#47;&#47;example.com/collect"></form>',
             "CSS escaped URL": '<style>@import url(https:\\2f\\2f example.com/theme.css);</style>',
             "computed script": '<script>fetch(["https:", "//example.com"].join(""))</script>',
+            "non-HTTP scheme": '<img src="ftp://example.com/pixel.png" alt="external">',
+            "active URI scheme": '<a href="javascript:alert(1)">external</a>',
+            "embedded active document": '<iframe src="data:text/html,external"></iframe>',
         }
         for name, injection in variants.items():
             with self.subTest(vector=name):

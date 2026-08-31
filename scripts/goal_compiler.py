@@ -1220,6 +1220,12 @@ def render_goal(contract: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def is_nonlocal_url_reference(value: str) -> bool:
+    """Reject protocol-relative or explicitly schemed HTML URL attributes."""
+    decoded = html.unescape(value).strip()
+    return decoded.startswith("//") or bool(re.match(r"(?i)^[a-z][a-z0-9+.-]*:", decoded))
+
+
 class ArtifactHTMLInspector(HTMLParser):
     """Collect structural HTML facts without relying on quote-sensitive regexes."""
 
@@ -1239,12 +1245,12 @@ class ArtifactHTMLInspector(HTMLParser):
             self.primary_cta_count += 1
         for name in ("src", "href", "action", "formaction", "poster", "data", "ping"):
             value = normalized.get(name, "")
-            if value.lower().startswith(("http://", "https://", "//")):
+            if is_nonlocal_url_reference(value):
                 self.external_urls.append(value)
         srcset = normalized.get("srcset", "")
         for candidate in srcset.split(","):
             value = candidate.strip().split(maxsplit=1)[0] if candidate.strip() else ""
-            if value.lower().startswith(("http://", "https://", "//")):
+            if is_nonlocal_url_reference(value):
                 self.external_urls.append(value)
         if normalized_tag == "script" or any(name.startswith("on") for name in normalized):
             self.active_content.append(normalized_tag)
@@ -1265,7 +1271,7 @@ def decoded_external_url_tokens(content: str) -> list[str]:
 
     decoded = re.sub(r"\\(?:([0-9a-fA-F]{1,6})\s?|(.))", decode_css_escape, decoded)
     return re.findall(
-        r"(?i)(?:https?:)?//(?:[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?|\[[0-9a-f:]+\])(?::\d+)?(?:[/#?][^\s<>'\"]*)?",
+        r"(?i)(?:[a-z][a-z0-9+.-]*:)?//(?:[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?|\[[0-9a-f:]+\])(?::\d+)?(?:[/#?][^\s<>'\"]*)?",
         decoded,
     )
 
