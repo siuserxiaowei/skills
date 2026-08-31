@@ -1243,7 +1243,18 @@ class ArtifactHTMLInspector(HTMLParser):
         normalized = {name.lower(): (value or "").strip() for name, value in attrs}
         if normalized.get("data-primary-cta", "").lower() == "true":
             self.primary_cta_count += 1
-        for name in ("src", "href", "action", "formaction", "poster", "data", "ping"):
+        for name in (
+            "src",
+            "href",
+            "xlink:href",
+            "action",
+            "formaction",
+            "poster",
+            "data",
+            "ping",
+            "cite",
+            "background",
+        ):
             value = normalized.get(name, "")
             if is_nonlocal_url_reference(value):
                 self.external_urls.append(value)
@@ -1252,7 +1263,10 @@ class ArtifactHTMLInspector(HTMLParser):
             value = candidate.strip().split(maxsplit=1)[0] if candidate.strip() else ""
             if is_nonlocal_url_reference(value):
                 self.external_urls.append(value)
-        if normalized_tag == "script" or any(name.startswith("on") for name in normalized):
+        active_tag = normalized_tag in {"script", "iframe", "object", "embed", "base"}
+        active_attribute = "srcdoc" in normalized or any(name.startswith("on") for name in normalized)
+        active_refresh = normalized_tag == "meta" and normalized.get("http-equiv", "").lower() == "refresh"
+        if active_tag or active_attribute or active_refresh:
             self.active_content.append(normalized_tag)
 
 

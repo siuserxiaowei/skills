@@ -345,6 +345,34 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
         self.assertIn("validator `no_external_urls` failed", errors)
 
     def test_html_external_url_gate_rejects_network_capable_bypasses(self) -> None:
+        evidence = {
+            "sources": [
+                {
+                    "id": "web-001",
+                    "title": "Synthetic website observation A",
+                    "url": "https://example.test/source-a",
+                    "source_type": "synthetic test fixture",
+                    "tool_channel": "local test data",
+                    "access_limit": "not a live source",
+                },
+                {
+                    "id": "web-002",
+                    "title": "Synthetic website observation B",
+                    "url": "https://example.org/source-b",
+                    "source_type": "synthetic test fixture",
+                    "tool_channel": "local test data",
+                    "access_limit": "not a live source",
+                },
+            ],
+            "claims": [
+                {
+                    "claim_type": "用户痛点或需求",
+                    "statement": "Synthetic claim used only for the HTML execution-boundary regression.",
+                    "source_ids": ["web-001", "web-002"],
+                }
+            ],
+            "notice": "TEST ONLY: not research evidence for a real decision.",
+        }
         variants = {
             "form action": '<form action="https://example.com/collect"></form>',
             "srcset": '<img srcset="https://example.com/a.png 1x, //example.org/b.png 2x" alt="external">',
@@ -360,15 +388,39 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
             "HTML tab in scheme": '<iframe src="da&#9;ta:text/html,external"></iframe>',
             "literal carriage return in scheme": '<a href="java\rscript:alert(1)">external</a>',
             "CSS newline in scheme": '<style>@import url(https:\n//example.com/theme.css);</style>',
+            "iframe srcdoc": '<iframe srcdoc="&lt;script&gt;top.__x=1&lt;/script&gt;"></iframe>',
+            "SVG xlink": '<svg><a xlink:href="javascript:alert(1)">external</a></svg>',
+            "meta refresh": '<meta http-equiv="refresh" content="0; url=/next">',
         }
         for name, injection in variants.items():
             with self.subTest(vector=name):
                 semantic = goal_compiler.load_semantic_input(DEMO_FIXTURES / "semantic-input.demo.json")
+                semantic["provenance"]["mode"] = "test_fixture"
                 content = semantic["first_step"]["content_template"].replace("</main>", f"{injection}</main>")
                 set_first_step_content(semantic, content)
-                contract = compile_semantic(semantic, request=WEBSITE_REQUEST)
+                contract = compile_semantic(semantic, request=WEBSITE_REQUEST, evidence_bundle=evidence)
                 errors = "\n".join(goal_compiler.validate_contract(contract, require_human_approval=False))
                 self.assertIn("validator `no_external_urls` failed", errors)
+                review = synthetic_review("first-validation-page")
+                with self.assertRaisesRegex(goal_compiler.CompilerError, "cannot approve an invalid"):
+                    goal_compiler.apply_human_review(contract, review)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            semantic = goal_compiler.load_semantic_input(DEMO_FIXTURES / "semantic-input.demo.json")
+            semantic["provenance"]["mode"] = "test_fixture"
+            local_links = '<a href="#plan">plan</a><img src="./local.png" alt="local"><a href="/local">local</a>'
+            content = semantic["first_step"]["content_template"].replace("</main>", f"{local_links}</main>")
+            set_first_step_content(semantic, content)
+            contract = compile_semantic(
+                semantic,
+                request=WEBSITE_REQUEST,
+                workspace_root=Path(temp_dir),
+                evidence_bundle=evidence,
+            )
+            approved = goal_compiler.apply_human_review(contract, synthetic_review("first-validation-page"))
+            report = goal_compiler.execute_first_step(approved)
+            self.assertTrue(report["checks"]["no_external_urls"])
+            self.assertTrue((Path(temp_dir) / "first-output" / "index.html").is_file())
 
     def test_compiler_metadata_is_exact_and_approval_bound(self) -> None:
         semantic = load_semantic("coding-semantic-input.json")
