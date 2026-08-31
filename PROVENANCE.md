@@ -55,4 +55,4 @@ This is the precise original mechanism being submitted:
 
 ## Assets
 
-Per-file rights state and SHA-256 records are in [`ASSET_RIGHTS.csv`](ASSET_RIGHTS.csv). The older engineering screenshots and 75-second V2 release video remain evidence for the existing desktop-pet implementation; they are not evidence for the new Character Director path.
+Per-file rights state, repository path, main-release-package path, and SHA-256 records are in [`ASSET_RIGHTS.csv`](ASSET_RIGHTS.csv). The older engineering screenshots, website/social composites, and 75-second V2 release video remain evidence for the existing desktop-pet implementation; they are not evidence for the new Character Director path. Historical composites that visibly reuse the inherited hero retain its upstream attribution and provider-terms boundary.

@@ -199,7 +199,7 @@ MIT — see `LICENSE`. Additional notices in `NOTICE.md` (trademarks, demo asset
 
 - Not an OpenAI product and not a fork of Codex source
 - Not a way to patch or rebrand the official binary
-- Not a Windows build (see `../windows/`)
+- Not a Windows build; upstream Windows theme-tooling source remains in the [repository `windows/` directory](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/tree/main/windows).
 - Not an API proxy: theming does not change model providers or API keys
 
 If you use a third-party API relay, configure it separately — keep theme install and API config as two explicit steps.

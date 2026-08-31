@@ -59,6 +59,7 @@ test("standalone skill archive carries its license and provenance bundle", async
     "SOURCES.md",
     "THIRD_PARTY_NOTICES.md",
     "ASSET_RIGHTS.csv",
+    "STANDALONE_PACKAGE.md",
   ]) {
     assert.match(listing, new RegExp(`^codex-bugfire-customizer/${evidence.replaceAll(".", "\\.")}$`, "m"));
   }
@@ -68,8 +69,17 @@ test("standalone skill archive carries its license and provenance bundle", async
   const { stdout: notices } = await execFileAsync("/usr/bin/unzip", [
     "-p", archive, "codex-bugfire-customizer/THIRD_PARTY_NOTICES.md",
   ], { encoding: "utf8" });
+  const { stdout: sources } = await execFileAsync("/usr/bin/unzip", [
+    "-p", archive, "codex-bugfire-customizer/SOURCES.md",
+  ], { encoding: "utf8" });
+  const { stdout: packageScope } = await execFileAsync("/usr/bin/unzip", [
+    "-p", archive, "codex-bugfire-customizer/STANDALONE_PACKAGE.md",
+  ], { encoding: "utf8" });
   assert.match(license, /^MIT License/);
   assert.match(notices, /Codex Dream Skin/);
+  assert.doesNotMatch(`${notices}\n${sources}`, /\]\((?:macos|contest|docs)\//);
+  assert.match(sources, /https:\/\/github\.com\/siuserxiaowei\/Codex-Bugfire-Skin\/blob\/v1\.3\.0-bugfire\.1\/macos\//);
+  assert.match(packageScope, /does \*\*not\*\* contain the full BUGFIRE engine/i);
 });
 
 test("skill wrapper finds this repository and completes a fresh pack journey", async () => {

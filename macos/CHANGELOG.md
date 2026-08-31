@@ -23,11 +23,14 @@
 - live 响应先做 `Content-Length` 预检，再以 1 MiB body-reader 上限流式累计，首个越界 chunk 会主动取消而非整段下载后才拒绝
 - `manifestProposal.rights` 强制从已校验的人工 brief 派生，AI 不能覆盖素材权利声明
 - recorded fixture 校验强制携带 human brief；即使攻击者修改 rights 并重算 checksum，只要与 brief 不完全一致仍会拒绝
+- fixture checksum 输入必须是至多 4 KiB 的普通 UTF-8 文件，拒绝符号链接、目录和超大/特殊文件
 - `review` 与 `materialize` 也分别强制重新读取操作员 brief 并核对摘要和 exact rights，阻断跳过 fixture 校验的 plan-only 持久化链
 - `materialize` 会重建 canonical AI draft 并严格校验 `humanReview.draftSha256`，同时拒绝调用方可控输出路径中的 symlink 祖先
 - Character Director 纳入 lines / branches / functions 均 80% 的独立覆盖率门禁；测试路径改用 `fileURLToPath`，支持含空格与中文的 Client ZIP 解包目录
 - Client 包内外的用户说明统一读取 `VERSION`，并以回归测试阻止旧版号重新进入发布 ZIP
 - 独立 Customizer Skill ZIP 随包携带 MIT 许可证、上游归属、来源记录与素材权利边界
+- 发布素材台账覆盖全部 12 张 `docs/images/bugfire-*.png`，并区分仓库路径、扁平主包路径与 standalone Skill 范围
+- 主包、双击 Client 和 Skill 构建器同时支持源码仓库与扁平 release 布局；发布文档链接在包内保持可解析
 - 保持既有 loopback-only CDP、官方应用不修改、Build 仅演示与一键恢复边界
 
 ## 1.2.0-bugfire.1 — 2026-07-16

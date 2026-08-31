@@ -1,15 +1,24 @@
 #!/bin/bash
 
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+. "$SCRIPT_DIR/release-layout.sh"
+ROOT="$BUGFIRE_ENGINE_ROOT"
+PROJECT_ROOT="$BUGFIRE_PROJECT_ROOT"
 VERSION="$(/usr/bin/tr -d '[:space:]' < "$ROOT/VERSION")"
+SKIP_TESTS="false"
+if [ "${1:-}" = "--skip-tests" ]; then SKIP_TESTS="true"; shift; fi
+if [ "$#" -gt 1 ]; then
+  /usr/bin/printf 'Usage: %s [--skip-tests] [output.zip]\n' "$0" >&2
+  exit 1
+fi
 OUTPUT="${1:-$HOME/Desktop/Codex 主题编辑器.zip}"
 TMP="$(/usr/bin/mktemp -d /tmp/codex-dream-client.XXXXXX)"
 CLIENT_ROOT="$TMP/Codex 主题编辑器"
 ENGINE="$CLIENT_ROOT/.codex-dream-skin-studio"
 trap '/bin/rm -rf "$TMP"' EXIT
 
-"$ROOT/tests/run-tests.sh"
+if [ "$SKIP_TESTS" != "true" ]; then "$ROOT/tests/run-tests.sh"; fi
 /bin/mkdir -p "$ENGINE"
 /usr/bin/rsync -a \
   --exclude '.git/' \
@@ -20,21 +29,19 @@ trap '/bin/rm -rf "$TMP"' EXIT
 /bin/mkdir -p "$ENGINE/skills/codex-bugfire-customizer"
 /usr/bin/rsync -a \
   --exclude '.DS_Store' \
-  "$ROOT/../skills/codex-bugfire-customizer/" \
+  "$PROJECT_ROOT/skills/codex-bugfire-customizer/" \
   "$ENGINE/skills/codex-bugfire-customizer/"
 /bin/mkdir -p "$ENGINE/contest/bugfire"
 /usr/bin/rsync -a \
   --exclude '.DS_Store' \
-  "$ROOT/../contest/bugfire/" \
+  "$PROJECT_ROOT/contest/bugfire/" \
   "$ENGINE/contest/bugfire/"
 /bin/mkdir -p "$ENGINE/docs"
 /usr/bin/rsync -a \
   --exclude '.DS_Store' \
-  "$ROOT/../docs/" \
+  "$PROJECT_ROOT/docs/" \
   "$ENGINE/docs/"
-for evidence in PROVENANCE.md SOURCES.md THIRD_PARTY_NOTICES.md ASSET_RIGHTS.csv; do
-  /bin/cp "$ROOT/../$evidence" "$ENGINE/$evidence"
-done
+"$ROOT/scripts/prepare-package-layout.sh" "$ENGINE"
 
 /usr/bin/printf '%s\n' \
   '#!/bin/bash' \

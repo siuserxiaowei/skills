@@ -9,6 +9,7 @@ import { validateBugfireManifest } from "./bugfire-pack.mjs";
 
 const MAX_JSON_BYTES = 256 * 1024;
 const MAX_AI_RESPONSE_BYTES = 1024 * 1024;
+const MAX_CHECKSUM_BYTES = 4 * 1024;
 const MAX_DECISIONS = 8;
 const MODES = new Set(["recorded-agent-fixture", "live-openai-compatible"]);
 const STATUSES = new Set(["ai-draft", "human-approved"]);
@@ -149,6 +150,18 @@ async function readJson(file, name) {
     if (error instanceof TypeError && error.message.startsWith("Invalid BUGFIRE director artifact:")) throw error;
     invalid(`${name} is not valid JSON: ${error.message}`);
   }
+}
+
+async function readSmallTextFile(file, name, maximumBytes) {
+  const absolute = path.resolve(file);
+  const entry = await fs.lstat(absolute).catch((error) => {
+    if (error?.code === "ENOENT") invalid(`${name} is missing: ${absolute}`);
+    throw error;
+  });
+  if (!entry.isFile() || entry.isSymbolicLink() || entry.size < 1 || entry.size > maximumBytes) {
+    invalid(`${name} must be a regular text file no larger than ${maximumBytes} bytes`);
+  }
+  return decodeUtf8(await fs.readFile(absolute), name);
 }
 
 async function assertOutputAbsent(file, name) {
@@ -712,9 +725,9 @@ export async function verifyRecordedFixture(planFile, checksumFile, briefFile) {
   const planRecord = await readJson(planFile, "recorded plan fixture");
   const plan = validateDirectorPlan(planRecord.value, { requiredStatus: "ai-draft" });
   if (plan.provenance.mode !== "recorded-agent-fixture") invalid("fixture must be labeled recorded-agent-fixture");
-  const checksum = decodeUtf8(
-    await fs.readFile(path.resolve(checksumFile)), "fixture checksum",
-  ).trim();
+  const checksum = (await readSmallTextFile(
+    checksumFile, "fixture checksum", MAX_CHECKSUM_BYTES,
+  )).trim();
   const match = /^([a-f0-9]{64})(?:\s+\*?.+)?$/.exec(checksum);
   if (!match) invalid("fixture checksum file is malformed");
   const actual = sha256(planRecord.bytes);

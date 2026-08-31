@@ -1,7 +1,9 @@
 #!/bin/bash
 
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/../.." && pwd -P)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+. "$SCRIPT_DIR/release-layout.sh"
+ROOT="$BUGFIRE_PROJECT_ROOT"
 SKILL="$ROOT/skills/codex-bugfire-customizer"
 ARCHIVE="${1:-$ROOT/release/codex-bugfire-customizer.skill.zip}"
 RELEASE="$(/usr/bin/dirname "$ARCHIVE")"
@@ -14,6 +16,29 @@ STAGED_SKILL="$TMP/codex-bugfire-customizer"
 for evidence in LICENSE NOTICE.md PROVENANCE.md SOURCES.md THIRD_PARTY_NOTICES.md ASSET_RIGHTS.csv; do
   /bin/cp "$ROOT/$evidence" "$STAGED_SKILL/$evidence"
 done
+
+RELEASE_REF="v$(/usr/bin/tr -d '[:space:]' < "$BUGFIRE_ENGINE_ROOT/VERSION")"
+REPOSITORY_BLOB="https://github.com/siuserxiaowei/Codex-Bugfire-Skin/blob/$RELEASE_REF"
+REPOSITORY_TREE="https://github.com/siuserxiaowei/Codex-Bugfire-Skin/tree/$RELEASE_REF"
+for markdown in PROVENANCE.md SOURCES.md THIRD_PARTY_NOTICES.md; do
+  temporary="$STAGED_SKILL/$markdown.absolute-links.$$"
+  /usr/bin/sed \
+    -e "s#](contest/bugfire/demo)#]($REPOSITORY_TREE/contest/bugfire/demo)#g" \
+    -e "s#](contest/#]($REPOSITORY_BLOB/contest/#g" \
+    -e "s#](macos/#]($REPOSITORY_BLOB/macos/#g" \
+    -e "s#](scripts/#]($REPOSITORY_BLOB/macos/scripts/#g" \
+    -e "s#](tests/#]($REPOSITORY_BLOB/macos/tests/#g" \
+    -e "s#](references/#]($REPOSITORY_BLOB/macos/references/#g" \
+    -e "s#](docs/#]($REPOSITORY_BLOB/docs/#g" \
+    "$STAGED_SKILL/$markdown" > "$temporary"
+  /bin/mv "$temporary" "$STAGED_SKILL/$markdown"
+done
+temporary="$STAGED_SKILL/ASSET_RIGHTS.csv.absolute-links.$$"
+/usr/bin/sed \
+  -e "s#documented in macos/references/asset-provenance.md#documented at $REPOSITORY_BLOB/macos/references/asset-provenance.md#g" \
+  -e "s#documented in references/asset-provenance.md#documented at $REPOSITORY_BLOB/macos/references/asset-provenance.md#g" \
+  "$STAGED_SKILL/ASSET_RIGHTS.csv" > "$temporary"
+/bin/mv "$temporary" "$STAGED_SKILL/ASSET_RIGHTS.csv"
 
 VALIDATOR="${SKILL_VALIDATOR:-$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py}"
 if [ -f "$VALIDATOR" ]; then

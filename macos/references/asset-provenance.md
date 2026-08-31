@@ -15,7 +15,7 @@ Images chosen through Customize belong to the user (or their licensors).
 
 ## BUGFIRE runtime evidence
 
-The six `docs/images/bugfire-*.png` files were captured from the local BUGFIRE demo and reviewed for task text, account data, private paths, and real project names before repository inclusion. They document product behavior; they are not raster overlays used by the runtime.
+The six runtime screenshots below were captured from the local BUGFIRE demo and reviewed for task text, account data, private paths, and real project names before repository inclusion. They document product behavior; they are not raster overlays used by the runtime.
 
 | File | Pixels | SHA-256 |
 | --- | ---: | --- |
@@ -37,3 +37,15 @@ The three `docs/images/bugfire-director-*.png` files are offline 1920×1080 Chro
 | `bugfire-director-pack-preview.png` | `b0c6e094c44fe26dc7e0ac3443fedccd9c5933d7363574ab67f8e14646f60ab0` |
 
 The first board says `model ID not independently attested`. The second uses a neutral demo-operator gate, and the third is captured from the generated offline preview. These boards do not claim a live API call or named-person approval.
+
+## Historical website and promo composites
+
+Three additional public rasters predate the Character Director work. Git history establishes the committing author, purpose, and first commit, but their editable raster-production sources were not retained. Their originality claim is therefore limited to the checked repository composition; embedded screenshots and the inherited hero keep their own rights boundaries.
+
+| File | First commit | Pixels | SHA-256 | Recorded purpose |
+| --- | --- | ---: | --- | --- |
+| `bugfire-pages-preview.png` | `157add6` | 1440×1000 | `b35099143af7f62c6db75f5682b512c17ad83ec1d04a686e0e27ee8695decf4c` | GitHub Pages preview |
+| `bugfire-social-card.png` | `157add6` | 1200×630 | `9958b29be104fc50da045a8008caa03886b0f9b5ce945445eb4fd47e397555de` | Open Graph/social card |
+| `bugfire-video-cover.png` | `b4118e9` | 1920×1080 | `90ba1707c1cf22a527dba9851e019e49dd60ec69655a9d6e7f0ba7ea777e09cc` | 75-second demo cover |
+
+These files are allowed with attribution to the upstream base where inherited material is visible. They are not used as evidence that a new AI generation occurred, and the video cover is not evidence for the later Character Director path.

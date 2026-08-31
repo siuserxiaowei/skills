@@ -1,14 +1,23 @@
 #!/bin/bash
 
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+. "$SCRIPT_DIR/release-layout.sh"
+ROOT="$BUGFIRE_ENGINE_ROOT"
+PROJECT_ROOT="$BUGFIRE_PROJECT_ROOT"
 VERSION="$(/usr/bin/tr -d '[:space:]' < "$ROOT/VERSION")"
-RELEASE_DIR="$ROOT/release"
-ARCHIVE="$RELEASE_DIR/codex-bugfire-skin-v$VERSION.zip"
+SKIP_TESTS="false"
+if [ "${1:-}" = "--skip-tests" ]; then SKIP_TESTS="true"; shift; fi
+if [ "$#" -gt 1 ]; then
+  /usr/bin/printf 'Usage: %s [--skip-tests] [output.zip]\n' "$0" >&2
+  exit 1
+fi
+ARCHIVE="${1:-$ROOT/release/codex-bugfire-skin-v$VERSION.zip}"
+RELEASE_DIR="$(/usr/bin/dirname "$ARCHIVE")"
 TMP="$(/usr/bin/mktemp -d /tmp/codex-dream-skin-release.XXXXXX)"
 trap '/bin/rm -rf "$TMP"' EXIT
 
-if [ "${1:-}" != "--skip-tests" ]; then "$ROOT/tests/run-tests.sh"; fi
+if [ "$SKIP_TESTS" != "true" ]; then "$ROOT/tests/run-tests.sh"; fi
 
 /bin/mkdir -p "$TMP/codex-dream-skin-studio" "$RELEASE_DIR"
 /usr/bin/rsync -a \
@@ -19,21 +28,19 @@ if [ "${1:-}" != "--skip-tests" ]; then "$ROOT/tests/run-tests.sh"; fi
 /bin/mkdir -p "$TMP/codex-dream-skin-studio/skills/codex-bugfire-customizer"
 /usr/bin/rsync -a \
   --exclude '.DS_Store' \
-  "$ROOT/../skills/codex-bugfire-customizer/" \
+  "$PROJECT_ROOT/skills/codex-bugfire-customizer/" \
   "$TMP/codex-dream-skin-studio/skills/codex-bugfire-customizer/"
 /bin/mkdir -p "$TMP/codex-dream-skin-studio/docs"
 /usr/bin/rsync -a \
   --exclude '.DS_Store' \
-  "$ROOT/../docs/" \
+  "$PROJECT_ROOT/docs/" \
   "$TMP/codex-dream-skin-studio/docs/"
 /bin/mkdir -p "$TMP/codex-dream-skin-studio/contest/bugfire"
 /usr/bin/rsync -a \
   --exclude '.DS_Store' \
-  "$ROOT/../contest/bugfire/" \
+  "$PROJECT_ROOT/contest/bugfire/" \
   "$TMP/codex-dream-skin-studio/contest/bugfire/"
-for evidence in PROVENANCE.md SOURCES.md THIRD_PARTY_NOTICES.md ASSET_RIGHTS.csv; do
-  /bin/cp "$ROOT/../$evidence" "$TMP/codex-dream-skin-studio/$evidence"
-done
+"$ROOT/scripts/prepare-package-layout.sh" "$TMP/codex-dream-skin-studio"
 /bin/chmod 755 "$TMP/codex-dream-skin-studio"/*.command
 /bin/chmod 755 "$TMP/codex-dream-skin-studio"/scripts/*.sh "$TMP/codex-dream-skin-studio"/tests/*.sh
 /bin/chmod 755 "$TMP/codex-dream-skin-studio"/skills/codex-bugfire-customizer/scripts/*.sh

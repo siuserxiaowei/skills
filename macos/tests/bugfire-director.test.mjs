@@ -90,6 +90,33 @@ test("recorded AI fixture is explicit, schema-valid, and checksum locked", async
   assert.match(result.notice, /not presented as a live API call/i);
 });
 
+test("recorded fixture checksum input must be a small regular UTF-8 file", async (t) => {
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-checksum-boundary-"));
+  t.after(() => fs.rm(workspace, { recursive: true, force: true }));
+  const validChecksum = path.join(DEMO, "ai-draft-plan.sha256");
+  const oversized = path.join(workspace, "oversized.sha256");
+  const linked = path.join(workspace, "linked.sha256");
+  const malformed = path.join(workspace, "malformed.sha256");
+  const directory = path.join(workspace, "directory.sha256");
+  await fs.writeFile(oversized, Buffer.alloc(4 * 1024 + 1, 0x61));
+  await fs.symlink(validChecksum, linked);
+  await fs.writeFile(malformed, Buffer.from([0xff]));
+  await fs.mkdir(directory);
+
+  for (const checksum of [oversized, linked, directory]) {
+    await assert.rejects(verifyRecordedFixture(
+      path.join(DEMO, "ai-draft-plan.json"),
+      checksum,
+      path.join(DEMO, "brief.json"),
+    ), /fixture checksum must be a regular text file no larger than 4096 bytes/i);
+  }
+  await assert.rejects(verifyRecordedFixture(
+    path.join(DEMO, "ai-draft-plan.json"),
+    malformed,
+    path.join(DEMO, "brief.json"),
+  ), /fixture checksum is not valid UTF-8/i);
+});
+
 test("director provenance and review timestamps require canonical RFC 3339", async () => {
   const draft = await json(path.join(DEMO, "ai-draft-plan.json"));
   const review = await json(path.join(DEMO, "human-review.json"));
@@ -265,6 +292,24 @@ test("contest boards are offline 16:9 artifacts with rights-table hashes", async
     fs.readFile(path.join(boardRoot, "source", "02-human-rejection.html"), "utf8"),
   ]);
   assert.doesNotMatch(sources.join("\n"), /(?:src|href)=["']https?:/i);
+});
+
+test("every public BUGFIRE documentation raster has a rights row and exact digest", async () => {
+  const rights = await fs.readFile(path.join(PROJECT, "ASSET_RIGHTS.csv"), "utf8");
+  assert.match(rights, /^repository_path,main_package_path,asset_type,/);
+  const imageRoot = path.join(PROJECT, "docs", "images");
+  const files = (await fs.readdir(imageRoot)).filter((file) => /^bugfire-.*\.png$/.test(file)).sort();
+  assert.equal(files.length, 12);
+  for (const file of files) {
+    const repositoryPath = `docs/images/${file}`;
+    const bytes = await fs.readFile(path.join(imageRoot, file));
+    const digest = (await import("node:crypto")).default.createHash("sha256").update(bytes).digest("hex");
+    const escapedPath = repositoryPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    assert.match(rights, new RegExp(`^${escapedPath},${escapedPath},[^\\n]+,${digest},`, "m"));
+  }
+  assert.match(rights, /bugfire-pages-preview\.png[^\n]+157add6/);
+  assert.match(rights, /bugfire-social-card\.png[^\n]+157add6/);
+  assert.match(rights, /bugfire-video-cover\.png[^\n]+b4118e9/);
 });
 
 test("human review must reject and materially replace exactly one decision surface", async () => {
