@@ -25,3 +25,15 @@ The six `docs/images/bugfire-*.png` files were captured from the local BUGFIRE d
 | `bugfire-level-up.png` | 1600×916 | `bc8c8602306bb39f363149ee0eab5490782ad14ded29b24fa9fc6a731c96bc22` |
 | `bugfire-certificate.png` | 1200×1500 | `f070279acb6797f4a1dfcc797a9f4c6f2e18203ec959de8f65edee620aaed56b` |
 | `bugfire-task.png` | 2362×1684 | `24fdf691e547b2721ffe342f271cb30a1f497eb11cafdfafcd126a0c58769215` |
+
+## Character Director evidence boards
+
+The three `docs/images/bugfire-director-*.png` files are offline 1920×1080 Chrome captures. Their HTML sources, original Patchling Zero SVGs, and renderer script are retained under `contest/bugfire/`. They load no network resources.
+
+| File | SHA-256 |
+| --- | --- |
+| `bugfire-director-ai-draft.png` | `6bc423a9305eb0a8d311f0567ea481d280e58aa455ac42f07de92951e7a7a987` |
+| `bugfire-director-human-rejection.png` | `ca22ffd2a065ca538a8c0520860f5596e37061decaedea64911596c5cd3d56c6` |
+| `bugfire-director-pack-preview.png` | `b0c6e094c44fe26dc7e0ac3443fedccd9c5933d7363574ab67f8e14646f60ab0` |
+
+The first board says `model ID not independently attested`. The second uses a neutral demo-operator gate, and the third is captured from the generated offline preview. These boards do not claim a live API call or named-person approval.

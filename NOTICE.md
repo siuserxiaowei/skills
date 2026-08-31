@@ -19,7 +19,7 @@ The MIT License in [`LICENSE`](LICENSE) applies to project source code and docum
 
 BUGFIRE does not redistribute Node.js. The macOS runtime validates and uses the signed Node.js executable bundled with the user's official Codex Desktop application.
 
-Themes are injected through a verified Chromium DevTools Protocol endpoint on the loopback interface. BUGFIRE does not modify the official application bundle or code signature, does not execute a real Build command in `1.2.0-bugfire.1`, and does not read task text, source code, API keys, or secrets. The local progress file contains only gameplay state described in the README.
+Themes are injected through a verified Chromium DevTools Protocol endpoint on the loopback interface. BUGFIRE does not modify the official application bundle or code signature, and its desktop-pet runtime does not execute a real Build command or read task text, source code, API keys, or secrets in `1.3.0-bugfire.1`. The separately invoked Character Director reads an environment API key only for an explicitly requested live call and never persists it. The local progress file contains only gameplay state described in the README.
 
 CDP is powerful even on loopback. Do not expose its port to the network or run untrusted local software while a themed session is active. Use Pause or Restore when the extension is not needed.
 

@@ -114,7 +114,7 @@ test("binding payloads are validated and settled by the tested state model", () 
 });
 
 test("all user-visible runtime versions use the BUGFIRE prerelease", () => {
-  const expected = "1.2.0-bugfire.1";
+  const expected = "1.3.0-bugfire.1";
   assert.equal(JSON.parse(packageSource).version, expected);
   assert.equal(versionSource.trim(), expected);
   assert.match(common, new RegExp(`SKIN_VERSION=["']${expected.replaceAll(".", "\\.")}["']`));

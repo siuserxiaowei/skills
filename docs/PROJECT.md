@@ -1,8 +1,8 @@
 # BUGFIRE project notes
 
-> Version: `1.2.0-bugfire.1`
+> Version: `1.3.0-bugfire.1`
 > Platform: macOS
-> Canonical public repository: pending a user-owned remote
+> Canonical public repository: <https://github.com/siuserxiaowei/Codex-Bugfire-Skin>
 
 BUGFIRE「补丁兽」is an independent extension of Codex Dream Skin. It adds an original pixel Patch Dragon, a clearly labelled simulated Build loop, five local progression levels, growth cards, and a Season 01 keepsake certificate.
 
@@ -13,8 +13,9 @@ The extension is based on [Codex Dream Skin v1.1.2 commit `2f038b5`](https://git
 - Runs against the official Codex Desktop app on macOS.
 - Does not modify the official `.app`, `app.asar`, or code signature.
 - Uses only a verified loopback CDP endpoint already associated with Codex.
-- Does not read task text, prompts, source code, API keys, secrets, or real Build output.
-- Does not execute a real project or Shell command in `1.2.0-bugfire.1`.
+- The desktop-pet runtime does not read task text, prompts, source code, API keys, secrets, or real Build output.
+- The separately invoked Character Director sends only the supplied brief to its configured endpoint and does not persist its environment API key.
+- Does not execute a real project or Shell command in `1.3.0-bugfire.1`.
 - Treats levels and cards as local entertainment records, not skills assessments or credentials.
 
 ## Repository layout
@@ -86,4 +87,4 @@ The first release should include:
 - `verify-dream-skin-macos.sh --reload` with `pass: true`;
 - Restore/no-residue verification followed by a hot re-apply;
 - privacy-safe home, cabin, failure, growth-card, certificate, and task-route screenshots;
-- exact version `v1.2.0-bugfire.1`, upstream attribution, MIT license, and unofficial disclaimer.
+- exact version `v1.3.0-bugfire.1`, upstream attribution, MIT license, and unofficial disclaimer.

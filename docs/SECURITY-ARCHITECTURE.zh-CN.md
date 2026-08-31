@@ -2,7 +2,7 @@
 
 **BUGFIRE 是运行在官方 Codex Desktop 外部的本地桌宠扩展。** 它先验证官方应用及其内置 Node.js 的签名，再通过仅绑定 `127.0.0.1` 的 CDP 向已确认的 Codex renderer 注入 CSS 和桌宠 DOM；它不改 `.app`、`app.asar`、代码签名、模型配置或 API Key。
 
-> 适用版本：`1.2.0-bugfire.1` · 2026-07-16 · 非 OpenAI 官方产品
+> 适用版本：`1.3.0-bugfire.1` · 2026-08-31 · 非 OpenAI 官方产品
 
 ## 数据流是什么？
 
@@ -35,6 +35,12 @@ BUGFIRE 不读取或保存：
 - 真实 Shell 命令、Build 日志或退出码
 
 首版的 `BUILD · 演示` 只驱动本地状态机，不会运行 `npm`、`make`、`xcodebuild` 或其他项目命令。
+
+### 可选 AI 角色导演的网络边界
+
+桌宠运行时与 pack validator 仍然离线。只有用户主动执行 `bugfire-director.mjs draft-live` 时，CLI 才会把用户提供的角色 brief 发给配置的 OpenAI-compatible endpoint。Key 只从环境变量读取，不接受命令行 secret，也不写进 plan；产物只记录 endpoint origin、model ID、时间和摘要。远程 endpoint 必须是 HTTPS，HTTP 只允许本机 loopback 模型或测试服务。
+
+仓库内的 recorded fixture 不联网，并明确标注它不是实时调用。AI draft 无法直接 materialize；人工替换后仍必须通过原 pack validator。
 
 ## CDP 如何被限制？
 
@@ -76,4 +82,4 @@ cd macos
 
 `doctor --require-live` 与 `verify --reload` 只有在当前 Codex 由已验证的回环 CDP 会话启动时才应返回 `pass: true`。不要把历史截图或静态测试描述成当前实时验证。
 
-本版本源代码验收为 87/87 测试通过；强制覆盖率为 Lines 88.38%、Branches 84.50%、Functions 80.39%。详细证据见 [QA inventory](../macos/references/qa-inventory.md)、[隐私说明](PRIVACY.md) 与根目录 [安全策略](../SECURITY.md)。
+本版本的实际测试与 release build 结果在发布前重新记录；不要沿用旧版 87/87 的数字冒充当前验收。详细证据见 [QA inventory](../macos/references/qa-inventory.md)、[隐私说明](PRIVACY.md) 与根目录 [安全策略](../SECURITY.md)。

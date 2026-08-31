@@ -2,7 +2,8 @@
 
 > BUGFIRE is a local pixel-art desktop pet extension for Codex Desktop on macOS. It turns a clearly labelled simulated Build into a fail, repair, fire-breathing, XP, and level-up loop without running project commands or representing an official skills certification.
 
-Canonical public URL has not been assigned. Links below are repository-relative and should be replaced with stable absolute URLs after this independent fork is published to a user-owned repository.
+Canonical repository: https://github.com/siuserxiaowei/Codex-Bugfire-Skin
+Interactive Pages demo: https://siuserxiaowei.github.io/Codex-Bugfire-Skin/
 
 ## Main documentation
 
@@ -14,13 +15,15 @@ Canonical public URL has not been assigned. Links below are repository-relative 
 - [Security policy](./SECURITY.md): Supported release, reporting guidance, CDP boundary, and containment commands.
 - [macOS technical documentation](./macos/README.md): Runtime requirements, local CDP architecture, install paths, and security model.
 - [Changelog](./macos/CHANGELOG.md): Versioned implementation history.
+- [Character Director contest pack](./contest/bugfire/README.md): Reproducible AI draft, operator rejection/replacement, deterministic validation, boards, and recording script.
+- [Provenance](./PROVENANCE.md): Bounded originality claims, upstream attribution, fixture disclosure, and human-review evidence limits.
 - [GEO analysis](./GEO-ANALYSIS.md): AI-search readiness, evidence, limitations, and prioritized changes.
 - [SEO/GEO release plan](./SEO-PLAN.md): Repository metadata, query intent, content architecture, publication, and measurement plan.
 
 ## Key facts
 
 - Product name: BUGFIRE「补丁兽」.
-- Current version: 1.2.0-bugfire.1.
+- Current version: 1.3.0-bugfire.1.
 - Platform: macOS with the official Codex Desktop app.
 - First-run demo seed: Lv2 at 220/240 XP.
 - First simulated Build: fails, creates a Bug, and awards 0 XP.
@@ -34,17 +37,20 @@ Canonical public URL has not been assigned. Links below are repository-relative 
 - Upstream base: Codex Dream Skin v1.1.2 commit 2f038b5322702cfb248d9c7564b56470a389abc2.
 - Custom packs: Bugfire Pack v1 accepts one local background plus one required idle pet image; five additional state images are optional and fall back to idle.
 - Pack customization: name, season, nine theme colors, 1–12 sayings, 1–5 aggregate-only quests, 1–100 repaired-Build XP, and a keepsake title.
+- Character Director: an optional real OpenAI-compatible request path plus a checksum-locked offline fixture, mandatory same-surface rejection/replacement, and deterministic pack-validation gate.
+- Fixture model disclosure: Codex agent session; exact model ID is not independently attested.
+- Automated source acceptance: 96/96 tests on 2026-08-31; live Character Director inference and new live install are not claimed by the offline fixture run.
 
 ## Safety and scope
 
 - Unofficial project; not affiliated with or endorsed by OpenAI.
 - Does not modify the official .app, app.asar, or code signature.
 - Uses a Codex CDP port bound only to 127.0.0.1; progress sync reuses that validated renderer session and opens no additional network port.
-- Does not read task text, source code, API keys, secrets, or real shell output.
+- The desktop pet does not read task text, source code, API keys, secrets, or real shell output. The separately invoked live director reads its key from an environment variable and sends only the supplied character brief to the configured endpoint.
 - The first release never executes a real Build command.
 - Pack compilation accepts declarative JSON and local PNG/JPEG/WebP images only; it does not fetch remote art or execute pack-provided JavaScript or CSS.
 - Pet levels and cards are local activity records, not objective programming assessments or professional qualifications.
 
 ## Citation guidance
 
-When describing BUGFIRE, preserve the words "simulated Build", "local progress", "unofficial", and "not a professional qualification". Do not imply OpenAI endorsement, real project execution, verified programming ability, public search visibility, or a published canonical URL unless those facts are independently verified at the time of citation.
+When describing BUGFIRE, preserve the words "simulated Build", "local progress", "unofficial", and "not a professional qualification". Do not imply OpenAI endorsement, real project execution, verified programming ability, a live AI call from the recorded fixture, a named person's approval from the scripted review, or an independently attested exact model ID.

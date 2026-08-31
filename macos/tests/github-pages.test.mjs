@@ -17,13 +17,21 @@ test("GitHub Pages demo exposes the default experience and conversion paths", as
   assert.match(html, /data-shot="home"/);
   assert.match(html, /data-shot="cabin"/);
   assert.match(html, /data-shot="level"/);
+  assert.match(html, /CHARACTER DIRECTOR/);
+  assert.match(html, /AI 提案，人工否决，校验器裁决/);
+  assert.match(html, /bugfire-director-ai-draft\.png/);
+  assert.match(html, /model ID 不作独立可验证声明/);
   assert.match(html, /releases\/latest/);
   assert.match(html, /skills\/codex-bugfire-customizer\/SKILL\.md/);
   assert.doesNotMatch(html, /https?:\/\/(?:fonts\.googleapis|fonts\.gstatic|cdn\.|unpkg|jsdelivr)/);
 });
 
-test("Pages source includes discoverability files and local social art", async () => {
-  for (const filename of [".nojekyll", "robots.txt", "sitemap.xml", "llms.txt", "404.html", "images/bugfire-social-card.png"]) {
+test("Pages source includes discoverability files and local social/director art", async () => {
+  for (const filename of [
+    ".nojekyll", "robots.txt", "sitemap.xml", "llms.txt", "404.html",
+    "images/bugfire-social-card.png", "images/bugfire-director-ai-draft.png",
+    "images/bugfire-director-human-rejection.png", "images/bugfire-director-pack-preview.png",
+  ]) {
     await fs.access(path.join(ROOT, "docs", filename));
   }
 });

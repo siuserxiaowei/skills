@@ -23,13 +23,15 @@
 - Official app and internal Node signature, Team ID, architecture, and version validation.
 - Port collision selection and saved-port reuse.
 - PID reuse protection through PID, start time, executable, script path, and command-line matching.
-- Live verification after `Page.reload` returns version `1.2.0-bugfire.1` and `pass: true`.
+- Live verification after `Page.reload` must return the current runtime version and `pass: true`; the last historical live capture is recorded below.
 - Strict home verification requires a visible banner of at least 320×160, two to four visible native cards, visible project button, composer, sidebar, non-interactive decoration, and no horizontal overflow.
 - BUGFIRE state and pack-core tests enforce 80% minimum line, branch, and function coverage.
 - Binding validation rejects unknown event types, outcomes, oversized payloads, and duplicate settlement IDs; no extra network listener is introduced.
 - Pack CLI covers `init`, `validate`, `build`, machine-readable reports, idle-art fallback, explicit replacement, installed-engine path resolution, and local-only embedding.
 - Pack validation rejects traversal, final/parent symlink escapes, unsupported or mismatched image content, animation, oversized bytes/pixels, disguised WebP frames, invalid identifiers/colors/quest metrics, oversized text, and undeclared fields.
 - Theme switching proves watcher identity before signalling, validates a complete staged copy, atomically swaps directories, and preserves the active theme when staged validation fails.
+- Character Director tests observe real OpenAI-compatible loopback HTTP requests, credential non-persistence, strict UTF-8 decoding, no-clobber user outputs, fixture checksum/brief/prompt linkage, mandatory same-surface rejection/replacement, and the independent pack-validation boundary.
+- VibeLab evidence checks require three offline 1920×1080 boards with SHA-256 entries in `ASSET_RIGHTS.csv`.
 
 ## Visual checks
 
@@ -52,6 +54,16 @@
 - Confirm `codesign --verify --deep --strict` still succeeds for the official Codex app.
 - Build ZIP and record SHA-256.
 - Initialize, validate, compile, and switch one clean custom pack; confirm custom state art, sayings, quest board, keepsake title, and progress-ID transition.
+
+## BUGFIRE 1.3.0-bugfire.1 source acceptance (2026-08-31)
+
+- `macos/tests/run-tests.sh`: 96/96 automated tests passed on macOS; shell/JavaScript syntax, payload, config round-trip, signature, doctor, Skill, Pages, and Character Director checks passed.
+- Enforced core coverage set: 42/42 tests passed; lines `88.42%`, branches `84.50%`, functions `80.39%` (all thresholds 80%).
+- Offline director Demo passed: fixture SHA-256 and brief/prompt digests verified; `alert-first-palette` changed from `#ff7a1a` to `#35d9d1`; materialization, pack validation, build, preview, and injector payload check returned `pass: true`.
+- The live request path was exercised against a real loopback mock HTTP server. The test observed the bearer request and proved the secret was absent from the resulting plan. No public claim is made that the checked fixture came from a live endpoint.
+- Three offline boards were regenerated and visually inspected at 1920×1080. The AI board says the exact model ID is not independently attested; the review board requires on-camera operator confirmation; the third board is a real generated preview capture.
+- Release ZIP built successfully at `macos/release/codex-bugfire-skin-v1.3.0-bugfire.1.zip`; its final SHA-256 is written beside it in the gitignored `release/SHA256SUMS.txt` and must be verified after the last source change.
+- A new live install/reload/restore capture was not run during source acceptance. The optional `--live-cycle` remains explicitly gated because it may restart Codex; the older 2026-07-16 live evidence below is engineering context only, not proof of the Character Director workflow.
 
 ## BUGFIRE 1.2.0-bugfire.1 source acceptance (2026-07-16)
 

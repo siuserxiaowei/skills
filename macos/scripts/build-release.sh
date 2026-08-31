@@ -26,9 +26,18 @@ if [ "${1:-}" != "--skip-tests" ]; then "$ROOT/tests/run-tests.sh"; fi
   --exclude '.DS_Store' \
   "$ROOT/../docs/" \
   "$TMP/codex-dream-skin-studio/docs/"
+/bin/mkdir -p "$TMP/codex-dream-skin-studio/contest/bugfire"
+/usr/bin/rsync -a \
+  --exclude '.DS_Store' \
+  "$ROOT/../contest/bugfire/" \
+  "$TMP/codex-dream-skin-studio/contest/bugfire/"
+for evidence in PROVENANCE.md SOURCES.md THIRD_PARTY_NOTICES.md ASSET_RIGHTS.csv; do
+  /bin/cp "$ROOT/../$evidence" "$TMP/codex-dream-skin-studio/$evidence"
+done
 /bin/chmod 755 "$TMP/codex-dream-skin-studio"/*.command
 /bin/chmod 755 "$TMP/codex-dream-skin-studio"/scripts/*.sh "$TMP/codex-dream-skin-studio"/tests/*.sh
 /bin/chmod 755 "$TMP/codex-dream-skin-studio"/skills/codex-bugfire-customizer/scripts/*.sh
+/bin/chmod 755 "$TMP/codex-dream-skin-studio"/contest/bugfire/*.sh
 /bin/rm -f "$ARCHIVE"
 /usr/bin/ditto -c -k --keepParent "$TMP/codex-dream-skin-studio" "$ARCHIVE"
 SHA256="$(/usr/bin/shasum -a 256 "$ARCHIVE" | /usr/bin/awk '{print $1}')"

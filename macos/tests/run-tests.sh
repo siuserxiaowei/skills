@@ -2,11 +2,13 @@
 
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
+CONTEST_ROOT="$ROOT/../contest/bugfire"
+[ -d "$CONTEST_ROOT" ] || CONTEST_ROOT="$ROOT/contest/bugfire"
 NODE="${NODE:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node}"
 [ -x "$NODE" ] || { printf 'Codex bundled Node.js was not found: %s\n' "$NODE" >&2; exit 1; }
 
 while IFS= read -r file; do /bin/bash -n "$file"; done < <(
-  /usr/bin/find "$ROOT" -type f \( -name '*.sh' -o -name '*.command' \) \
+  /usr/bin/find "$ROOT" "$CONTEST_ROOT" -type f \( -name '*.sh' -o -name '*.command' \) \
     ! -path '*/release/*' -print
 )
 while IFS= read -r file; do "$NODE" --check "$file" >/dev/null; done < <(
@@ -73,7 +75,7 @@ NO_DESKTOP_BACKUP="$TMP/theme-backup-without-desktop.json"
 "$NODE" "$ROOT/scripts/theme-config.mjs" restore "$NO_DESKTOP_CONFIG" "$NO_DESKTOP_BACKUP" >/dev/null
 /usr/bin/cmp -s "$NO_DESKTOP_CONFIG" "$TMP/original-without-desktop.toml"
 
-/usr/bin/env -u HOME /bin/bash -c '. "$1/scripts/common-macos.sh"; [ -n "$HOME" ] && [ "$SKIN_VERSION" = "1.2.0-bugfire.1" ]' _ "$ROOT"
+/usr/bin/env -u HOME /bin/bash -c '. "$1/scripts/common-macos.sh"; [ -n "$HOME" ] && [ "$SKIN_VERSION" = "1.3.0-bugfire.1" ]' _ "$ROOT"
 "$ROOT/scripts/doctor-macos.sh" >/dev/null
 
 printf 'PASS: syntax, payload, custom-theme, config round-trips, HOME recovery, signature, and doctor checks.\n'

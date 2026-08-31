@@ -10,7 +10,7 @@
 
 **BUGFIRE「补丁兽」是一款运行在 macOS 版 Codex Desktop 里的本地像素桌宠。** 它用“模拟 Build → 发现 Bug → 修复重建 → 喷火升级”的可玩反馈，让 Vibe Coding 的练习过程更有成长感；它不会执行真实构建，也不把宠物等级包装成编程能力认证。
 
-> 当前版本：`1.2.0-bugfire.1` · macOS 首版 · 非 OpenAI 官方产品
+> 当前版本：`1.3.0-bugfire.1` · macOS 首版 · 非 OpenAI 官方产品
 
 ![BUGFIRE 补丁兽在 Codex Desktop 首页右下角的像素桌宠浮巢](docs/images/bugfire-home.png)
 
@@ -26,6 +26,20 @@
 
 [使用说明](docs/USAGE.zh-CN.md) · [安全架构](docs/SECURITY-ARCHITECTURE.zh-CN.md) · [隐私说明](docs/PRIVACY.md) · [安全策略](SECURITY.md) · [GEO 分析](GEO-ANALYSIS.md) · [SEO/GEO 发布计划](SEO-PLAN.md) · [macOS 技术说明](macos/README.md)
 
+## 新增：AI 角色导演，但最终决定权不交给 AI
+
+`v1.3.0-bugfire.1` 加入一条可审计工作流：原创角色 brief → AI 结构化草案 → 人工明确否决并替换一项选择 → deterministic validator → build / preview → 可选 live install / verify / restore。
+
+```bash
+./contest/bugfire/run-demo.sh
+```
+
+无 API Key 时，Demo 使用由本项目 Codex agent 实际产出、SHA-256 锁定的离线 fixture，并明确标注“不是实时 API 调用、不是人工审批证明”。有兼容端点时，`bugfire-director.mjs draft-live` 会真实调用 Chat Completions 或 Responses API；Key 只从环境变量读取，不进入产物。AI 草案不能直接 materialize，人工替换也不能绕过原有 pack validator。
+
+[VibeLab 投稿与复现证据](contest/bugfire/README.md) · [AI fixture](contest/bugfire/demo/ai-draft-plan.json) · [人工 review 输入](contest/bugfire/demo/human-review.json) · [来源与归属](PROVENANCE.md)
+
+> 页面上方的旧 75 秒 V2 是既有 BUGFIRE 工程实机证据，不用于证明这条新增 AI 导演流程。新增流程需按投稿包的 60–75 秒分镜另行录制。
+
 ## 现在可以做自己的补丁兽
 
 项目提供 `Bugfire Pack v1` 和 [`codex-bugfire-customizer`](skills/codex-bugfire-customizer/SKILL.md) Skill。创作者不需要改注入器，只要准备一张背景图和一张 `idle` 宠物图，就能生成同一套模拟 Build、动作反馈、XP、成长卡、任务板和纪念卡系统；另外五张状态图可选，缺失时安全复用 `idle`。
@@ -39,7 +53,7 @@
 | 关键事实 | 当前实现 |
 | --- | --- |
 | 平台 | macOS + 官方 Codex Desktop |
-| 版本 | `1.2.0-bugfire.1` |
+| 版本 | `1.3.0-bugfire.1` |
 | Build | 明确标注的本地演示，不执行 Shell |
 | 存档 | `~/Library/Application Support/CodexDreamSkinStudio/bugfire-progress.json`，权限 `0600` |
 | 注入 | 使用仅绑定 `127.0.0.1` 的 Codex CDP；进度同步不另开端口 |
@@ -131,7 +145,7 @@ cd macos
 
 BUGFIRE 运行时依赖一个仅绑定 `127.0.0.1` 的 Codex CDP 端口来注入样式和装饰组件。进度同步复用这条已验证的 renderer 会话，通过一个 `Runtime` binding 完成，不再另开网络端口。存档只记录 schema 版本、宠物/赛季 ID、XP、失败与成功次数、修复成功次数、技能、成长卡、已结算事件 ID 和更新时间。
 
-它不会：
+桌宠运行时不会：
 
 - 修改官方 Codex 安装包、`app.asar` 或代码签名
 - 读取任务正文、项目源码、API Key、Base URL 或密钥

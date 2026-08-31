@@ -8,9 +8,9 @@
 [![Tests](https://img.shields.io/github/actions/workflow/status/siuserxiaowei/Codex-Bugfire-Skin/ci.yml?branch=main&style=for-the-badge&label=CI&labelColor=050704)](https://github.com/siuserxiaowei/Codex-Bugfire-Skin/actions/workflows/ci.yml)
 [![MIT License](https://img.shields.io/badge/LICENSE-MIT-f4efd8?style=for-the-badge&labelColor=050704)](LICENSE)
 
-**BUGFIRE is an unofficial, local pixel-art desktop pet for Codex Desktop on macOS.** Its clearly labelled demo turns a small coding loop into playable feedback: a simulated Build fails, a Bug appears, a repaired rebuild succeeds, and the Patch Dragon breathes fire to level up. BUGFIRE does not run project commands or read task text, source code, prompts, API keys, or shell output. Pet levels track local activity only; they are not a programming-skills assessment, professional qualification, or OpenAI certification.
+**BUGFIRE is an unofficial, local pixel-art desktop pet for Codex Desktop on macOS.** Its clearly labelled demo turns a small coding loop into playable feedback: a simulated Build fails, a Bug appears, a repaired rebuild succeeds, and the Patch Dragon breathes fire to level up. The desktop-pet runtime does not run project commands or read task text, source code, prompts, API keys, or shell output. Pet levels track local activity only; they are not a programming-skills assessment, professional qualification, or OpenAI certification.
 
-> Current version: `1.2.0-bugfire.1` · macOS first release candidate · Unofficial project
+> Current version: `1.3.0-bugfire.1` · macOS first release candidate · Unofficial project
 
 ![BUGFIRE Patch Dragon in the lower-right corner of the Codex Desktop home screen](docs/images/bugfire-home.png)
 
@@ -26,6 +26,20 @@ All feature footage in the video comes from a real Codex Desktop recording. `DEM
 
 [Chinese usage guide](docs/USAGE.zh-CN.md) · [Security architecture](docs/SECURITY-ARCHITECTURE.zh-CN.md) · [Privacy notes](docs/PRIVACY.md) · [Security policy](SECURITY.md) · [macOS technical notes](macos/README.md) · [GEO analysis](GEO-ANALYSIS.md) · [SEO/GEO release plan](SEO-PLAN.md)
 
+## New: an AI character director with a human and deterministic gate
+
+`v1.3.0-bugfire.1` adds an auditable pipeline: original-character brief → structured AI draft → explicit human rejection and replacement → deterministic validator → build / preview → optional live install / verify / restore.
+
+```bash
+./contest/bugfire/run-demo.sh
+```
+
+Without an API key, the demo replays a SHA-256-locked fixture actually authored in this repository's Codex agent session. It is explicitly labelled as neither a live API request nor proof of human approval. With a compatible endpoint, `bugfire-director.mjs draft-live` makes a real Chat Completions or Responses request. Credentials are read only from the environment and never persisted. An AI draft cannot materialize directly, and a reviewed plan still cannot bypass the existing pack validator.
+
+[VibeLab submission and evidence](contest/bugfire/README.md) · [AI fixture](contest/bugfire/demo/ai-draft-plan.json) · [review input](contest/bugfire/demo/human-review.json) · [provenance](PROVENANCE.md)
+
+> The older 75-second V2 video above remains engineering footage for the existing desktop pet. It does not prove the new AI-director path; that path has a separate 60–75 second recording script in the contest pack.
+
 ## What does BUGFIRE do?
 
 - Adds a 72 px pet nest to Codex and opens a roughly 320 × 420 px cabin.
@@ -40,7 +54,7 @@ All feature footage in the video comes from a real Codex Desktop recording. `DEM
 | Key fact | Current implementation |
 | --- | --- |
 | Platform | macOS with the official Codex Desktop app |
-| Version | `1.2.0-bugfire.1` |
+| Version | `1.3.0-bugfire.1` |
 | Build behavior | Clearly labelled local simulation; no shell command |
 | Progress file | `~/Library/Application Support/CodexDreamSkinStudio/bugfire-progress.json`, mode `0600` |
 | Integration | Codex CDP bound only to `127.0.0.1`; progress sync opens no additional port |

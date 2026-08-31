@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.3.0-bugfire.1 — 2026-08-31
+
+### 新增
+
+- 加入真实 `OpenAI-compatible` 角色导演 CLI：从原创 brief 生成结构化创意草案，支持 Chat Completions 与 Responses 两种 API 形态
+- 加入 checksum 锁定的离线 AI fixture；明确标注它不是实时 API 调用，也不是人工审批证明
+- 加入强制人工拒绝/替换门：至少实质修改一项创意决定，且替换字段必须与被拒决定一致
+- 加入 `materialize` 边界报告：AI 只提案，人工改动后，仍必须由既有 deterministic pack validator 决定是否可构建
+- 加入原创 `Patchling Zero｜零号补丁兽` 演示 brief、矢量源素材、可复现终端 Demo、离线预览与 VibeLab 投稿包
+
+### 安全与证据
+
+- API Key 只从环境变量读取，不接受命令行 secret，也不会写入 plan、日志或产物
+- 远程模型端点必须使用 HTTPS；仅本机 `127.0.0.1` / `localhost` / `::1` 测试或本地模型允许 HTTP
+- brief、review、fixture 与 AI response 采用 fatal UTF-8 解码，拒绝非法字节而不是静默替换
+- draft、review 与 materialize 输出使用随机 `wx` 暂存文件和原子 no-clobber 提交，已有目标会原样保留并拒绝覆盖
+- 自动化测试会启动 loopback mock endpoint，证明 live 路径确实发起 HTTP 请求，并校验凭据没有进入输出
+- 保持既有 loopback-only CDP、官方应用不修改、Build 仅演示与一键恢复边界
+
 ## 1.2.0-bugfire.1 — 2026-07-16
 
 ### 新增

@@ -1,6 +1,6 @@
 ---
 name: codex-bugfire-customizer
-description: Build, validate, preview, install, or package a custom Codex BUGFIRE companion from user-supplied background and pet images plus names, colors, sayings, and local quest rules. Use when someone asks to customize the Codex-Bugfire-Skin system, make their own Codex desktop pet or skin, convert uploaded PNG/JPEG/WebP art into a Bugfire Pack, validate a bugfire-pack.json folder, or prepare a reusable companion pack without modifying the official Codex app.
+description: Direct, build, validate, preview, install, or package a custom Codex BUGFIRE companion from an original character brief and user-supplied background/pet images. Use when someone asks to create a structured AI character-direction draft, make their own Codex desktop pet or skin, convert owned PNG/JPEG/WebP art into a Bugfire Pack, require a human rejection/review gate, validate a bugfire-pack.json folder, or prepare a reusable companion pack without modifying the official Codex app.
 ---
 
 # Codex BUGFIRE Customizer
@@ -27,6 +27,14 @@ Require exactly these minimum user inputs:
 Accept five optional pet images for `building`, `bug`, `fire`, `success`, and `levelUp`, plus a tagline, quote, palette, sayings, quest titles/targets, season label, and keepsake title.
 
 Never require task text, source code, prompts, API keys, shell output, or account data. Do not fetch copyrighted character art merely because a user names a character; require user-supplied or clearly licensed art.
+
+## Optional AI character director
+
+Read [references/director-contract.md](references/director-contract.md) when the user wants AI-assisted character direction. The director may propose names, palette, voice, quests, and a pack manifest, but it cannot approve rights or bypass the pack validator.
+
+For a real OpenAI-compatible request, set credentials in the environment and run the engine's `bugfire-director.mjs draft-live`. Never put the key in a command argument, plan, log, or shared fixture. If no key is available, do not pretend a live call happened; use a clearly labelled, checksum-verified recorded fixture if the project supplies one.
+
+Before materialization, require an explicit review file that rejects and materially replaces one decision. `materialize` accepts only a `human-approved` plan; `bugfire-pack validate` is still mandatory afterward. Treat a scripted review fixture as a reproducible demo input, not proof that a named person approved it.
 
 ## Build a pack
 

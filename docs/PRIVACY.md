@@ -26,6 +26,17 @@ BUGFIRE does not read or store:
 
 Codex itself remains responsible for its own data handling; BUGFIRE does not change the official application's privacy policy.
 
+## Optional Character Director network request
+
+The desktop pet and deterministic pack tools remain offline. `v1.3.0-bugfire.1` also includes an optional, separately invoked `bugfire-director.mjs draft-live` command. Only when the user explicitly runs that command does it send the supplied character brief to the configured OpenAI-compatible endpoint.
+
+- The API key is read from `BUGFIRE_OPENAI_API_KEY`; it is not accepted as a CLI argument or written to a plan.
+- Output records only the endpoint origin, model ID, timestamp, and prompt/brief digests; it does not store headers or credentials.
+- Remote endpoints require HTTPS. HTTP is permitted only for loopback local-model/test endpoints.
+- The checked offline fixture performs no network request and states that it is not a live call.
+
+Review an endpoint's privacy terms before using live mode. Do not put secrets, task text, source code, customer data, or private conversations in a character brief.
+
 ## Reset and removal
 
 “重置体验” replaces BUGFIRE progress with a new Lv1 / 0 XP record. Pause or Restore removes injected UI but intentionally preserves the local progress file. A user may delete that one JSON file after Restore if they also want to erase BUGFIRE gameplay history.

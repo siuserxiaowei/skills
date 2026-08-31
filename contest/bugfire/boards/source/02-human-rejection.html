@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920">
+<title>BUGFIRE · Human Rejection</title>
+<style>
+  *{box-sizing:border-box}html,body{width:1920px;height:1080px;margin:0;overflow:hidden}body{font-family:"PingFang SC","Heiti SC",system-ui,sans-serif;color:#f4efd8;background:#050704}body:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 76% 40%,#0b3835 0,transparent 30%),radial-gradient(circle at 25% 45%,#3a1606 0,transparent 30%),#050704;z-index:-1}
+  main{padding:64px 90px}.top{display:flex;justify-content:space-between;color:#9aa58d;letter-spacing:.15em;font-size:21px}.live{color:#ffd166;border:1px solid #ffd166;padding:10px 16px;letter-spacing:.05em}h1{font-size:78px;margin:48px 0 15px}.sub{font-size:27px;color:#9aa58d}.flow{display:grid;grid-template-columns:1fr 130px 1fr;align-items:center;margin-top:55px}.card{height:520px;padding:34px;border:2px solid;background:#090c08ef}.before{border-color:#ff7a1a}.after{border-color:#35d9d1}.label{font:20px ui-monospace,monospace;letter-spacing:.1em}.before .label{color:#ff7a1a}.after .label{color:#35d9d1}.color{height:190px;margin:32px 0;display:grid;place-items:center;font:900 45px ui-monospace,monospace;color:#07100d}.before .color{background:#ff7a1a}.after .color{background:#35d9d1}.title{font-size:37px;font-weight:800}.reason{font-size:24px;line-height:1.55;color:#c8cec0}.arrow{font-size:84px;text-align:center;color:#83ff45}.reject{position:absolute;top:415px;left:480px;transform:rotate(-8deg);padding:12px 24px;border:6px solid #ff5364;color:#ff5364;font:900 34px ui-monospace,monospace;letter-spacing:.1em;background:#050704dd}.proof{margin-top:43px;padding:22px 30px;border-left:5px solid #83ff45;background:#0a0e09;font:25px ui-monospace,monospace;color:#c1ff72}.footer{position:absolute;bottom:33px;left:90px;right:90px;display:flex;justify-content:space-between;font:18px ui-monospace,monospace;color:#9aa58d}
+</style>
+<main>
+  <div class="top"><span>BUGFIRE · BOUNDED HUMAN REVIEW GATE</span><span class="live">录制时由操作员现场确认这项选择</span></div>
+  <h1>否决一个选择，改变真实产物</h1>
+  <div class="sub">replacement must cover the same manifest fields · unchanged input is rejected</div>
+  <section class="flow">
+    <article class="card before"><div class="label">AI DRAFT</div><div class="color">#FF7A1A</div><div class="title">告警橙 = 主强调色</div><p class="reason">问题：待机界面也持续像故障态，警报失去层级。</p></article>
+    <div class="arrow">→</div>
+    <article class="card after"><div class="label">OPERATOR REPLACEMENT</div><div class="color">#35D9D1</div><div class="title">电路青 = 常态验证</div><p class="reason">酸性绿表示通过；橙色只保留给真正警报与修复瞬间。</p></article>
+  </section>
+  <div class="reject">REJECTED</div>
+  <div class="proof">humanDecisionChanged: "alert-first-palette" · beforeAccent: "#ff7a1a" · afterAccent: "#35d9d1"</div>
+  <footer class="footer"><span>scripted review input ≠ named-person approval</span><span>AI DRAFT CANNOT MATERIALIZE DIRECTLY</span></footer>
+</main>
+</html>

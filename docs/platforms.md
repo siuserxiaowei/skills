@@ -1,6 +1,6 @@
 # 平台对照
 
-> BUGFIRE 宠物功能在 `1.2.0-bugfire.1` 中只实现并测试于 macOS。下方 Windows 内容来自上游 Dream Skin 换肤工具，不代表 Windows 已支持补丁兽、XP、成长卡或赛季证书。
+> BUGFIRE 宠物功能在 `1.3.0-bugfire.1` 中只实现并测试于 macOS。下方 Windows 内容来自上游 Dream Skin 换肤工具，不代表 Windows 已支持补丁兽、XP、成长卡或赛季证书。
 
 ## 上游换肤引擎运行模型（macOS / Windows）
 

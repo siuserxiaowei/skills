@@ -1,7 +1,7 @@
 # BUGFIRE「补丁兽」中文使用说明
 
-> 适用版本：`1.2.0-bugfire.1`
-> 最后更新：2026-07-16
+> 适用版本：`1.3.0-bugfire.1`
+> 最后更新：2026-08-31
 > 平台：macOS + 官方 Codex Desktop
 
 BUGFIRE 是 Codex Desktop 的本地像素桌宠扩展。它提供模拟 Build、Bug 喷火、XP、技能、成长卡和赛季纪念证书，不执行真实项目命令，也不代表编程能力认证。

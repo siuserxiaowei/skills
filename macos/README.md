@@ -116,6 +116,27 @@ active directory atomically with rollback.
 
 See `../docs/CUSTOMIZATION.zh-CN.md` and `../skills/codex-bugfire-customizer/`.
 
+## AI Character Director (optional)
+
+The director can make a real OpenAI-compatible request that turns an original-character brief into bounded creative decisions and a pack-manifest proposal. It is deliberately outside the desktop-pet runtime.
+
+```bash
+export BUGFIRE_OPENAI_BASE_URL="https://your-compatible-endpoint.example/v1"
+export BUGFIRE_OPENAI_MODEL="your-model-id"
+export BUGFIRE_OPENAI_API_KEY="your-secret"
+node ./scripts/bugfire-director.mjs draft-live brief.json ai-draft.json \
+  --model "$BUGFIRE_OPENAI_MODEL" --base-url "$BUGFIRE_OPENAI_BASE_URL"
+unset BUGFIRE_OPENAI_API_KEY
+
+node ./scripts/bugfire-director.mjs review ai-draft.json human-review.json reviewed-plan.json
+node ./scripts/bugfire-director.mjs materialize reviewed-plan.json pack-source
+node ./scripts/bugfire-pack.mjs validate pack-source
+```
+
+An `ai-draft` cannot materialize. A review must reject and materially replace one decision over the same bounded manifest fields. The resulting source still has to pass the existing pack validator. API keys are environment-only and are never serialized; remote endpoints require HTTPS, while HTTP is restricted to loopback local-model/test endpoints. Director JSON is decoded as strict UTF-8, and draft, review, and materialize destinations must be new paths: existing files are never overwritten.
+
+The repository's full offline example and disclosure are in `../contest/bugfire/`.
+
 ## Customer ZIP (optional packaging)
 
 To build the “double-click install” folder layout for non-git users:

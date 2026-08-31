@@ -1,6 +1,6 @@
 # Security policy
 
-BUGFIRE is an unofficial local extension for Codex Desktop on macOS. The currently supported release line is `1.2.0-bugfire.x`.
+BUGFIRE is an unofficial local extension for Codex Desktop on macOS. The currently supported release line is `1.3.0-bugfire.x`.
 
 ## Report a security issue
 
@@ -21,6 +21,7 @@ Include:
 - The first release does not run a real Build or Shell command.
 - The pet does not read task text, prompts, source code, API keys, or secrets.
 - Local progress is schema-validated, size-bounded, atomically written, and stored with mode `0600`.
+- The optional Character Director reads its API key only from the environment, requires HTTPS for remote endpoints, persists no credentials, rejects malformed UTF-8, refuses to overwrite existing outputs, and cannot bypass the human-review or deterministic pack-validation gates.
 
 CDP is powerful even on loopback. Never expose the debugging port on `0.0.0.0` or a LAN address, and avoid untrusted local software while the extension is active.
 

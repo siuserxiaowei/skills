@@ -377,6 +377,10 @@ function validateManifestShape(raw) {
   };
 }
 
+// The AI director produces a proposal, but this existing deterministic contract
+// remains the only authority that can turn that proposal into an installable pack.
+export { validateManifestShape as validateBugfireManifest };
+
 async function readManifest(packRoot) {
   const manifestPath = path.join(packRoot, "bugfire-pack.json");
   const loaded = await readStableFile(manifestPath, "manifest", MAX_MANIFEST_BYTES, {

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BUGFIRE 补丁兽｜可定制的 Codex Desktop 像素桌宠</title>
-  <meta name="description" content="BUGFIRE 是一套运行在 macOS Codex Desktop 内的可定制像素桌宠系统：六种状态、模拟 Build、喷火除 Bug、本地 XP 成长、任务板与纪念卡。上传一张背景和一张宠物图即可制作自己的版本。">
+  <meta name="description" content="BUGFIRE 是一套运行在 macOS Codex Desktop 内的可定制像素桌宠系统：AI 角色导演提案、人工否决与替换、确定性校验、六种状态、模拟 Build、本地 XP 与一键恢复。">
   <meta name="keywords" content="Codex Desktop, Codex 宠物, Codex 桌宠, Codex skin, macOS desktop pet, Vibe Coding, BUGFIRE, AI coding companion">
   <meta name="author" content="siuserxiaowei">
   <meta name="theme-color" content="#050704">
@@ -13,7 +13,7 @@
   <meta property="og:locale" content="zh_CN">
   <meta property="og:site_name" content="BUGFIRE 补丁兽">
   <meta property="og:title" content="BUGFIRE 补丁兽｜把 Codex 变成会成长的像素伙伴">
-  <meta property="og:description" content="上传两张图，定制六状态 Codex 桌宠。模拟 Build、喷火除 Bug、本地 XP、成长卡与可分享 Skill。">
+  <meta property="og:description" content="原创 brief → AI 角色导演 → 人工否决/替换 → deterministic validator → 六状态 Codex 桌宠。">
   <meta property="og:url" content="https://siuserxiaowei.github.io/Codex-Bugfire-Skin/">
   <meta property="og:image" content="https://siuserxiaowei.github.io/Codex-Bugfire-Skin/images/bugfire-social-card.png">
   <meta property="og:image:width" content="1200">
@@ -31,7 +31,7 @@
     "description": "A customizable local pixel companion and growth system for Codex Desktop on macOS.",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "macOS",
-    "softwareVersion": "1.2.0-bugfire.1",
+    "softwareVersion": "1.3.0-bugfire.1",
     "isAccessibleForFree": true,
     "license": "https://opensource.org/license/mit",
     "codeRepository": "https://github.com/siuserxiaowei/Codex-Bugfire-Skin",
@@ -138,6 +138,17 @@
     .demo-note { display: flex; justify-content: space-between; gap: 18px; margin-top: 13px; color: var(--muted); font-size: 11px; }
     .demo-note strong { color: var(--acid); }
 
+    .director { padding: 90px 0; border-top: 1px solid var(--line); background: radial-gradient(circle at 80% 20%, rgba(53,217,209,.08), transparent 34rem); }
+    .director-lede { max-width: 880px; margin: 18px 0 0; color: var(--muted); font-size: 15px; line-height: 1.8; }
+    .director-lede strong { color: var(--paper); }
+    .director-flow { margin: 28px 0 0; padding: 18px 20px; border-left: 4px solid #35d9d1; color: #8ffcf3; background: var(--panel); font-size: 13px; line-height: 1.7; }
+    .director-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 28px; }
+    .director-shot { margin: 0; padding: 8px; border: 1px solid var(--line); background: var(--panel); }
+    .director-shot img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+    .director-shot figcaption { padding: 12px 7px 6px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .director-shot strong { color: var(--acid-soft); }
+    .disclosure { margin-top: 18px; color: var(--muted); font-size: 10px; line-height: 1.7; }
+
     .system { padding: 86px 0; border-block: 1px solid var(--line); background: linear-gradient(180deg, rgba(131,255,69,.035), transparent); }
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; }
     .card { min-height: 220px; position: relative; overflow: hidden; padding: 24px; border: 1px solid var(--line); background: rgba(10,14,9,.76); }
@@ -166,6 +177,7 @@
       .section-head { grid-template-columns: 1fr; }
       .demo-tabs { justify-content: start; }
       .grid { grid-template-columns: 1fr; }
+      .director-grid { grid-template-columns: 1fr; }
       .recipe { grid-template-columns: 1fr; gap: 34px; }
       .demo-note, footer .shell { flex-direction: column; }
       .status { display: none; }
@@ -181,7 +193,7 @@
   <header class="topbar">
     <div class="shell topbar-inner">
       <a class="brand" href="#top" aria-label="BUGFIRE 首页"><span class="brand-mark" aria-hidden="true"></span>BUGFIRE · 补丁兽</a>
-      <span class="status">LOCAL · SAFE · CUSTOMIZABLE</span>
+      <span class="status">AI-DIRECTED · HUMAN-GATED · LOCAL</span>
     </div>
   </header>
 
@@ -196,7 +208,7 @@
         <a class="cta secondary" href="https://github.com/siuserxiaowei/Codex-Bugfire-Skin">☆ GitHub</a>
       </div>
       <ul class="micro-proof" aria-label="项目关键事实">
-        <li>87 项自动化测试</li><li>不修改官方 app.asar</li><li>数据只留本机</li><li>MIT 开源</li>
+        <li>96 项自动化测试</li><li>不修改官方 app.asar</li><li>AI 草案不能直出安装包</li><li>MIT 开源</li>
       </ul>
     </section>
 
@@ -216,6 +228,22 @@
         </div>
       </div>
       <div class="demo-note"><span id="demo-note"><strong>01 / HOME</strong> · 首页右下角常驻 72 px 浮巢，不挡原生输入区。</span><span>截图已遮盖私人项目与任务内容</span></div>
+    </section>
+
+    <section class="director" id="director">
+      <div class="shell">
+        <p class="section-kicker">CHARACTER DIRECTOR // VIBELAB</p>
+        <h2>AI 提案，人工否决，校验器裁决。</h2>
+        <p class="director-lede"><strong>新增 Character Director 不把一句 prompt 伪装成成品。</strong>它把原创角色 brief 编译成结构化 creative decisions；操作员必须拒绝并替换一项选择，之后仍由原有 pack validator 检查字段、路径、图片与权利声明。</p>
+        <div class="director-flow">ORIGINAL BRIEF → RECORDED / LIVE AI DRAFT → HUMAN REJECTION + REPLACEMENT → DETERMINISTIC VALIDATOR → BUILD / PREVIEW → OPTIONAL LIVE VERIFY / RESTORE</div>
+        <div class="director-grid">
+          <figure class="director-shot"><img src="images/bugfire-director-ai-draft.png" alt="AI 角色导演草案，明确标注为 SHA-256 校验的 recorded fixture" width="1920" height="1080"><figcaption><strong>01 · AI DRAFT</strong><br>Codex agent session；精确 model ID 不作独立可验证声明。</figcaption></figure>
+          <figure class="director-shot"><img src="images/bugfire-director-human-rejection.png" alt="操作员否决告警橙主色并替换为电路青" width="1920" height="1080"><figcaption><strong>02 · REJECT / REPLACE</strong><br>主色从 #ff7a1a 变为 #35d9d1；未改动的 replacement 会被拒绝。</figcaption></figure>
+          <figure class="director-shot"><img src="images/bugfire-director-pack-preview.png" alt="通过 deterministic validator 后生成的 Patchling Zero 离线预览" width="1920" height="1080"><figcaption><strong>03 · VALIDATE / PREVIEW</strong><br>真实本地 pack 产物；六态预览不修改 Codex。</figcaption></figure>
+        </div>
+        <div class="actions"><a class="cta primary" href="https://github.com/siuserxiaowei/Codex-Bugfire-Skin/tree/main/contest/bugfire">查看一键复现与证据 →</a><a class="cta secondary" href="https://github.com/siuserxiaowei/Codex-Bugfire-Skin/blob/main/PROVENANCE.md">原创与归属边界</a></div>
+        <p class="disclosure">离线 fixture 是该仓库 Codex agent session 的真实 AI 产出并由 SHA-256 锁定；重放不冒充 live API，checksum 不独立证明 model identity。review JSON 是可复现演示输入，公开声称“人工否决”前需由录制操作员现场确认。旧 75 秒 V2 仅作既有桌宠工程证据。</p>
+      </div>
     </section>
 
     <section class="system">
