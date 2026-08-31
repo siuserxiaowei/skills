@@ -56,6 +56,28 @@ function text(value, name, maximum = 400) {
   return normalized;
 }
 
+function rfc3339DateTime(value, name) {
+  const normalized = text(value, name, 40);
+  if (value !== normalized) invalid(`${name} must be a canonical RFC 3339 date-time`);
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,9}))?(?:Z|([+-])(\d{2}):(\d{2}))$/.exec(normalized);
+  if (!match) invalid(`${name} must be a canonical RFC 3339 date-time`);
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  const second = Number(match[6]);
+  const offsetHour = match[9] === undefined ? 0 : Number(match[9]);
+  const offsetMinute = match[10] === undefined ? 0 : Number(match[10]);
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const monthDays = [0, 31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (year < 1 || month < 1 || month > 12 || day < 1 || day > monthDays[month] ||
+      hour > 23 || minute > 59 || second > 59 || offsetHour > 23 || offsetMinute > 59) {
+    invalid(`${name} must be a canonical RFC 3339 date-time`);
+  }
+  return normalized;
+}
+
 function stringList(value, name, { minimum = 1, maximum = 12, itemMaximum = 240 } = {}) {
   if (!Array.isArray(value) || value.length < minimum || value.length > maximum) {
     invalid(`${name} must contain ${minimum} to ${maximum} entries`);
@@ -224,8 +246,7 @@ function validateProvenance(raw) {
     "endpointOrigin", "sourceNotice",
   ], "provenance");
   if (!MODES.has(provenance.mode)) invalid("provenance.mode is unsupported");
-  const generatedAt = text(provenance.generatedAt, "provenance.generatedAt", 40);
-  if (Number.isNaN(Date.parse(generatedAt))) invalid("provenance.generatedAt must be an ISO date-time");
+  const generatedAt = rfc3339DateTime(provenance.generatedAt, "provenance.generatedAt");
   for (const field of ["briefSha256", "promptSha256"]) {
     if (typeof provenance[field] !== "string" || !/^[a-f0-9]{64}$/.test(provenance[field])) {
       invalid(`provenance.${field} must be a SHA-256 digest`);
@@ -258,8 +279,7 @@ function validateHumanReview(raw) {
     "reviewer", "reviewedAt", "rejectedDecisionId", "reason", "originalDecision",
     "replacementDecision", "draftSha256",
   ], "humanReview");
-  const reviewedAt = text(review.reviewedAt, "humanReview.reviewedAt", 40);
-  if (Number.isNaN(Date.parse(reviewedAt))) invalid("humanReview.reviewedAt must be an ISO date-time");
+  const reviewedAt = rfc3339DateTime(review.reviewedAt, "humanReview.reviewedAt");
   if (!/^[a-f0-9]{64}$/.test(review.draftSha256 || "")) invalid("humanReview.draftSha256 is invalid");
   return {
     reviewer: text(review.reviewer, "humanReview.reviewer", 100),
@@ -603,8 +623,7 @@ function validateReviewRequest(raw) {
     "schemaVersion", "reviewer", "reviewedAt", "rejectedDecisionId", "reason", "replacementDecision",
   ], "review request");
   if (review.schemaVersion !== 1) invalid("review request schemaVersion must be 1");
-  const reviewedAt = text(review.reviewedAt, "reviewedAt", 40);
-  if (Number.isNaN(Date.parse(reviewedAt))) invalid("reviewedAt must be an ISO date-time");
+  const reviewedAt = rfc3339DateTime(review.reviewedAt, "reviewedAt");
   return {
     schemaVersion: 1,
     reviewer: text(review.reviewer, "reviewer", 100),

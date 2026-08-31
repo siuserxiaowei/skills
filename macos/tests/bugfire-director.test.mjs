@@ -90,6 +90,52 @@ test("recorded AI fixture is explicit, schema-valid, and checksum locked", async
   assert.match(result.notice, /not presented as a live API call/i);
 });
 
+test("director provenance and review timestamps require canonical RFC 3339", async () => {
+  const draft = await json(path.join(DEMO, "ai-draft-plan.json"));
+  const review = await json(path.join(DEMO, "human-review.json"));
+  const brief = await json(path.join(DEMO, "brief.json"));
+  const invalidTimestamps = [
+    "1",
+    "2026-08-31",
+    "August 31, 2026",
+    "2026-02-30T06:00:00Z",
+    "2026-08-31T24:00:00Z",
+    "2026-08-31T06:00:60Z",
+    "2026-08-31t06:00:00z",
+    "2026-08-31T06:00:00+24:00",
+    " 2026-08-31T06:00:00Z",
+    "2026-08-31T06:00:00Z ",
+  ];
+  for (const timestamp of invalidTimestamps) {
+    const invalidDraft = structuredClone(draft);
+    invalidDraft.provenance.generatedAt = timestamp;
+    assert.throws(
+      () => validateDirectorPlan(invalidDraft, { requiredStatus: "ai-draft" }),
+      /canonical RFC 3339 date-time/,
+    );
+
+    const invalidReview = structuredClone(review);
+    invalidReview.reviewedAt = timestamp;
+    assert.throws(
+      () => applyHumanReview(draft, invalidReview, brief),
+      /canonical RFC 3339 date-time/,
+    );
+  }
+
+  const offsetDraft = structuredClone(draft);
+  offsetDraft.provenance.generatedAt = "2026-08-31T13:49:09+08:00";
+  assert.equal(
+    validateDirectorPlan(offsetDraft, { requiredStatus: "ai-draft" }).provenance.generatedAt,
+    "2026-08-31T13:49:09+08:00",
+  );
+  const fractionalReview = structuredClone(review);
+  fractionalReview.reviewedAt = "2026-08-31T14:00:00.123456789+08:00";
+  assert.equal(
+    applyHumanReview(draft, fractionalReview, brief).humanReview.reviewedAt,
+    "2026-08-31T14:00:00.123456789+08:00",
+  );
+});
+
 test("a checksum-valid recorded fixture cannot replace the human brief rights", async () => {
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-fixture-rights-"));
   const forgedPlan = structuredClone(await json(path.join(DEMO, "ai-draft-plan.json")));
