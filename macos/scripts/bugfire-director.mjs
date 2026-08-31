@@ -539,14 +539,15 @@ export async function draftWithOpenAI({ brief: rawBrief, baseUrl, apiKey, model,
   let envelope;
   try {
     envelope = JSON.parse(responseBody);
-  } catch (error) {
-    throw new Error(`AI endpoint envelope was not valid JSON: ${error.message}`);
+  } catch {
+    throw new Error("AI endpoint envelope was not valid JSON");
   }
+  const responseContent = responseText(envelope, apiMode);
   let rawPayload;
   try {
-    rawPayload = JSON.parse(responseText(envelope, apiMode));
-  } catch (error) {
-    throw new Error(`AI response was not valid JSON: ${error.message}`);
+    rawPayload = JSON.parse(responseContent);
+  } catch {
+    throw new Error("AI response was not valid JSON");
   }
   assertNoExactSecrets(rawPayload, [credential], "AI response payload");
   const payload = validateAiPayload(rawPayload, brief.rights);

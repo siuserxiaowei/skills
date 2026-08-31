@@ -65,7 +65,7 @@ node macos/scripts/bugfire-director.mjs draft-live \
 unset BUGFIRE_OPENAI_API_KEY
 ```
 
-The automated test starts a real loopback HTTP server, observes the request, and proves the credential is not serialized. Remote endpoints require HTTPS. No test or fixture pretends that a live provider was called when it was not.
+The automated test starts a real loopback HTTP server, observes the request, and proves the credential is neither serialized nor reflected through malformed-JSON CLI errors. Remote endpoints require HTTPS. No test or fixture pretends that a live provider was called when it was not.
 
 ## Evidence matrix
 

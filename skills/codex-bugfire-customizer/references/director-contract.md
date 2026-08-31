@@ -23,7 +23,7 @@ unset BUGFIRE_OPENAI_API_KEY
 
 Use `--api-mode responses` for a Responses-compatible endpoint. Remote HTTP is rejected; only HTTPS is allowed. HTTP is accepted for loopback local-model/test endpoints.
 
-The API key is environment-only. Before a live draft can be written, both the parsed endpoint payload and the validated plan are recursively checked for the exact credential value. If an endpoint reflects the key into any accepted string or object key, generation is rejected without an output file.
+The API key is environment-only. Before a live draft can be written, both the parsed endpoint payload and the validated plan are recursively checked for the exact credential value. If an endpoint reflects the key into any accepted string or object key, generation is rejected without an output file. Malformed envelope or content JSON produces stable generic CLI errors; parser messages are never allowed to append endpoint-controlled response excerpts that could contain the key.
 
 If the endpoint declares a `Content-Length` above 1 MiB, the response is rejected before body consumption. Every response is then read chunk by chunk with a 1 MiB application cap; the body reader is cancelled as soon as the next chunk would cross it. The HTTP/runtime stack may buffer before yielding an individual chunk, so this is an application accumulation and early-cancellation boundary rather than a claim about all transport buffering.
 

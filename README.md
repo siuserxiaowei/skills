@@ -34,7 +34,7 @@
 ./contest/bugfire/run-demo.sh
 ```
 
-无 API Key 时，Demo 使用由本项目 Codex agent 实际产出、SHA-256 锁定的离线 fixture，并明确标注“不是实时 API 调用、不是人工审批证明”；fixture 校验、review 和 materialize 都必须重新提供同一份由操作员控制的 human brief，并精确核对 brief 摘要与持久化 rights，不能靠跳过 `verify-fixture` 把伪造 rights 写入包。有兼容端点时，`bugfire-director.mjs draft-live` 会真实调用 Chat Completions 或 Responses API；Key 只从环境变量读取，响应与最终 plan 在写盘前都会递归拒绝 Key 的精确值，即使恶意端点把凭据回显进合法字段也不会产生文件。响应若声明 `Content-Length` 会先做 1 MiB 预检，无论是否声明都由 body reader 流式累计，在首个越界 chunk 主动取消。live `manifestProposal.rights` 强制复制自人工 brief，AI 无权改写。AI 草案不能直接 materialize，人工替换也不能绕过原有 pack validator。
+无 API Key 时，Demo 使用由本项目 Codex agent 实际产出、SHA-256 锁定的离线 fixture，并明确标注“不是实时 API 调用、不是人工审批证明”；fixture 校验、review 和 materialize 都必须重新提供同一份由操作员控制的 human brief，并精确核对 brief 摘要与持久化 rights，不能靠跳过 `verify-fixture` 把伪造 rights 写入包。有兼容端点时，`bugfire-director.mjs draft-live` 会真实调用 Chat Completions 或 Responses API；Key 只从环境变量读取，响应与最终 plan 在写盘前都会递归拒绝 Key 的精确值，即使恶意端点把凭据回显进合法字段也不会产生文件；endpoint-controlled JSON 解析失败只输出固定错误文案，不拼接可能含 Key 的响应片段。响应若声明 `Content-Length` 会先做 1 MiB 预检，无论是否声明都由 body reader 流式累计，在首个越界 chunk 主动取消。live `manifestProposal.rights` 强制复制自人工 brief，AI 无权改写。AI 草案不能直接 materialize，人工替换也不能绕过原有 pack validator。
 
 这里的 human brief 是调用者选择并保管的信任根：工具验证“当前 plan 是否仍与这份 brief 一致”，不认证 brief 作者身份，也不替用户证明真实版权。SHA-256 只是完整性摘要，不是签名。
 

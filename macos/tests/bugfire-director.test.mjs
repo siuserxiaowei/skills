@@ -424,6 +424,53 @@ test("a malicious live endpoint cannot reflect the exact API key into any persis
   await assert.rejects(fs.access(output));
 });
 
+test("malformed live JSON cannot reflect the exact API key through CLI parse errors", async (context) => {
+  const apiKey = "test-key";
+  const server = http.createServer(async (request, response) => {
+    const chunks = [];
+    for await (const chunk of request) chunks.push(chunk);
+    const requestBody = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    response.writeHead(200, { "content-type": "application/json" });
+    if (requestBody.model === "malformed-envelope-model") {
+      response.end(apiKey);
+    } else {
+      response.end(JSON.stringify({ choices: [{ message: { content: apiKey } }] }));
+    }
+  });
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  context.after(() => new Promise((resolve) => server.close(resolve)));
+  const address = server.address();
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-parse-secret-"));
+  const cases = [
+    ["malformed-envelope-model", "envelope.json", /endpoint envelope was not valid JSON/i],
+    ["malformed-content-model", "content.json", /AI response was not valid JSON/i],
+  ];
+
+  for (const [model, filename, expectedError] of cases) {
+    const output = path.join(workspace, filename);
+    await assert.rejects(execFileAsync(process.execPath, [
+      DIRECTOR,
+      "draft-live",
+      path.join(DEMO, "brief.json"),
+      output,
+      "--model",
+      model,
+      "--base-url",
+      `http://127.0.0.1:${address.port}/v1`,
+    ], {
+      env: { ...process.env, BUGFIRE_OPENAI_API_KEY: apiKey },
+    }), (error) => {
+      assert.match(error.stderr, expectedError);
+      assert.doesNotMatch(`${error.stdout}\n${error.stderr}`, new RegExp(apiKey));
+      return true;
+    });
+    await assert.rejects(fs.access(output));
+  }
+});
+
 test("AI manifest rights are forcibly derived from the human brief", async () => {
   const brief = await json(path.join(DEMO, "brief.json"));
   const recorded = await json(path.join(DEMO, "ai-draft-plan.json"));

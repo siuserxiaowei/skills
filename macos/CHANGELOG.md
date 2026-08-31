@@ -18,6 +18,7 @@
 - draft、review 与 materialize 输出使用随机 `wx` 暂存文件和原子 no-clobber 提交，已有目标会原样保留并拒绝覆盖
 - 自动化测试会启动 loopback mock endpoint，证明 live 路径确实发起 HTTP 请求，并校验凭据没有进入输出
 - 对 AI 响应与最终 plan 做递归精确凭据扫描；恶意端点回显 API Key 时在落盘前拒绝，错误信息也不回显 Key
+- envelope/content JSON 解析失败使用固定错误文案，避免 V8 parser 把 endpoint 响应片段（包括短 Key）带入 CLI stderr
 - live 响应先做 `Content-Length` 预检，再以 1 MiB body-reader 上限流式累计，首个越界 chunk 会主动取消而非整段下载后才拒绝
 - `manifestProposal.rights` 强制从已校验的人工 brief 派生，AI 不能覆盖素材权利声明
 - recorded fixture 校验强制携带 human brief；即使攻击者修改 rights 并重算 checksum，只要与 brief 不完全一致仍会拒绝
