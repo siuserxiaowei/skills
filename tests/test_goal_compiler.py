@@ -356,6 +356,10 @@ class GoalCompilerBoundaryTests(unittest.TestCase):
             "non-HTTP scheme": '<img src="ftp://example.com/pixel.png" alt="external">',
             "active URI scheme": '<a href="javascript:alert(1)">external</a>',
             "embedded active document": '<iframe src="data:text/html,external"></iframe>',
+            "HTML newline in scheme": '<a href="java&#10;script:alert(1)">external</a>',
+            "HTML tab in scheme": '<iframe src="da&#9;ta:text/html,external"></iframe>',
+            "literal carriage return in scheme": '<a href="java\rscript:alert(1)">external</a>',
+            "CSS newline in scheme": '<style>@import url(https:\n//example.com/theme.css);</style>',
         }
         for name, injection in variants.items():
             with self.subTest(vector=name):

@@ -1222,7 +1222,7 @@ def render_goal(contract: dict[str, Any]) -> str:
 
 def is_nonlocal_url_reference(value: str) -> bool:
     """Reject protocol-relative or explicitly schemed HTML URL attributes."""
-    decoded = html.unescape(value).strip()
+    decoded = re.sub(r"[\t\n\r]", "", html.unescape(value)).strip()
     return decoded.startswith("//") or bool(re.match(r"(?i)^[a-z][a-z0-9+.-]*:", decoded))
 
 
@@ -1270,6 +1270,7 @@ def decoded_external_url_tokens(content: str) -> list[str]:
         return match.group(2) or ""
 
     decoded = re.sub(r"\\(?:([0-9a-fA-F]{1,6})\s?|(.))", decode_css_escape, decoded)
+    decoded = re.sub(r"[\t\n\r]", "", decoded)
     return re.findall(
         r"(?i)(?:[a-z][a-z0-9+.-]*:)?//(?:[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?|\[[0-9a-f:]+\])(?::\d+)?(?:[/#?][^\s<>'\"]*)?",
         decoded,
