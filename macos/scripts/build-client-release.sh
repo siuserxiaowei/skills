@@ -26,6 +26,11 @@ trap '/bin/rm -rf "$TMP"' EXIT
   --exclude '.DS_Store' \
   "$ROOT/../contest/bugfire/" \
   "$ENGINE/contest/bugfire/"
+/bin/mkdir -p "$ENGINE/docs"
+/usr/bin/rsync -a \
+  --exclude '.DS_Store' \
+  "$ROOT/../docs/" \
+  "$ENGINE/docs/"
 for evidence in PROVENANCE.md SOURCES.md THIRD_PARTY_NOTICES.md ASSET_RIGHTS.csv; do
   /bin/cp "$ROOT/../$evidence" "$ENGINE/$evidence"
 done

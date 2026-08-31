@@ -45,7 +45,7 @@ Before a public post says “人工否决”, the recording operator should type
 
 ## Deterministic boundary
 
-The director can only propose declared manifest fields. An AI draft cannot materialize. A review must materially change the rejected decision over exactly the same field surface. Even then, the existing pack validator independently checks schema, local image content, paths, size, dimensions, rights text, and safety limits before build or install.
+The director can only propose declared manifest fields. Its persisted `manifestProposal.rights` is forcibly derived from the validated human brief, not from an AI claim. A live response and the validated plan are recursively checked for the exact API credential before any write. An AI draft cannot materialize. A review must materially change the rejected decision over exactly the same field surface, and `materialize` reconstructs that canonical pre-review draft to verify `humanReview.draftSha256`. Even then, the existing pack validator independently checks schema, local image content, paths, size, dimensions, rights text, and safety limits before build or install.
 
 This is the precise original mechanism being submitted:
 

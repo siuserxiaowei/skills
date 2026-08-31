@@ -57,10 +57,11 @@
 
 ## BUGFIRE 1.3.0-bugfire.1 source acceptance (2026-08-31)
 
-- `macos/tests/run-tests.sh`: 96/96 automated tests passed on macOS; shell/JavaScript syntax, payload, config round-trip, signature, doctor, Skill, Pages, and Character Director checks passed.
+- `macos/tests/run-tests.sh`: 104/104 automated tests passed on macOS; shell/JavaScript syntax, payload, config round-trip, signature, doctor, Skill, Pages, and Character Director checks passed.
 - Enforced core coverage set: 42/42 tests passed; lines `88.42%`, branches `84.50%`, functions `80.39%` (all thresholds 80%).
+- Enforced Character Director coverage set: 17/17 tests passed; lines `97.43%`, branches `81.90%`, functions `89.06%` (all thresholds 80%).
 - Offline director Demo passed: fixture SHA-256 and brief/prompt digests verified; `alert-first-palette` changed from `#ff7a1a` to `#35d9d1`; materialization, pack validation, build, preview, and injector payload check returned `pass: true`.
-- The live request path was exercised against a real loopback mock HTTP server. The test observed the bearer request and proved the secret was absent from the resulting plan. No public claim is made that the checked fixture came from a live endpoint.
+- The live request path was exercised against a real loopback mock HTTP server. Tests observed both supported bearer-request shapes, proved a malicious endpoint reflecting the credential into accepted nested plan fields is rejected before write without logging the key, and proved AI-supplied rights are replaced by the validated human brief. No public claim is made that the checked fixture came from a live endpoint.
 - Three offline boards were regenerated and visually inspected at 1920×1080. The AI board says the exact model ID is not independently attested; the review board requires on-camera operator confirmation; the third board is a real generated preview capture.
 - Release ZIP built successfully at `macos/release/codex-bugfire-skin-v1.3.0-bugfire.1.zip`; its final SHA-256 is written beside it in the gitignored `release/SHA256SUMS.txt` and must be verified after the last source change.
 - A new live install/reload/restore capture was not run during source acceptance. The optional `--live-cycle` remains explicitly gated because it may restart Codex; the older 2026-07-16 live evidence below is engineering context only, not proof of the Character Director workflow.

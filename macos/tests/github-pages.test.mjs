@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
-const ENGINE = path.resolve(new URL("../", import.meta.url).pathname);
+const ENGINE = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const ROOT = path.basename(ENGINE) === "macos" ? path.dirname(ENGINE) : ENGINE;
 const page = path.join(ROOT, "docs", "index.html");
 

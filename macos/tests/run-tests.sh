@@ -4,8 +4,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 CONTEST_ROOT="$ROOT/../contest/bugfire"
 [ -d "$CONTEST_ROOT" ] || CONTEST_ROOT="$ROOT/contest/bugfire"
-NODE="${NODE:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node}"
-[ -x "$NODE" ] || { printf 'Codex bundled Node.js was not found: %s\n' "$NODE" >&2; exit 1; }
+NODE="${BUGFIRE_TEST_NODE:-/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node}"
+if [ ! -x "$NODE" ]; then NODE="$(/usr/bin/which node 2>/dev/null || true)"; fi
+[ -x "$NODE" ] || { printf 'A usable Node.js runtime was not found: %s\n' "$NODE" >&2; exit 1; }
 
 while IFS= read -r file; do /bin/bash -n "$file"; done < <(
   /usr/bin/find "$ROOT" "$CONTEST_ROOT" -type f \( -name '*.sh' -o -name '*.command' \) \
@@ -31,6 +32,10 @@ fi
   --test-coverage-lines=80 --test-coverage-branches=80 --test-coverage-functions=80 \
   "$ROOT/tests/bugfire-state.test.mjs" "$ROOT/tests/bugfire-state-hardening.test.mjs" \
   "$ROOT/tests/bugfire-pack.test.mjs" >/dev/null
+"$NODE" --test --experimental-test-coverage \
+  --test-coverage-include="$ROOT/scripts/bugfire-director.mjs" \
+  --test-coverage-lines=80 --test-coverage-branches=80 --test-coverage-functions=80 \
+  "$ROOT/tests/bugfire-director.test.mjs" >/dev/null
 
 TMP="$(/usr/bin/mktemp -d /tmp/codex-dream-skin-tests.XXXXXX)"
 trap '/bin/rm -rf "$TMP"' EXIT

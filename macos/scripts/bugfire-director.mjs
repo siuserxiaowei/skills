@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { TextDecoder } from "node:util";
@@ -78,6 +79,30 @@ export function sha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
 }
 
+function assertNoExactSecrets(value, secrets, name) {
+  const exactSecrets = secrets.filter((secret) => typeof secret === "string" && secret.length > 0);
+  if (!exactSecrets.length) return;
+  const visit = (candidate) => {
+    if (typeof candidate === "string") {
+      if (exactSecrets.some((secret) => candidate.includes(secret))) {
+        invalid(`${name} contains an exact credential value and cannot be persisted`);
+      }
+      return;
+    }
+    if (Array.isArray(candidate)) {
+      for (const entry of candidate) visit(entry);
+      return;
+    }
+    if (candidate && typeof candidate === "object") {
+      for (const [key, entry] of Object.entries(candidate)) {
+        visit(key);
+        visit(entry);
+      }
+    }
+  };
+  visit(value);
+}
+
 function decodeUtf8(bytes, name) {
   try {
     return UTF8.decode(bytes);
@@ -114,7 +139,8 @@ async function assertOutputAbsent(file, name) {
   return absolute;
 }
 
-async function writeJsonNoClobber(file, value, name) {
+async function writeJsonNoClobber(file, value, name, { secrets = [] } = {}) {
+  assertNoExactSecrets(value, secrets, name);
   const absolute = path.resolve(file);
   await fs.mkdir(path.dirname(absolute), { recursive: true, mode: 0o700 });
   const temporary = `${absolute}.${process.pid}.${crypto.randomBytes(8).toString("hex")}.tmp`;
@@ -298,16 +324,36 @@ export function validateDirectorPlan(raw, { requiredStatus } = {}) {
       }
     }
   }
-  return {
+  const provenance = validateProvenance(plan.provenance);
+  const productionNotes = stringList(
+    plan.productionNotes, "productionNotes", { maximum: 16, itemMaximum: 400 },
+  );
+  const validated = {
     schemaVersion: 1,
     artifactType: "bugfire-character-director-plan",
     status: plan.status,
-    provenance: validateProvenance(plan.provenance),
+    provenance,
     creativeDecisions: decisions,
     manifestProposal,
-    productionNotes: stringList(plan.productionNotes, "productionNotes", { maximum: 16, itemMaximum: 400 }),
+    productionNotes,
     humanReview,
   };
+  if (humanReview) {
+    const originalDecisions = structuredClone(decisions);
+    originalDecisions[originalDecisions.findIndex(({ id }) => id === humanReview.rejectedDecisionId)] =
+      humanReview.originalDecision;
+    const canonicalDraft = validateDirectorPlan({
+      ...validated,
+      status: "ai-draft",
+      creativeDecisions: originalDecisions,
+      manifestProposal: applyPatch(manifestProposal, humanReview.originalDecision.manifestPatch),
+      humanReview: null,
+    }, { requiredStatus: "ai-draft" });
+    if (humanReview.draftSha256 !== sha256(stableJson(canonicalDraft))) {
+      invalid("humanReview.draftSha256 does not match the reconstructed canonical draft");
+    }
+  }
+  return validated;
 }
 
 function setJsonPointer(target, pointer, value) {
@@ -341,9 +387,11 @@ export function directorPrompt() {
   ].join("\n");
 }
 
-function validateAiPayload(raw) {
+function validateAiPayload(raw, briefRights) {
   const payload = plainObject(raw, "AI response");
   exactKeys(payload, ["creativeDecisions", "manifestProposal", "productionNotes"], "AI response");
+  const manifestProposal = structuredClone(plainObject(payload.manifestProposal, "AI response.manifestProposal"));
+  manifestProposal.rights = structuredClone(briefRights);
   const provisional = {
     schemaVersion: 1,
     artifactType: "bugfire-character-director-plan",
@@ -359,7 +407,7 @@ function validateAiPayload(raw) {
       sourceNotice: "Validation placeholder; replaced before an artifact is written.",
     },
     creativeDecisions: payload.creativeDecisions,
-    manifestProposal: payload.manifestProposal,
+    manifestProposal,
     productionNotes: payload.productionNotes,
     humanReview: null,
   };
@@ -413,6 +461,7 @@ export async function draftWithOpenAI({ brief: rawBrief, baseUrl, apiKey, model,
   if (typeof apiKey !== "string" || !apiKey.trim()) {
     throw new Error("BUGFIRE_OPENAI_API_KEY is missing; no live AI generation was performed");
   }
+  const credential = apiKey.trim();
   const messages = [
     { role: "system", content: prompt },
     { role: "user", content: JSON.stringify(brief) },
@@ -422,7 +471,7 @@ export async function draftWithOpenAI({ brief: rawBrief, baseUrl, apiKey, model,
     : { model: selectedModel, messages, response_format: { type: "json_object" } };
   const response = await fetchImpl(endpoint, {
     method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+    headers: { "content-type": "application/json", authorization: `Bearer ${credential}` },
     body: JSON.stringify(body),
     redirect: "error",
     signal: AbortSignal.timeout(60_000),
@@ -433,7 +482,7 @@ export async function draftWithOpenAI({ brief: rawBrief, baseUrl, apiKey, model,
   }
   const responseBody = decodeUtf8(responseBytes, "AI endpoint response");
   if (!response.ok) {
-    const message = responseBody.slice(0, 500).replaceAll(apiKey, "[REDACTED]");
+    const message = responseBody.slice(0, 500).replaceAll(credential, "[REDACTED]");
     throw new Error(`AI endpoint returned HTTP ${response.status}: ${message}`);
   }
   let envelope;
@@ -448,8 +497,9 @@ export async function draftWithOpenAI({ brief: rawBrief, baseUrl, apiKey, model,
   } catch (error) {
     throw new Error(`AI response was not valid JSON: ${error.message}`);
   }
-  const payload = validateAiPayload(rawPayload);
-  return validateDirectorPlan({
+  assertNoExactSecrets(rawPayload, [credential], "AI response payload");
+  const payload = validateAiPayload(rawPayload, brief.rights);
+  const plan = validateDirectorPlan({
     schemaVersion: 1,
     artifactType: "bugfire-character-director-plan",
     status: "ai-draft",
@@ -466,6 +516,33 @@ export async function draftWithOpenAI({ brief: rawBrief, baseUrl, apiKey, model,
     ...payload,
     humanReview: null,
   });
+  assertNoExactSecrets(plan, [credential], "validated AI director plan");
+  return plan;
+}
+
+function isWithin(base, target) {
+  const relative = path.relative(base, target);
+  return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== "..");
+}
+
+async function assertNoSymlinkAncestors(absolute, name) {
+  const resolved = path.resolve(absolute);
+  const candidates = [process.cwd(), os.tmpdir(), os.homedir()]
+    .map((candidate) => path.resolve(candidate))
+    .filter((candidate) => isWithin(candidate, resolved))
+    .sort((left, right) => right.length - left.length);
+  const anchor = candidates[0] || path.parse(resolved).root;
+  let cursor = anchor;
+  const components = path.relative(anchor, resolved).split(path.sep).filter(Boolean);
+  for (const component of components) {
+    cursor = path.join(cursor, component);
+    const entry = await fs.lstat(cursor).catch((error) => {
+      if (error?.code === "ENOENT") return null;
+      throw error;
+    });
+    if (!entry) return;
+    if (entry.isSymbolicLink()) invalid(`${name} must not traverse a symbolic link: ${cursor}`);
+  }
 }
 
 function validateReviewRequest(raw) {
@@ -526,12 +603,14 @@ export function applyHumanReview(rawDraft, rawReview) {
 export async function materializeReviewedPlan(rawPlan, packDirectory) {
   const plan = validateDirectorPlan(rawPlan, { requiredStatus: "human-approved" });
   const root = path.resolve(packDirectory);
+  await assertNoSymlinkAncestors(root, "pack output");
   const entry = await fs.lstat(root).catch((error) => {
     if (error?.code === "ENOENT") return null;
     throw error;
   });
   if (entry && (!entry.isDirectory() || entry.isSymbolicLink())) invalid("pack output must be a real directory");
   await fs.mkdir(root, { recursive: true, mode: 0o700 });
+  await assertNoSymlinkAncestors(root, "pack output");
   const report = {
     pass: true,
     boundary: "AI proposes; human changes/approves; deterministic pack validator decides installability.",
@@ -603,14 +682,15 @@ async function cli(argv) {
     const flags = options([third, ...rest].filter((value) => value !== undefined));
     await assertOutputAbsent(second, "AI draft output");
     const brief = (await readJson(first, "brief")).value;
+    const apiKey = process.env.BUGFIRE_OPENAI_API_KEY || "";
     const plan = await draftWithOpenAI({
       brief,
       baseUrl: flags["base-url"] || process.env.BUGFIRE_OPENAI_BASE_URL || "https://api.openai.com/v1",
-      apiKey: process.env.BUGFIRE_OPENAI_API_KEY || "",
+      apiKey,
       model: flags.model || process.env.BUGFIRE_OPENAI_MODEL || "",
       apiMode: flags["api-mode"] || "chat-completions",
     });
-    await writeJsonNoClobber(second, plan, "AI draft output");
+    await writeJsonNoClobber(second, plan, "AI draft output", { secrets: [apiKey] });
     return { pass: true, mode: plan.provenance.mode, model: plan.provenance.model, output: path.resolve(second) };
   }
   if (command === "verify-fixture" && first && second && rest.length === 0) {

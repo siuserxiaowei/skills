@@ -133,7 +133,9 @@ node ./scripts/bugfire-director.mjs materialize reviewed-plan.json pack-source
 node ./scripts/bugfire-pack.mjs validate pack-source
 ```
 
-An `ai-draft` cannot materialize. A review must reject and materially replace one decision over the same bounded manifest fields. The resulting source still has to pass the existing pack validator. API keys are environment-only and are never serialized; remote endpoints require HTTPS, while HTTP is restricted to loopback local-model/test endpoints. Director JSON is decoded as strict UTF-8, and draft, review, and materialize destinations must be new paths: existing files are never overwritten.
+An `ai-draft` cannot materialize. A review must reject and materially replace one decision over the same bounded manifest fields. The resulting source still has to pass the existing pack validator. API keys are environment-only; the accepted response payload and validated plan are recursively scanned for the exact credential value before any write, so a reflecting endpoint fails closed. Manifest rights are always derived from the validated human brief, never accepted from AI output. Remote endpoints require HTTPS, while HTTP is restricted to loopback local-model/test endpoints. Director JSON is decoded as strict UTF-8, and draft, review, and materialize destinations must be new paths: existing files are never overwritten. `materialize` reconstructs the canonical pre-review draft and verifies `humanReview.draftSha256` before writing.
+
+Materialization checks every existing output-path component below the current working directory, user home, or system temporary-directory anchor and rejects symbolic links before and after directory creation. This reduces accidental or attacker-chosen redirection, but Node does not expose a portable directory-fd `openat` chain here; a local process with permission to race and replace an ancestor during the check/write interval remains outside this CLI's guarantee. Use a private output directory and do not run beside untrusted local processes.
 
 The repository's full offline example and disclosure are in `../contest/bugfire/`.
 

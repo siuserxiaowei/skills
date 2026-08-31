@@ -4,10 +4,11 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 const execFileAsync = promisify(execFile);
-const ENGINE = path.resolve(new URL("../", import.meta.url).pathname);
+const ENGINE = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const PROJECT_ROOT = path.basename(ENGINE) === "macos" ? path.dirname(ENGINE) : ENGINE;
 const SKILL = path.join(PROJECT_ROOT, "skills", "codex-bugfire-customizer");
 const CREATE = path.join(SKILL, "scripts", "create-pack.mjs");

@@ -38,9 +38,9 @@ BUGFIRE 不读取或保存：
 
 ### 可选 AI 角色导演的网络边界
 
-桌宠运行时与 pack validator 仍然离线。只有用户主动执行 `bugfire-director.mjs draft-live` 时，CLI 才会把用户提供的角色 brief 发给配置的 OpenAI-compatible endpoint。Key 只从环境变量读取，不接受命令行 secret，也不写进 plan；产物只记录 endpoint origin、model ID、时间和摘要。远程 endpoint 必须是 HTTPS，HTTP 只允许本机 loopback 模型或测试服务。
+桌宠运行时与 pack validator 仍然离线。只有用户主动执行 `bugfire-director.mjs draft-live` 时，CLI 才会把用户提供的角色 brief 发给配置的 OpenAI-compatible endpoint。Key 只从环境变量读取，不接受命令行 secret；解析后的响应和最终 plan 在写盘前都会递归扫描 Key 的精确值，恶意端点即使把凭据回显进合法字段也会失败且不生成文件。`manifestProposal.rights` 一律从已校验的人工 brief 派生，AI 无权改写。产物只记录 endpoint origin、model ID、时间和摘要。远程 endpoint 必须是 HTTPS，HTTP 只允许本机 loopback 模型或测试服务。
 
-仓库内的 recorded fixture 不联网，并明确标注它不是实时调用。AI draft 无法直接 materialize；人工替换后仍必须通过原 pack validator。
+仓库内的 recorded fixture 不联网，并明确标注它不是实时调用。AI draft 无法直接 materialize；人工替换后会先重建 canonical draft 并严格核对 `draftSha256`，再通过原 pack validator。materialize 会在建目录前后拒绝调用方可控路径段中的 symlink；受限于 Node 缺少可移植的 directory-fd `openat` 链，同一用户恶意进程在检查与写入之间抢占替换祖先路径仍属于残余竞态，建议只在私有输出目录运行。
 
 ## CDP 如何被限制？
 

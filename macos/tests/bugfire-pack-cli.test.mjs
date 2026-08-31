@@ -4,10 +4,11 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 const execFileAsync = promisify(execFile);
-const ROOT = path.resolve(new URL("../", import.meta.url).pathname);
+const ROOT = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const CLI = path.join(ROOT, "scripts", "bugfire-pack.mjs");
 
 test("CLI initializes, validates, builds, and emits a machine-readable report", async () => {

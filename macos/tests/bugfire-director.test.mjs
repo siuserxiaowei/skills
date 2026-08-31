@@ -13,6 +13,7 @@ import {
   draftWithOpenAI,
   materializeReviewedPlan,
   stableJson,
+  validateDirectorBrief,
   validateDirectorPlan,
   verifyRecordedFixture,
 } from "../scripts/bugfire-director.mjs";
@@ -27,6 +28,15 @@ const execFileAsync = promisify(execFile);
 
 async function json(file) {
   return JSON.parse(await fs.readFile(file, "utf8"));
+}
+
+function chatResponse(payload, { ok = true, status = 200 } = {}) {
+  const envelope = { choices: [{ message: { content: JSON.stringify(payload) } }] };
+  return {
+    ok,
+    status,
+    arrayBuffer: async () => Buffer.from(JSON.stringify(envelope)),
+  };
 }
 
 test("recorded AI fixture is explicit, schema-valid, and checksum locked", async () => {
@@ -225,6 +235,310 @@ test("live mode exercises both OpenAI-compatible API shapes without storing cred
     assert.doesNotMatch(JSON.stringify(plan), /test-secret-never-persist/);
     assert.equal(validateDirectorPlan(plan).status, "ai-draft");
   }
+});
+
+test("a malicious live endpoint cannot reflect the exact API key into any persisted plan field", async (context) => {
+  const apiKey = "reflected-secret-must-never-persist-7f31";
+  const brief = await json(path.join(DEMO, "brief.json"));
+  const recorded = await json(path.join(DEMO, "ai-draft-plan.json"));
+  const payload = {
+    creativeDecisions: structuredClone(recorded.creativeDecisions),
+    manifestProposal: structuredClone(recorded.manifestProposal),
+    productionNotes: structuredClone(recorded.productionNotes),
+  };
+  payload.creativeDecisions[0].choice = apiKey;
+  payload.manifestProposal.name = apiKey;
+  payload.creativeDecisions[0].manifestPatch["/name"] = apiKey;
+
+  const server = http.createServer(async (request, response) => {
+    for await (const _chunk of request) {
+      // Drain the request before replying so the child process observes a normal API exchange.
+    }
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(payload) } }] }));
+  });
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  context.after(() => new Promise((resolve) => server.close(resolve)));
+  const address = server.address();
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-secret-"));
+  const output = path.join(workspace, "malicious-plan.json");
+
+  await assert.rejects(execFileAsync(process.execPath, [
+    DIRECTOR,
+    "draft-live",
+    path.join(DEMO, "brief.json"),
+    output,
+    "--model",
+    "local-contract-model",
+    "--base-url",
+    `http://127.0.0.1:${address.port}/v1`,
+  ], {
+    env: { ...process.env, BUGFIRE_OPENAI_API_KEY: apiKey },
+  }), (error) => {
+    assert.match(error.stderr, /secret|credential|persist/i);
+    assert.doesNotMatch(`${error.stdout}\n${error.stderr}`, new RegExp(apiKey));
+    return true;
+  });
+  await assert.rejects(fs.access(output));
+});
+
+test("AI manifest rights are forcibly derived from the human brief", async () => {
+  const brief = await json(path.join(DEMO, "brief.json"));
+  const recorded = await json(path.join(DEMO, "ai-draft-plan.json"));
+  const payload = {
+    creativeDecisions: recorded.creativeDecisions,
+    manifestProposal: {
+      ...recorded.manifestProposal,
+      rights: {
+        declaration: "The model falsely claims ownership of every supplied asset.",
+        sourceUrl: "https://malicious.example.test/fabricated-rights",
+      },
+    },
+    productionNotes: recorded.productionNotes,
+  };
+
+  const plan = await draftWithOpenAI({
+    brief,
+    baseUrl: "http://127.0.0.1:1/v1",
+    apiKey: "rights-boundary-test-key",
+    model: "local-contract-model",
+    fetchImpl: async () => chatResponse(payload),
+  });
+
+  assert.deepEqual(plan.manifestProposal.rights, brief.rights);
+  assert.doesNotMatch(JSON.stringify(plan), /malicious\.example|falsely claims ownership/i);
+});
+
+test("materialize recomputes and enforces the canonical AI draft digest", async () => {
+  const reviewed = await json(path.join(DEMO, "reviewed-plan.json"));
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-digest-"));
+  const forged = structuredClone(reviewed);
+  forged.humanReview.draftSha256 = "0".repeat(64);
+  await assert.rejects(
+    materializeReviewedPlan(forged, path.join(workspace, "forged")),
+    /draftSha256|draft digest|canonical draft/i,
+  );
+  await assert.rejects(fs.access(path.join(workspace, "forged", "bugfire-pack.json")));
+
+  const tampered = structuredClone(reviewed);
+  tampered.productionNotes = [...tampered.productionNotes, "Unbound post-review mutation"];
+  await assert.rejects(
+    materializeReviewedPlan(tampered, path.join(workspace, "tampered")),
+    /draftSha256|draft digest|canonical draft/i,
+  );
+});
+
+test("materialize refuses a symlink ancestor before creating pack artifacts", async () => {
+  const reviewed = await json(path.join(DEMO, "reviewed-plan.json"));
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-symlink-"));
+  const outside = path.join(workspace, "outside");
+  const linked = path.join(workspace, "linked");
+  await fs.mkdir(outside);
+  await fs.symlink(outside, linked, "dir");
+
+  await assert.rejects(
+    materializeReviewedPlan(reviewed, path.join(linked, "pack")),
+    /symbolic link|symlink/i,
+  );
+  await assert.rejects(fs.access(path.join(outside, "pack", "bugfire-pack.json")));
+});
+
+test("director CLI covers fixture verification, review, validation, and materialization", async () => {
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-cli-"));
+  const reviewed = path.join(workspace, "reviewed.json");
+  const pack = path.join(workspace, "pack");
+
+  const verified = JSON.parse((await execFileAsync(process.execPath, [
+    DIRECTOR,
+    "verify-fixture",
+    path.join(DEMO, "ai-draft-plan.json"),
+    path.join(DEMO, "ai-draft-plan.sha256"),
+    path.join(DEMO, "brief.json"),
+  ])).stdout);
+  assert.equal(verified.pass, true);
+
+  const reviewResult = JSON.parse((await execFileAsync(process.execPath, [
+    DIRECTOR,
+    "review",
+    path.join(DEMO, "ai-draft-plan.json"),
+    path.join(DEMO, "human-review.json"),
+    reviewed,
+  ])).stdout);
+  assert.equal(reviewResult.status, "human-approved");
+
+  const validation = JSON.parse((await execFileAsync(process.execPath, [
+    DIRECTOR,
+    "validate",
+    reviewed,
+  ])).stdout);
+  assert.equal(validation.status, "human-approved");
+
+  const materialized = JSON.parse((await execFileAsync(process.execPath, [
+    DIRECTOR,
+    "materialize",
+    reviewed,
+    pack,
+  ])).stdout);
+  assert.equal(materialized.pass, true);
+  await fs.access(path.join(pack, "bugfire-pack.json"));
+  await fs.access(path.join(pack, "director-report.json"));
+
+  await assert.rejects(execFileAsync(process.execPath, [DIRECTOR, "unknown"]), (error) => {
+    assert.match(error.stderr, /Usage:/);
+    return true;
+  });
+});
+
+test("director rejects malformed briefs, endpoints, API envelopes, and fixture checksums", async () => {
+  const brief = await json(path.join(DEMO, "brief.json"));
+  assert.throws(() => validateDirectorBrief(null), /brief must be an object/i);
+  assert.throws(() => validateDirectorBrief({ ...brief, unexpected: true }), /unsupported fields/i);
+  assert.throws(() => validateDirectorBrief({
+    ...brief,
+    rights: { ...brief.rights, sourceUrl: "http://insecure.example.test/art" },
+  }), /must use HTTPS/i);
+
+  await assert.rejects(draftWithOpenAI({
+    brief,
+    baseUrl: "not a URL",
+    apiKey: "test-key",
+    model: "test-model",
+  }), /valid URL/i);
+  await assert.rejects(draftWithOpenAI({
+    brief,
+    baseUrl: "http://127.0.0.1:1/v1",
+    apiKey: "test-key",
+    model: "test-model",
+    apiMode: "unsupported",
+  }), /api mode/i);
+  await assert.rejects(draftWithOpenAI({
+    brief,
+    baseUrl: "http://127.0.0.1:1/v1",
+    apiKey: "test-key",
+    model: "test-model",
+    fetchImpl: async () => ({
+      ok: false,
+      status: 429,
+      arrayBuffer: async () => Buffer.from("test-key quota exceeded"),
+    }),
+  }), (error) => {
+    assert.match(error.message, /HTTP 429.*\[REDACTED\]/i);
+    assert.doesNotMatch(error.message, /test-key/);
+    return true;
+  });
+  await assert.rejects(draftWithOpenAI({
+    brief,
+    baseUrl: "http://127.0.0.1:1/v1",
+    apiKey: "test-key",
+    model: "test-model",
+    fetchImpl: async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => Buffer.from("not-json"),
+    }),
+  }), /envelope was not valid JSON/i);
+  await assert.rejects(draftWithOpenAI({
+    brief,
+    baseUrl: "http://127.0.0.1:1/v1",
+    apiKey: "test-key",
+    model: "test-model",
+    fetchImpl: async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => Buffer.from(JSON.stringify({ choices: [] })),
+    }),
+  }), /no supported text payload/i);
+
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-checksum-"));
+  const checksum = path.join(workspace, "wrong.sha256");
+  await fs.writeFile(checksum, `${"0".repeat(64)}  ai-draft-plan.json\n`);
+  await assert.rejects(verifyRecordedFixture(
+    path.join(DEMO, "ai-draft-plan.json"),
+    checksum,
+  ), /checksum mismatch/i);
+});
+
+test("director validators reject broken plan, provenance, and review bindings", async () => {
+  const draft = await json(path.join(DEMO, "ai-draft-plan.json"));
+  const review = await json(path.join(DEMO, "human-review.json"));
+
+  assert.throws(() => validateDirectorPlan({}), /schema|artifactType/i);
+  assert.throws(() => validateDirectorPlan({
+    ...draft,
+    creativeDecisions: draft.creativeDecisions.slice(0, 1),
+  }), /2 to 8/i);
+  const duplicate = structuredClone(draft);
+  duplicate.creativeDecisions[1].id = duplicate.creativeDecisions[0].id;
+  assert.throws(() => validateDirectorPlan(duplicate), /unique/i);
+  const detached = structuredClone(draft);
+  detached.manifestProposal.name = "A manifest value detached from its decision";
+  assert.throws(() => validateDirectorPlan(detached), /not reflected/i);
+  const liveWithoutOrigin = structuredClone(draft);
+  liveWithoutOrigin.provenance.mode = "live-openai-compatible";
+  liveWithoutOrigin.provenance.endpointOrigin = "";
+  assert.throws(() => validateDirectorPlan(liveWithoutOrigin), /endpoint origin/i);
+  const fixtureWithOrigin = structuredClone(draft);
+  fixtureWithOrigin.provenance.endpointOrigin = "https://api.example.test";
+  assert.throws(() => validateDirectorPlan(fixtureWithOrigin), /must not imply a live endpoint/i);
+  const invalidDigest = structuredClone(draft);
+  invalidDigest.provenance.briefSha256 = "not-a-digest";
+  assert.throws(() => validateDirectorPlan(invalidDigest), /SHA-256 digest/i);
+
+  const unknownDecision = structuredClone(review);
+  unknownDecision.rejectedDecisionId = "does-not-exist";
+  unknownDecision.replacementDecision.id = "does-not-exist";
+  assert.throws(() => applyHumanReview(draft, unknownDecision), /does not exist/i);
+  const changedId = structuredClone(review);
+  changedId.replacementDecision.id = "different-id";
+  assert.throws(() => applyHumanReview(draft, changedId), /keep the rejected decision id/i);
+  const changedSurface = structuredClone(review);
+  changedSurface.replacementDecision.manifestPatch = {
+    "/theme/colors/accent": "#35d9d1",
+  };
+  assert.throws(() => applyHumanReview(draft, changedSurface), /exactly the same manifest fields/i);
+});
+
+test("live response size and JSON-content boundaries fail closed", async () => {
+  const brief = await json(path.join(DEMO, "brief.json"));
+  await assert.rejects(draftWithOpenAI({
+    brief,
+    baseUrl: "http://127.0.0.1:1/v1",
+    apiKey: "test-key",
+    model: "test-model",
+    fetchImpl: async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => Buffer.alloc(1024 * 1024 + 1, 0x20),
+    }),
+  }), /response exceeded/i);
+  await assert.rejects(draftWithOpenAI({
+    brief,
+    baseUrl: "http://127.0.0.1:1/v1",
+    apiKey: "test-key",
+    model: "test-model",
+    fetchImpl: async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => Buffer.from(JSON.stringify({
+        choices: [{ message: { content: "not-json" } }],
+      })),
+    }),
+  }), /AI response was not valid JSON/i);
+
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "bugfire-director-input-errors-"));
+  const malformed = path.join(workspace, "malformed.json");
+  await fs.writeFile(malformed, "{not-json", "utf8");
+  await assert.rejects(verifyRecordedFixture(
+    malformed,
+    path.join(DEMO, "ai-draft-plan.sha256"),
+  ), /not valid JSON/i);
+  await assert.rejects(verifyRecordedFixture(
+    path.join(workspace, "missing.json"),
+    path.join(DEMO, "ai-draft-plan.sha256"),
+  ), /is missing/i);
 });
 
 test("live mode fails closed without a key and rejects non-TLS remote endpoints", async () => {
