@@ -1,0 +1,20 @@
+{
+  "aspectRatio": "16:9",
+  "targetDurationSeconds": 70,
+  "primaryWalkthrough": "demo-output/walkthrough.html",
+  "staticBoard": "goal-compiler-board-1920x1080.png",
+  "demoStatus": "HUMAN_PENDING",
+  "shots": [
+    {"start": 0, "end": 7, "artifact": "goal-compiler-board-1920x1080.png"},
+    {"start": 7, "end": 16, "artifact": "demo-output/01-agent-result/semantic-input.snapshot.json"},
+    {"start": 16, "end": 26, "artifact": "demo-output/01-agent-result/strategy-gate.json"},
+    {"start": 26, "end": 38, "artifact": "demo-output/01-agent-result/validator.FAIL.log"},
+    {"start": 38, "end": 48, "artifact": "demo-output/02-subjective-metric/validator.FAIL.log"},
+    {"start": 48, "end": 59, "artifact": "demo-output/03-human-pending/human-review.pending.json"},
+    {"start": 59, "end": 70, "artifact": "../tests/test_goal_compiler.py"}
+  ],
+  "audioIncluded": false,
+  "externalAssetsIncluded": false,
+  "liveAiClaimed": false,
+  "executionClaimed": false
+}

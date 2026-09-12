@@ -1,0 +1,121 @@
+{
+  "semantic_schema_version": "1.0",
+  "request": "修复 CSV parser 忽略空行时崩溃的问题，并增加回归测试",
+  "provenance": {
+    "mode": "test_fixture",
+    "producer": "Goal Compiler automated cross-domain test",
+    "live_ai_claimed": false,
+    "notice": "仅用于自动化测试，不代表真人已批准。"
+  },
+  "smart_router": {
+    "task_type": "coding",
+    "maturity": "明确缺陷",
+    "risk_level": "低",
+    "external_information_need": "不需要",
+    "output_length": "短版",
+    "ask_questions_first": false,
+    "routing_reason": "请求指定了 CSV parser、空行崩溃与回归测试，可用本地最小夹具直接验证。"
+  },
+  "default_assumptions": [
+    "缺陷边界是空行不应产生数据行，且 parser 不应抛出异常。",
+    "第一步只生成可独立运行的 Python 回归夹具，不修改生产仓库。"
+  ],
+  "strategy_gate": {
+    "problem_reframe": "核心不是生成任意代码，而是把“空行崩溃”编译成一个可运行、可失败且可回归的最小技术合同。",
+    "smallest_bet": "写入一个无外部依赖的 Python 夹具，覆盖普通数据行和空行，并仅执行语法与标记检查。",
+    "success_metrics": [
+      {
+        "id": "csv-empty-line-regression",
+        "statement": "生成 1 个语法有效的 Python 回归夹具，并包含 1 个针对 CSV 空行的回归用例。",
+        "measurement": {
+          "method": "Python 语法与回归夹具检查",
+          "target": {
+            "min_python_files": 1,
+            "syntax_valid": true,
+            "regression_case_required": true
+          }
+        },
+        "evidence_path": "first-output/execution-report.json"
+      }
+    ],
+    "disconfirming_evidence": [
+      {
+        "signal": "夹具内没有针对空行的独立回归断言。",
+        "threshold": {
+          "required_regression_assertions": 1,
+          "observed_regression_assertions": 0
+        },
+        "response": "暂停交付并补充最小空行用例。"
+      }
+    ],
+    "kill_criteria": [
+      {
+        "condition": "首个夹具需要生产密钥、网络或未授权仓库修改才能运行。",
+        "threshold": {
+          "unauthorized_dependencies": 1
+        },
+        "action": "stop_and_request_authorization"
+      }
+    ]
+  },
+  "tool_evidence_gate": {
+    "research_required": false,
+    "permitted_tools": [
+      "本地文件与 Python 标准库"
+    ],
+    "authorization_required_for": [
+      "生产仓库修改、密钥、网络请求或外部发布"
+    ],
+    "evidence_requirements": [],
+    "blocked_claims": [
+      "未运行完整业务测试时不声称生产缺陷已修复"
+    ]
+  },
+  "goal_plan": {
+    "preference_application": "只建立可回归的最小技术证据，不扩大修改范围。",
+    "feedback_adjustment": "将崩溃描述改写为空行输入与输出断言，并保留未验证声明。",
+    "business_priority": "业务价值是防止解析中断，证据强度暂低，执行成本低，分发潜力不适用，变现路径不适用，风险低；建议先生成夹具。",
+    "output_length_reason": "技术边界明确，一个文件与一份检查报告足以验收。",
+    "choice_rationale": "语法有效且带回归标记的夹具，是比抽象修复说明更小的真实产物。",
+    "outcome": "产出一个可独立检查的 CSV 空行 Python 回归夹具。",
+    "task_pack": "Coding 回归包",
+    "task_pack_application": "将缺陷边界、最小夹具、回归标记与语法检查绑定到同一动作。",
+    "domain_pack": "不适用",
+    "domain_pack_application": "这是本地编程回归任务，不加载产品或内容领域包。",
+    "tool_stack": "仅使用本地文件系统和 Python 标准库的语法编译检查。",
+    "research_stages": null,
+    "deliverables": "待审批技术合同、Python 夹具和 execution-report.json。",
+    "quality_gate": "动作在白名单内，文件后缀为 .py，语法通过且含回归标记。",
+    "verification": "重算请求、语义快照、合同 ID 与审批 payload 一致性摘要，再检查 Python 语法与回归标记。",
+    "limits": "不执行生成的 Python，不修改生产代码，不使用网络或未授权资源。",
+    "boundary": "Agent/Skill 提供领域语义，真人审查指标与范围，CLI 只写入已批准的文本并记录检查。",
+    "progress_rules": "先编译合同，待人工审批后只写入一个夹具；任一门禁失败就停止。",
+    "stop_criteria": "夹具写入且所有白名单检查为真，或出现未授权依赖。",
+    "pause_conditions": "缺人工批准、payload 与保存的审批记录不一致、输出已存在或语法/回归标记检查失败时暂停。"
+  },
+  "first_step": {
+    "action": "write_python_regression_fixture",
+    "purpose": "写入经人工批准的 CSV 空行回归夹具，不自动执行它。",
+    "metric_id": "csv-empty-line-regression",
+    "output_directory": "first-output",
+    "primary_artifact": "first-output/test_csv_empty_lines.py",
+    "report_path": "first-output/execution-report.json",
+    "artifact_kind": "python",
+    "media_type": "text/x-python",
+    "validators": [
+      "nonempty",
+      "python_syntax",
+      "regression_marker",
+      "no_unresolved_template"
+    ],
+    "acceptance": {
+      "task_type": "coding",
+      "required_terms": [
+        "REGRESSION_FIXTURE",
+        "parse_rows"
+      ],
+      "forbidden_terms": []
+    },
+    "content_file": "coding-first-output.py"
+  }
+}

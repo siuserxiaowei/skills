@@ -1,0 +1,18 @@
+{
+  "workspace_root": "~/Documents/New project 3",
+  "obsidian_vault": "~/Documents/Obsidian Vault",
+  "allowed_write_roots": [
+    "${OBSIDIAN_VAULT}/90_Agent",
+    "${OBSIDIAN_VAULT}/微信渠道/_daily",
+    "${OBSIDIAN_VAULT}/03.公众号"
+  ],
+  "local_sources": {
+    "wechat_obsidian_pipeline": "${WORKSPACE_ROOT}/wechat-obsidian-pipeline",
+    "daily_card_public": "${WORKSPACE_ROOT}/daily-card-public",
+    "wechat_articles": "${WORKSPACE_ROOT}/wechat-articles",
+    "local_skills": "${WORKSPACE_ROOT}/.agents/skills",
+    "security_scan_skill": "${WORKSPACE_ROOT}/.agents/skills/security-scan",
+    "visual_taste_lab": "${WORKSPACE_ROOT}/visual-taste-lab",
+    "wechat_article_reader_skill_repo": "https://github.com/siuserxiaowei/wechat-article-reader-skill"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "VibeLab demo operator",
+  "reviewedAt": "2026-08-31T06:00:00Z",
+  "rejectedDecisionId": "alert-first-palette",
+  "reason": "告警橙占据主强调色后，待机界面也持续像故障态。主色应表达清醒与可验证，橙色只保留给真正的警报。",
+  "replacementDecision": {
+    "id": "alert-first-palette",
+    "title": "人工改为冷静的验证青绿",
+    "choice": "主强调色换成电路青，酸性绿表示通过，橙色仅用于真正的警报与修复瞬间。",
+    "rationale": "把常态、通过与警报分层，减少界面持续告警的视觉疲劳。",
+    "manifestPatch": {
+      "/theme/colors/accent": "#35d9d1",
+      "/theme/colors/accentAlt": "#8ffcf3",
+      "/theme/colors/secondary": "#83ff45",
+      "/theme/colors/highlight": "#ff6b35"
+    }
+  }
+}

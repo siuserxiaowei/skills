@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://siuserxiaowei.github.io/Codex-Bugfire-Skin/sitemap.xml

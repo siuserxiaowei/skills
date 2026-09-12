@@ -1,0 +1,62 @@
+name: Validate Xiaowei Goal
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Validate example goals
+        run: python3 scripts/validate_xiaowei_goal.py examples/*.txt
+
+      - name: Evaluate example goal quality
+        run: python3 scripts/evaluate_goal_output.py examples/*.txt
+
+      - name: Run daily evolution audit
+        run: python3 scripts/daily_evolution_audit.py --report /tmp/daily-evolution-report.md
+
+      - name: Run negative validator tests
+        run: python3 scripts/test_validator_negative_cases.py
+
+      - name: Test Goal Compiler runtime
+        run: python3 -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: Run reproducible Goal Compiler demo
+        run: |
+          python3 scripts/goal_compiler.py demo --output /tmp/goal-compiler-demo
+          python3 scripts/validate_xiaowei_goal.py /tmp/goal-compiler-demo/01-agent-result/goal.md
+          python3 scripts/evaluate_goal_output.py /tmp/goal-compiler-demo/01-agent-result/goal.md
+          test ! -e /tmp/goal-compiler-demo/03-first-output
+          test -z "$(find /tmp/goal-compiler-demo -name 'validator.PASS.log' -print -quit)"
+
+      - name: Validate committed contest evidence
+        run: python3 scripts/validate_contest_pack.py
+
+      - name: Validate manifest JSON
+        run: python3 -m json.tool manifest.json > /tmp/xiaowei-goal-manifest.json
+
+      - name: Validate README topics
+        run: python3 scripts/check_readme_topics.py
+
+      - name: Check installed skill self-test against repository
+        run: python3 scripts/check_installed_skill.py .
+
+      - name: Validate YAML files
+        run: |
+          ruby -e 'require "yaml"; YAML.load_file("agents/interface.yaml"); YAML.load_file("agents/openai.yaml"); YAML.load_file(".github/workflows/validate.yml"); YAML.load_file(".github/workflows/daily-evolution.yml")'
+
+      - name: Compile Python scripts
+        run: python3 -m py_compile scripts/*.py tests/test_goal_compiler.py

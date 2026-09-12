@@ -1,0 +1,36 @@
+name: Validate Search Index
+
+on:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'README_ZH.md'
+      - 'docs/index.html'
+      - 'docs/skills.json'
+      - 'scripts/sync-search-index.js'
+      - 'package.json'
+
+jobs:
+  validate-search-index:
+    name: Validate README search data
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate bilingual entries and generate a temporary index
+        run: npm run sync:search
+
+      - name: Validate generated JSON
+        run: |
+          test -s docs/skills.json
+          node -e "JSON.parse(require('fs').readFileSync('docs/skills.json', 'utf8'))"
+          git diff --check

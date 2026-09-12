@@ -1,0 +1,24 @@
+{
+  "productName": "Goal Compiler｜需求编译器",
+  "version": "0.13.0",
+  "track": "VibeWork",
+  "repository": "https://github.com/siuserxiaowei/xiaowei-goal",
+  "livePage": "https://siuserxiaowei.github.io/xiaowei-goal/",
+  "demoInput": "给我做个 AI 网站，越快越好",
+  "demoStatus": "HUMAN_PENDING",
+  "demoProvenance": {
+    "liveAiClaimed": false,
+    "semanticLayer": "Agent/Skill owns semantic compilation. The bundled website payload is an explicitly recorded deterministic fixture, and a separate preserved forward test is labelled agent_result.",
+    "humanLayer": "The exact metric, evidence acceptance, and execution approval remain pending; no repository fixture impersonates a real reviewer.",
+    "deterministicLayer": "The Python CLI rebuilds saved semantics, validates identity/domain/evidence/action and review/current-payload consistency, derives output from an approved workspace, refuses existing outputs, and dispatches only whitelisted text artifacts after strict approval. Its unkeyed digests are not signatures."
+  },
+  "claims": [
+    "The bundled research-required contract fails without source-backed evidence.",
+    "The bundled subjective metric statement and method fail strict validation.",
+    "The bundled demo writes no PASS log and does not attempt execution.",
+    "Cross-domain tests reject website semantics for coding and dispatch a domain-correct Python fixture under a clearly synthetic test approval.",
+    "With the recorded review left unchanged, post-review drift in request, strategy, evidence, action, artifact, checks, content, or workspace fails consistency validation."
+  ],
+  "originalityClaim": "Concrete implementation and combined saved-semantic/evidence/review-consistency/whitelisted-dispatch mechanism; no global or category-first claim.",
+  "assetRightsFile": "../ASSET_RIGHTS.csv"
+}

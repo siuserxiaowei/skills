@@ -1,0 +1,40 @@
+{
+  "pipelines": {
+    "daily_digest": {
+      "label_zh": "Obsidian 日报任务",
+      "label_en": "Daily Digest Task",
+      "input": ["wechat-obsidian-pipeline", "daily-card-public", "Obsidian:微信渠道/"],
+      "roles": ["inbox-agent", "digest-agent", "review-agent", "qa-agent"],
+      "output": "Obsidian:90_Agent/outputs/daily_digest_*.md",
+      "acceptance": [
+        "Does not include raw private chat logs.",
+        "Summarizes source files and points to local references.",
+        "Marks public-share readiness as yes/no."
+      ]
+    },
+    "article_pipeline": {
+      "label_zh": "公众号生产任务",
+      "label_en": "Article Pipeline Task",
+      "input": ["wechat-articles/", "Obsidian:03.公众号/", "GitHub project updates"],
+      "roles": ["inbox-agent", "writer-agent", "review-agent", "qa-agent"],
+      "output": "Obsidian:90_Agent/drafts/article_pipeline_*.md",
+      "acceptance": [
+        "Includes title options, structure, fact checks, and image prompts.",
+        "Separates verified facts from opinions.",
+        "Has a publication checklist."
+      ]
+    },
+    "skill_maintenance": {
+      "label_zh": "Skill 维护任务",
+      "label_en": "Skill Maintenance Task",
+      "input": ["security-scan-skill", "visual-taste-lab", "wechat-article-reader-skill", ".agents/skills"],
+      "roles": ["skill-agent", "qa-agent", "writer-agent", "review-agent"],
+      "output": "Obsidian:90_Agent/skill-reports/skill_maintenance_*.md",
+      "acceptance": [
+        "Runs read-only validation where available.",
+        "Reports stale README/SKILL.md risks.",
+        "Does not modify or publish skill repos without explicit approval."
+      ]
+    }
+  }
+}

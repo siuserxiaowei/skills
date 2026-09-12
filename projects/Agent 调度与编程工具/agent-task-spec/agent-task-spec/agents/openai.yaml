@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Task Spec"
+  short_description: "把模糊需求变成可执行 spec 和托管计划"
+  default_prompt: "用 $agent-task-spec 把我的需求整理成可执行的 Agent Task Spec；如果我要求接管执行，请使用托管执行模式并标明自主执行等级。"

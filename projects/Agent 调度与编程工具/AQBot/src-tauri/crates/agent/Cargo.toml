@@ -1,0 +1,16 @@
+[package]
+name = "aqbot-agent"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+open-agent-sdk = { path = "../open-agent-sdk" }
+aqbot-core = { path = "../core" }
+aqbot-providers = { path = "../providers" }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+async-trait = "0.1"
+tracing = "0.1"
+tauri = "2"
+futures = "0.3"

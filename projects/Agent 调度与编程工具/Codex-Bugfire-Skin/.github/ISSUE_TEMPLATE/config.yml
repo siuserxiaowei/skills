@@ -1,0 +1,7 @@
+# Issue template config / Issue 模板配置
+# Blank issues are disabled — please pick a template.
+# Canonical contact URLs will be added after the user-owned repository is published.
+
+blank_issues_enabled: false
+
+contact_links: []

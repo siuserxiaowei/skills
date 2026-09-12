@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Network Workbench Task",
+  "type": "object",
+  "required": ["id", "type", "source", "output", "status", "created_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["daily_digest", "article_pipeline", "skill_maintenance"]
+    },
+    "source": {
+      "type": "string",
+      "description": "Obsidian path, GitHub repo, wechat-articles file, or Skill path."
+    },
+    "output": {
+      "type": "string",
+      "description": "Expected local output path or report target."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "running", "review_needed", "done", "blocked"]
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "assigned_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

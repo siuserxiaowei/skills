@@ -1,0 +1,22 @@
+决策摘要：任务类型=skill-evolution；成熟度=已有仓库；外部信息需求=不需要；风险等级=中；输出长度=标准版；是否先提问=否
+默认假设：目标仓库是 xiaowei-goal，GitHub Actions 可用；每日自动进化以定时审计和 issue 交接为后台入口，真正改代码和发布仍需要 agent 执行上下文。
+偏好应用：优先用小闭环每日审计发现缺口，再让 agent 执行可验证自我进化；不做无人值守随机改仓库。
+反馈调整：未提供上次执行反馈，本次不做反馈修正；每日审计会读取 validator、示例、README、CI 和 release 差异作为反馈信号。
+策略判断：问题重构=不是让 CI 每天自动乱改代码，而是每天发现 skill 是否退化并把问题交给 agent；最小验证=定时审计、报告 artifact、issue handoff 和 release 一致性检查；成功指标=每日 workflow 成功运行且无漂移时不创建 issue，有漂移时给出可执行交接；反证信号=workflow 频繁误报、无法定位原因或制造 issue 噪音；终止/暂缓条件=连续误报或同因 CI 失败时暂停每日节拍并修审计规则。
+优先级判断：业务价值=高；证据强度=中；执行成本=中；分发潜力=中；变现路径=提升 skill 稳定性和长期使用效率；风险=后台任务误改代码或制造提交噪音；建议=立即做每日审计，但禁止无人值守代码重写。
+输出长度：标准版；给出每日自动进化的完整目标和护栏。
+选择理由：每天自动进化需要定时入口，但 CI 没有智能 agent 上下文；用 scheduled workflow 做确定性审计和 issue handoff，比让 CI 无脑改代码更可靠。
+推荐执行版（中文，可直接复制）
+/goal 围绕 xiaowei-goal 仓库建立每天自动进化一次的机制：GitHub Actions 每天 09:00 Asia/Shanghai 运行 daily evolution audit，执行 validator、目标评估、负向测试、自检、JSON/YAML/Python 检查和结构漂移检查；如发现问题，自动创建或更新 GitHub issue 作为 agent handoff；agent 读取 issue 后执行完整自我进化、推送、等待 CI 并发布新版。
+自动化边界：每日后台只做确定性审计、报告和 issue handoff；不在无人值守 CI 中随机改 SKILL、提交代码或发布 release；真正代码进化必须在 agent session 中执行。
+反馈来源：每日审计读取 examples、tests、validator、evaluate_goal_output、README topics、manifest、workflow、安装自检、GitHub Actions 结果和 release 差异。
+允许修改路径：定时 workflow 只读仓库并创建 issue；agent 执行进化时仅限 `SKILL.md`、`README.md`、`manifest.json`、`agents/interface.yaml`、`.github/workflows/`、`references/`、`examples/`、`scripts/`、`tests/`。
+评估方式：运行 `python3 scripts/daily_evolution_audit.py` 生成报告，并在每日 workflow 中调用 `python3 scripts/check_release_consistency.py --require-github-release`；报告包含结构漂移、校验结果、manifest 版本与 release/tag 一致性、是否需要 action；需要 action 时生成 issue，不直接生成噪音 commit。
+验证方式：运行 `python3 scripts/validate_xiaowei_goal.py examples/*.txt`、`python3 scripts/evaluate_goal_output.py examples/*.txt`、`python3 scripts/test_validator_negative_cases.py`、`python3 scripts/check_installed_skill.py .`、`python3 -m json.tool manifest.json`、`python3 scripts/check_readme_topics.py`、`python3 scripts/check_release_consistency.py`、`python3 -m py_compile scripts/*.py`、`git diff --check` 和 YAML 解析检查。
+发布规则：每日审计不发布；agent 根据 issue 执行自我进化后，本地检查全部通过、GitHub Actions 成功，才创建语义化版本 release。
+回滚方式：每日审计只创建 issue 和 artifact，无需回滚代码；agent 进化产生问题时只回滚本轮 commit 或创建修复 release。
+限制：不提交凭证、Cookie、Token、私域内容、生产数据或版权材料；不让 CI 在没有 agent 上下文时无人值守改代码；不每天制造无意义版本号。
+工作边界：GitHub Actions 定时入口只运行审计和 issue handoff；代码修改、推送和 release 由后续 agent session 按 self-evolution 协议完成。
+推进规则：每天先跑审计；无问题只保留 artifact；有问题创建或评论 issue；agent 看到 issue 后先复现 failing check，再最小修改、完整验证、推送和发布。
+停止标准：每日 workflow 可被 GitHub 识别并可手动触发；审计报告生成；无问题时不制造提交；有问题时 issue handoff 可追踪；相关 validator 和 CI 全部通过。
+暂停条件：需要凭证、付费服务、生产数据、私域内容、破坏性操作、允许路径外修改、法律/隐私判断、GitHub 权限不足或同一 CI 问题连续失败两次时暂停。

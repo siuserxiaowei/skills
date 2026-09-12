@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="none"/>
+  <g shape-rendering="crispEdges">
+    <path d="M18 78H6V70H18V62H30V54H38V38H48V30H82V38H94V46H104V62H114V82H104V90H94V98H46V90H30V86H18Z" fill="#1e9f68"/>
+    <path d="M38 54H46V42H82V46H94V58H104V78H94V86H50V82H38Z" fill="#35d9d1"/>
+    <path d="M44 30V18H54V30M62 30V14H72V30M80 34V20H90V38" fill="#83ff45"/>
+    <rect x="84" y="50" width="8" height="8" fill="#050704"/>
+    <rect x="86" y="50" width="3" height="3" fill="#f4efd8"/>
+    <path d="M104 66H120V74H104Z" fill="#0b251a"/>
+    <path d="M46 90H60V108H52V116H38V106H46ZM82 90H96V106H104V116H82Z" fill="#14734f"/>
+    <rect x="50" y="58" width="10" height="10" fill="#83ff45"/>
+    <rect x="64" y="58" width="10" height="10" fill="#35d9d1"/>
+    <rect x="78" y="58" width="10" height="10" fill="#83ff45"/>
+    <path d="M10 42H18V50H10ZM20 24H26V30H20ZM102 24H108V30H102Z" fill="#83ff45"/>
+  </g>
+</svg>

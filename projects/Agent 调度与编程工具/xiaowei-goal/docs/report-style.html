@@ -1,0 +1,164 @@
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f3ea;
+    --paper: #fffdf7;
+    --ink: #23201a;
+    --muted: #645d50;
+    --line: #ddd0b8;
+    --leaf: #315f3d;
+    --soil: #9a6b3f;
+    --gold: #b8923a;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background:
+      radial-gradient(circle at 12% 8%, rgba(49, 95, 61, .08), transparent 34rem),
+      radial-gradient(circle at 88% 12%, rgba(184, 146, 58, .10), transparent 32rem),
+      var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-size: 16px;
+    line-height: 1.78;
+  }
+
+  body > * {
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  h1 {
+    margin: 0 auto 1rem;
+    padding: 4.5rem 1.5rem 1rem;
+    color: var(--leaf);
+    font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 1.18;
+    letter-spacing: .01em;
+  }
+
+  h2, h3, h4 {
+    color: var(--ink);
+    line-height: 1.35;
+  }
+
+  h2 {
+    margin-top: 3rem;
+    padding: 1.1rem 1.5rem .2rem;
+    border-top: 1px solid var(--line);
+    font-size: 1.7rem;
+  }
+
+  h3 {
+    margin-top: 2rem;
+    padding: 0 1.5rem;
+    color: var(--leaf);
+    font-size: 1.25rem;
+  }
+
+  h4 {
+    padding: 0 1.5rem;
+    font-size: 1.05rem;
+  }
+
+  p, ul, ol, pre, blockquote {
+    max-width: 920px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  a {
+    color: var(--leaf);
+    text-decoration-thickness: .08em;
+    text-underline-offset: .18em;
+  }
+
+  blockquote {
+    margin: 1.2rem auto;
+    padding-top: .9rem;
+    padding-bottom: .9rem;
+    border-left: 4px solid var(--leaf);
+    background: rgba(49, 95, 61, .07);
+    color: var(--muted);
+  }
+
+  code {
+    border: 1px solid rgba(154, 107, 63, .20);
+    border-radius: 4px;
+    padding: .08rem .28rem;
+    background: rgba(154, 107, 63, .08);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .92em;
+  }
+
+  pre {
+    overflow: auto;
+  }
+
+  pre code {
+    display: block;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #27241d;
+    color: #f7f3ea;
+    white-space: pre-wrap;
+  }
+
+  table {
+    width: calc(100% - 3rem);
+    margin: 1.1rem auto 1.6rem;
+    border-collapse: collapse;
+    background: var(--paper);
+    box-shadow: 0 8px 28px rgba(58, 48, 30, .08);
+  }
+
+  th, td {
+    border: 1px solid var(--line);
+    padding: .68rem .78rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: rgba(49, 95, 61, .10);
+    color: var(--leaf);
+    font-weight: 700;
+  }
+
+  hr {
+    width: calc(100% - 3rem);
+    margin: 2.6rem auto;
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  body::after {
+    content: "xiaowei-goal · broad research / Deep Research / business application";
+    display: block;
+    max-width: 980px;
+    margin: 3rem auto 0;
+    padding: 1.5rem;
+    color: var(--muted);
+    font-size: .9rem;
+    text-align: center;
+  }
+
+  @media (max-width: 720px) {
+    body {
+      font-size: 15px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+  }
+</style>

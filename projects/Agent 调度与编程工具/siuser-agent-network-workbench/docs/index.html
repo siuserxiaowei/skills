@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Siuser Agent Network Workbench</title>
+  <meta name="description" content="一个只跑在本机的多 Agent 调度台，用于 Obsidian 日报、公众号生产和 Skill 维护。">
+  <style>
+    :root {
+      --ink: #151513;
+      --muted: #6b675e;
+      --line: #d8d0c2;
+      --paper: #f6efe2;
+      --card: #fffaf0;
+      --blue: #0c65c9;
+      --green: #0f8b6f;
+      --red: #d44831;
+      --gold: #d99719;
+      --shadow: 0 22px 70px rgba(28, 26, 21, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(21, 21, 19, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(21, 21, 19, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 28px 28px;
+      font-family: ui-serif, "Songti SC", "STSong", Georgia, serif;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .wrap {
+      width: min(1120px, calc(100vw - 32px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .mark::before {
+      content: "";
+      width: 15px;
+      height: 15px;
+      border: 3px solid var(--ink);
+      box-shadow: 10px 0 0 var(--green), 20px 0 0 var(--blue), 30px 0 0 var(--gold);
+      transform: rotate(-8deg);
+    }
+
+    .hero {
+      min-height: 78vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1.03fr) minmax(360px, 0.97fr);
+      gap: 42px;
+      align-items: center;
+      padding: 38px 0 76px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 250, 240, 0.76);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    h1 {
+      margin: 22px 0 18px;
+      max-width: 760px;
+      font-size: clamp(48px, 8vw, 92px);
+      line-height: 0.94;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 680px;
+      font-size: 22px;
+      line-height: 1.62;
+      color: #34312b;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border: 2px solid var(--ink);
+      background: var(--ink);
+      color: #fffaf0;
+      text-decoration: none;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 700;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .button.secondary {
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .button:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 5px 5px 0 var(--gold);
+    }
+
+    .console {
+      position: relative;
+      border: 2px solid var(--ink);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .console::before {
+      content: "LOCAL ONLY";
+      position: absolute;
+      right: -36px;
+      top: 25px;
+      width: 170px;
+      padding: 7px 0;
+      transform: rotate(35deg);
+      background: var(--red);
+      color: #fff;
+      text-align: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .console-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--ink);
+      padding: 14px 16px;
+      background: #efe2cf;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .lights {
+      display: flex;
+      gap: 8px;
+    }
+
+    .lights span {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--red);
+      border: 1px solid var(--ink);
+    }
+
+    .lights span:nth-child(2) {
+      background: var(--gold);
+    }
+
+    .lights span:nth-child(3) {
+      background: var(--green);
+    }
+
+    .console-body {
+      padding: 20px;
+    }
+
+    .pipeline {
+      display: grid;
+      gap: 12px;
+    }
+
+    .node {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.46);
+    }
+
+    .badge {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border: 2px solid var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 900;
+      background: #fff;
+    }
+
+    .node strong {
+      display: block;
+      font-size: 18px;
+    }
+
+    .node span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .status {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--green);
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .section {
+      padding: 80px 0;
+      border-top: 2px solid rgba(21, 21, 19, 0.12);
+    }
+
+    h2 {
+      margin: 0 0 22px;
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .sub {
+      max-width: 720px;
+      margin: 0 0 32px;
+      color: var(--muted);
+      font-size: 19px;
+      line-height: 1.7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .glossary {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .term {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 16px;
+      align-items: start;
+      padding: 15px 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 250, 240, 0.78);
+    }
+
+    .term code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 800;
+      color: var(--blue);
+    }
+
+    .term strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 17px;
+    }
+
+    .term span {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .card {
+      min-height: 240px;
+      padding: 22px;
+      border: 2px solid var(--ink);
+      background: var(--card);
+      box-shadow: 7px 7px 0 rgba(21, 21, 19, 0.12);
+    }
+
+    .card h3 {
+      margin: 0 0 14px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .card p,
+    .card li {
+      color: #4b473f;
+      line-height: 1.68;
+      font-size: 16px;
+    }
+
+    .card ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .commands {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    pre {
+      margin: 0;
+      padding: 22px;
+      overflow-x: auto;
+      border: 2px solid var(--ink);
+      background: #171713;
+      color: #f8eedb;
+      font-size: 14px;
+      line-height: 1.7;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      box-shadow: 7px 7px 0 rgba(21, 21, 19, 0.16);
+    }
+
+    .rules {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .rule-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .rule {
+      padding: 16px 18px;
+      border-left: 6px solid var(--green);
+      background: rgba(255, 250, 240, 0.75);
+    }
+
+    .rule strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 18px;
+    }
+
+    footer {
+      padding: 36px 0 48px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    @media (max-width: 880px) {
+      .hero,
+      .grid,
+      .commands,
+      .rules,
+      .glossary {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+        padding-top: 24px;
+      }
+
+      .node {
+        grid-template-columns: 38px 1fr;
+      }
+
+      .status {
+        grid-column: 2;
+      }
+
+      .term {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap nav">
+    <div class="mark">Siuser Agent Network Workbench</div>
+    <div>v0.2.2 · local-first</div>
+  </header>
+
+  <main>
+    <section class="wrap hero">
+      <div>
+        <div class="eyebrow">不是一个炫酷空壳，而是你的本地多 Agent 调度台</div>
+        <h1>把散落的素材，变成可派活的工作流。</h1>
+        <p class="lead">
+          它把 Obsidian 日报、公众号生产、Skill 维护拆成任务、角色和检查清单。数据留在本机，Agent 只在限定目录里读写，发布、push、删除都需要人工确认。
+        </p>
+        <div class="actions">
+          <a class="button" href="https://github.com/siuserxiaowei/siuser-agent-network-workbench">打开 GitHub</a>
+          <a class="button secondary" href="#use">查看怎么用</a>
+        </div>
+      </div>
+
+      <div class="console" aria-label="Workbench pipeline preview">
+        <div class="console-head">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div>127.0.0.1 · Tasks 任务 / Mesh 节点 / Messages 消息</div>
+        </div>
+        <div class="console-body">
+          <div class="pipeline">
+            <div class="node">
+              <div class="badge">01</div>
+              <div><strong>收件箱 Agent / Inbox Agent</strong><span>收集 Obsidian、微信日报、文章素材、GitHub 项目状态</span></div>
+              <div class="status">排队中 / queued</div>
+            </div>
+            <div class="node">
+              <div class="badge">02</div>
+              <div><strong>写作/摘要 Agent / Writer/Digest Agent</strong><span>生成日报摘要、公众号结构、标题、配图提示词</span></div>
+              <div class="status">运行中 / running</div>
+            </div>
+            <div class="node">
+              <div class="badge">03</div>
+              <div><strong>审校 Agent / Review Agent</strong><span>事实核查、隐私脱敏、去 AI 味、发布前检查</span></div>
+              <div class="status">审阅 / review</div>
+            </div>
+            <div class="node">
+              <div class="badge">04</div>
+              <div><strong>验收 Agent / QA Agent</strong><span>跑脚本、查 README、写验收报告，只产出本地草稿</span></div>
+              <div class="status">完成 / done</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <h2>Dashboard 中英文对照</h2>
+        <p class="sub">上游 Dashboard 菜单本身还是英文，但工作台生成的任务、角色和演示消息都已经改成中英文对照。先按这张表看。</p>
+        <div class="glossary">
+          <div class="term"><code>Tasks</code><div><strong>任务</strong><span>看任务有没有投递出去，以及现在是什么状态。</span></div></div>
+          <div class="term"><code>Mesh</code><div><strong>节点网络</strong><span>看本机有哪些 Agent 角色节点。</span></div></div>
+          <div class="term"><code>Messages</code><div><strong>消息</strong><span>看 Agent 之间传了什么任务消息。</span></div></div>
+          <div class="term"><code>queued</code><div><strong>排队中</strong><span>任务已创建，还没处理。</span></div></div>
+          <div class="term"><code>delivered</code><div><strong>已投递</strong><span>消息已经送到目标 Agent。</span></div></div>
+          <div class="term"><code>expired</code><div><strong>已过期</strong><span>任务消息太久没人处理，已经过期。</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <h2>它能先服务三件事</h2>
+        <p class="sub">第一期不做公网服务，不接客户生产环境。它更像你自己的本地运营中枢，让日常内容生产和 Skill 维护变得可追踪。</p>
+        <div class="grid">
+          <article class="card">
+            <h3>Obsidian 日报</h3>
+            <p>读取本地 Markdown 和日报管线输出，生成可复盘、可公开前检查的日报草稿。</p>
+            <ul>
+              <li>不展示原始聊天内容</li>
+              <li>只写入指定日报目录</li>
+              <li>给出公开性检查清单</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>公众号生产</h3>
+            <p>把素材变成标题、结构、初稿、配图提示词和发布清单，适合长文生产前的第一轮整理。</p>
+            <ul>
+              <li>区分事实、观点和建议</li>
+              <li>保留参考资料线索</li>
+              <li>审校后再发布</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>Skill 工厂</h3>
+            <p>围绕你的安全扫描、视觉审美、微信文章读取等 Skill 做只读检查和维护报告。</p>
+            <ul>
+              <li>README/SKILL.md 检查</li>
+              <li>本地脚本验收</li>
+              <li>不自动 push 或发布</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="use">
+      <div class="wrap">
+        <h2>本地怎么启动</h2>
+        <p class="sub">克隆仓库后，先跑 doctor 和 init，再启动只监听 127.0.0.1 的 Hub 和 Dashboard。</p>
+        <div class="commands">
+          <pre><code>git clone https://github.com/siuserxiaowei/siuser-agent-network-workbench.git
+cd siuser-agent-network-workbench
+npm install
+npm run doctor
+npm run init
+npm run demo:article</code></pre>
+          <pre><code># Dashboard
+http://127.0.0.1:3000
+
+# 验证本地任务流
+npm run smoke
+npm run smoke:send-task
+
+# 停止本地服务
+npm run stop:local</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap rules">
+        <div>
+          <h2>安全边界</h2>
+          <p class="sub">这个项目的价值前提是本地优先。它可以组织 Agent 工作，但不能替代你的最终判断。</p>
+        </div>
+        <div class="rule-list">
+          <div class="rule"><strong>不上传私密数据</strong>微信聊天数据库、导出的 Markdown、图片、Obsidian vault 和 secrets 都不进入仓库。</div>
+          <div class="rule"><strong>不暴露公网</strong>Hub 和 Dashboard 默认只绑定 127.0.0.1，适合本机使用。</div>
+          <div class="rule"><strong>不自动发布</strong>删除、push、发布网页、修改主 vault 笔记，都需要你单独确认。</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    Siuser Agent Network Workbench · GitHub Pages · local-first multi-agent workflow
+  </footer>
+</body>
+</html>

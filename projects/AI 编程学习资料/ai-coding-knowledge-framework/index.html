@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="AI 时代的软件工程纪律知识框架：复杂度、spec、测试、接口契约、Agent 设计与 AI 编程实践。">
+<title>AI 工程纪律 · 版本选择</title>
+<link rel="stylesheet" href="assets/v2.css">
+</head>
+<body class="home-theme">
+<main class="version-home" id="content">
+  <header class="version-hero">
+    <p>AI Engineering Discipline · Visual Editions</p>
+    <h1>选择一套阅读界面</h1>
+    <p class="home-lede">同一份已核对的 AI 工程纪律知识框架，三种完全不同的视觉表达。默认从研究档案开始。</p>
+  </header>
+  <section class="version-gallery" aria-label="版本选择">
+
+    <a class="version-card version-research" href="research.html">
+      <span>Recommended</span>
+      <h2>研究档案</h2>
+      <p>白底、纸纹、细线索引，把工程纪律整理成一份可审阅的技术档案。</p>
+      <div class="palette" aria-hidden="true"><i class="swatch-research-1"></i><i class="swatch-research-2"></i><i class="swatch-research-3"></i><i class="swatch-research-4"></i></div>
+      <b>进入版本 01</b>
+    </a>
+    <a class="version-card version-magazine" href="magazine.html">
+      <span>Editorial</span>
+      <h2>杂志长卷</h2>
+      <p>用大标题、非对称分栏和强节奏，把同一套知识读成一篇思想专题。</p>
+      <div class="palette" aria-hidden="true"><i class="swatch-magazine-1"></i><i class="swatch-magazine-2"></i><i class="swatch-magazine-3"></i><i class="swatch-magazine-4"></i></div>
+      <b>进入版本 02</b>
+    </a>
+    <a class="version-card version-blueprint" href="blueprint.html">
+      <span>Systems</span>
+      <h2>蓝图控制台</h2>
+      <p>深蓝工程图、坐标线、模块编号，像打开一张 AI 工程系统总图。</p>
+      <div class="palette" aria-hidden="true"><i class="swatch-blueprint-1"></i><i class="swatch-blueprint-2"></i><i class="swatch-blueprint-3"></i><i class="swatch-blueprint-4"></i></div>
+      <b>进入版本 03</b>
+    </a>
+  </section>
+  <section class="home-source-note">
+    <span>16 个来源已补齐并链接</span>
+    <span>不含追踪脚本</span>
+    <span>纯静态 GitHub Pages</span>
+  </section>
+  <details class="home-sources">
+    <summary>查看 16 个已核对来源</summary>
+    <div class="source-grid compact-source-grid">
+  <article class="source-item">
+    <a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener noreferrer">01 · Building Effective Agents</a>
+    <span>Anthropic Engineering · 2024</span>
+    <p>Workflow vs agent 分类法，模式梯度，ACI 概念，start simple 原则。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank" rel="noopener noreferrer">02 · Effective Context Engineering for AI Agents</a>
+    <span>Anthropic Applied AI · 2025</span>
+    <p>最小高信号 token 集、just-in-time retrieval、compaction、structured notes、sub-agents、right altitude。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://github.com/tigerbeetle/tigerbeetle/blob/main/docs/TIGER_STYLE.md" target="_blank" rel="noopener noreferrer">03 · TIGER_STYLE.md</a>
+    <span>TigerBeetle</span>
+    <p>NASA Power of Ten、assertion 密度、命名学、控制流硬规则、静态内存。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://web.stanford.edu/~ouster/cgi-bin/aposd.php" target="_blank" rel="noopener noreferrer">04 · A Philosophy of Software Design</a>
+    <span>John Ousterhout</span>
+    <p>复杂度三症状、战术 vs 战略、深模块、design twice、注释即设计。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://www.joelonsoftware.com/2000/10/02/painless-functional-specifications-part-1-why-bother/" target="_blank" rel="noopener noreferrer">05 · Painless Functional Specifications</a>
+    <span>Joel Spolsky</span>
+    <p>Spec 强制设计、沟通只发生一次、排期前置、代码沉没成本。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://www.sqlite.org/testing.html" target="_blank" rel="noopener noreferrer">06 · How SQLite Is Tested</a>
+    <span>SQLite</span>
+    <p>四套测试、MC/DC、anomaly testing、mutation testing、测试/代码 1:590。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://antithesis.com/blog/is_something_bugging_you/" target="_blank" rel="noopener noreferrer">07 · Is Something Bugging You?</a>
+    <span>Will Wilson · Antithesis</span>
+    <p>决定性模拟测试、FoundationDB 经验、50x productivity 论点。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://12factor.net/" target="_blank" rel="noopener noreferrer">08 · The Twelve-Factor App</a>
+    <span>Adam Wiggins</span>
+    <p>SaaS app 的 12 条 deploy 契约：config、backing services、logs、process model。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md" target="_blank" rel="noopener noreferrer">09 · K8s API Conventions</a>
+    <span>kubernetes/community</span>
+    <p>声明式 API、spec/status、conditions、resourceVersion、lists over maps。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://stripe.com/blog/online-migrations" target="_blank" rel="noopener noreferrer">10 · Online Migrations at Scale</a>
+    <span>Stripe Blog</span>
+    <p>dual-write、backfill、dual-read、Scientist、增量切换写路径、删除旧数据。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://stripe.com/blog/idempotency" target="_blank" rel="noopener noreferrer">11 · Designing Robust APIs with Idempotency</a>
+    <span>Stripe Blog</span>
+    <p>Idempotency-Key、指数退避、jitter、thundering herd 防护。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://simonwillison.net/2025/Mar/11/using-llms-for-code/" target="_blank" rel="noopener noreferrer">12 · Using LLMs to Help Write Code</a>
+    <span>Simon Willison</span>
+    <p>LLM expectations、training cutoff、context is king、测试责任、专家能力放大。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://aider.chat/2023/10/22/repomap.html" target="_blank" rel="noopener noreferrer">13 · Building a Better Repository Map with Tree-Sitter</a>
+    <span>Paul Gauthier · Aider</span>
+    <p>tree-sitter、PageRank、repo map、结构性压缩优于截断。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://karpathy.medium.com/software-2-0-a64152b37c35" target="_blank" rel="noopener noreferrer">14 · Software 2.0</a>
+    <span>Andrej Karpathy</span>
+    <p>数据集作为 source code，训练把目标函数编译成神经网络权重。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://matklad.github.io/2023/11/15/push-ifs-up-and-fors-down.html" target="_blank" rel="noopener noreferrer">15 · Push Ifs Up And Fors Down</a>
+    <span>matklad · 2023</span>
+    <p>把条件上推、循环下沉，集中分支并让批处理成为基础形态。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://www.usenix.org/conference/osdi14/technical-sessions/presentation/yuan" target="_blank" rel="noopener noreferrer">16 · Simple Testing Can Prevent Most Critical Failures</a>
+    <span>Yuan et al. · OSDI 2014</span>
+    <p>198 个生产故障分析，92% 灾难性故障来自非致命错误处理不当。</p>
+  </article></div>
+  </details>
+</main>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "disconfirming_evidence": [
+    {
+      "response": "暂停交付并补充最小空行用例。",
+      "signal": "夹具内没有针对空行的独立回归断言。",
+      "threshold": {
+        "observed_regression_assertions": 0,
+        "required_regression_assertions": 1
+      }
+    }
+  ],
+  "kill_criteria": [
+    {
+      "action": "stop_and_request_authorization",
+      "condition": "首个夹具需要生产密钥、网络或未授权仓库修改才能运行。",
+      "threshold": {
+        "unauthorized_dependencies": 1
+      }
+    }
+  ],
+  "problem_reframe": "核心不是生成任意代码，而是把“空行崩溃”编译成一个可运行、可失败且可回归的最小技术合同。",
+  "smallest_bet": "写入一个无外部依赖的 Python 夹具，覆盖普通数据行和空行，并仅执行语法与标记检查。",
+  "success_metrics": [
+    {
+      "evidence_path": "first-output/execution-report.json",
+      "id": "csv-empty-line-regression",
+      "measurement": {
+        "method": "Python 语法与回归夹具检查",
+        "target": {
+          "min_python_files": 1,
+          "regression_case_required": true,
+          "syntax_valid": true
+        }
+      },
+      "statement": "生成 1 个语法有效的 Python 回归夹具，并包含 1 个针对 CSV 空行的回归用例。"
+    }
+  ]
+}

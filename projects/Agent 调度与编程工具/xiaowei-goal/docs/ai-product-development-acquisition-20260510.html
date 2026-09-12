@@ -1,0 +1,1978 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>AI 产品开发与获客经验分享：xiaowei-goal 拆解</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f6f8f7;
+      --paper: #ffffff;
+      --ink: #17202a;
+      --muted: #5d6670;
+      --line: #d9e0df;
+      --accent: #0f766e;
+      --accent-2: #b45309;
+      --soft: #edf7f5;
+      --soft-2: #fff5eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--page);
+      color: var(--ink);
+    }
+
+    body {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 42px 24px 64px;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-size: 16px;
+      line-height: 1.82;
+      box-shadow: 0 20px 60px rgba(23, 32, 42, .08);
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      padding-bottom: 18px;
+      border-bottom: 3px solid var(--accent);
+      color: var(--ink);
+      font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+      font-size: clamp(2rem, 4.6vw, 3.2rem);
+      line-height: 1.2;
+    }
+
+    h2 {
+      margin-top: 42px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--accent);
+      font-size: 1.5rem;
+      line-height: 1.35;
+    }
+
+    h3 {
+      margin-top: 30px;
+      color: var(--ink);
+      font-size: 1.18rem;
+      line-height: 1.35;
+    }
+
+    h4 {
+      margin-top: 22px;
+      font-size: 1rem;
+    }
+
+    p {
+      margin: .82rem 0;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: .08em;
+      text-underline-offset: .18em;
+    }
+
+    blockquote {
+      margin: 18px 0;
+      padding: 12px 16px;
+      border-left: 4px solid var(--accent);
+      background: var(--soft);
+      color: var(--muted);
+    }
+
+    strong {
+      color: var(--ink);
+    }
+
+    code {
+      border: 1px solid rgba(15, 118, 110, .20);
+      border-radius: 4px;
+      padding: .08rem .28rem;
+      background: var(--soft);
+      color: #134e4a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: .92em;
+    }
+
+    pre {
+      overflow: auto;
+    }
+
+    pre code {
+      display: block;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #17202a;
+      color: #f6f8f7;
+      white-space: pre-wrap;
+    }
+
+    table {
+      width: 100%;
+      margin: 18px 0 28px;
+      border-collapse: collapse;
+      background: var(--paper);
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--soft);
+      color: #134e4a;
+      font-weight: 700;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fbfdfc;
+    }
+
+    ul,
+    ol {
+      padding-left: 1.4rem;
+    }
+
+    li {
+      margin: .3rem 0;
+    }
+
+    hr {
+      margin: 36px 0;
+      border: 0;
+      border-top: 1px solid var(--line);
+    }
+
+    nav#TOC {
+      margin: 18px 0 30px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      background: #fbfdfc;
+    }
+
+    nav#TOC ul {
+      margin: 0;
+    }
+
+    body::after {
+      content: "xiaowei-goal · broad research → Deep Research → business application";
+      display: block;
+      margin-top: 54px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .92rem;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 28px 14px 48px;
+        font-size: 15px;
+        box-shadow: none;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">AI 产品开发与获客经验分享：xiaowei-goal 拆解</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#ai-产品开发与获客经验分享xiaowei-goal-拆解"
+id="toc-ai-产品开发与获客经验分享xiaowei-goal-拆解">AI
+产品开发与获客经验分享：xiaowei-goal 拆解</a>
+<ul>
+<li><a href="#一句话结论" id="toc-一句话结论">一句话结论</a></li>
+<li><a href="#信息密度升级说明"
+id="toc-信息密度升级说明">信息密度升级说明</a></li>
+<li><a href="#阶段-1广域联网调研补充"
+id="toc-阶段-1广域联网调研补充">阶段 1：广域联网调研补充</a></li>
+<li><a href="#逐句信息点级理解表"
+id="toc-逐句信息点级理解表">逐句/信息点级理解表</a></li>
+<li><a href="#需求雷达如何从用户原话找到产品"
+id="toc-需求雷达如何从用户原话找到产品">需求雷达：如何从用户原话找到产品</a>
+<ul>
+<li><a href="#原话采集" id="toc-原话采集">1. 原话采集</a></li>
+<li><a href="#原话到产品的判断字段" id="toc-原话到产品的判断字段">2.
+原话到产品的判断字段</a></li>
+<li><a href="#需求评分表" id="toc-需求评分表">3. 需求评分表</a></li>
+</ul></li>
+<li><a href="#获客路径拆解seo-geo-平台内容-app-store-kol"
+id="toc-获客路径拆解seo-geo-平台内容-app-store-kol">获客路径拆解：SEO /
+GEO / 平台内容 / App Store / KOL</a>
+<ul>
+<li><a href="#seo官网承接明确需求"
+id="toc-seo官网承接明确需求">SEO：官网承接明确需求</a></li>
+<li><a href="#geo让内容更容易被生成式搜索理解和引用"
+id="toc-geo让内容更容易被生成式搜索理解和引用">GEO：让内容更容易被生成式搜索理解和引用</a></li>
+<li><a href="#平台内容用推荐系统测试情绪和角度"
+id="toc-平台内容用推荐系统测试情绪和角度">平台内容：用推荐系统测试情绪和角度</a></li>
+<li><a href="#app-store把细分需求落到商店页实验"
+id="toc-app-store把细分需求落到商店页实验">App
+Store：把细分需求落到商店页实验</a></li>
+<li><a href="#kol买信任不买热闹"
+id="toc-kol买信任不买热闹">KOL：买信任，不买热闹</a></li>
+</ul></li>
+<li><a href="#内容矩阵的边界什么能规模化什么不能规模化"
+id="toc-内容矩阵的边界什么能规模化什么不能规模化">内容矩阵的边界：什么能规模化，什么不能规模化</a>
+<ul>
+<li><a href="#能规模化的内容"
+id="toc-能规模化的内容">能规模化的内容</a></li>
+<li><a href="#不能规模化或必须谨慎的内容"
+id="toc-不能规模化或必须谨慎的内容">不能规模化或必须谨慎的内容</a></li>
+<li><a href="#内容矩阵最小工作流"
+id="toc-内容矩阵最小工作流">内容矩阵最小工作流</a></li>
+</ul></li>
+<li><a href="#知识产品化路线资料库-agent-网站小程序-订阅"
+id="toc-知识产品化路线资料库-agent-网站小程序-订阅">知识产品化路线：资料库
+→ Agent → 网站/小程序 → 订阅</a>
+<ul>
+<li><a href="#一个可落地的小伟版本"
+id="toc-一个可落地的小伟版本">一个可落地的小伟版本</a></li>
+</ul></li>
+<li><a href="#阶段-2deep-research-判断"
+id="toc-阶段-2deep-research-判断">阶段 2：Deep Research 判断</a>
+<ul>
+<li><a href="#deep-research-证据表" id="toc-deep-research-证据表">Deep
+Research 证据表</a></li>
+<li><a href="#已被外部资料强化的判断"
+id="toc-已被外部资料强化的判断">已被外部资料强化的判断</a></li>
+<li><a href="#需要修正的判断"
+id="toc-需要修正的判断">需要修正的判断</a></li>
+<li><a href="#仍需验证的问题"
+id="toc-仍需验证的问题">仍需验证的问题</a></li>
+</ul></li>
+<li><a href="#关键判断分层事实-推断-假设"
+id="toc-关键判断分层事实-推断-假设">关键判断分层：事实 / 推断 /
+假设</a></li>
+<li><a href="#阶段-3应用到业务" id="toc-阶段-3应用到业务">阶段
+3：应用到业务</a></li>
+<li><a href="#风险清单与验证动作"
+id="toc-风险清单与验证动作">风险清单与验证动作</a></li>
+<li><a href="#道法术器势拆解" id="toc-道法术器势拆解">道法术器势拆解</a>
+<ul>
+<li><a href="#道法术器势对应-30-天动作"
+id="toc-道法术器势对应-30-天动作">道法术器势对应 30 天动作</a></li>
+</ul></li>
+<li><a href="#下一步-goal" id="toc-下一步-goal">下一步
+<code>/goal</code></a></li>
+<li><a href="#资料链接" id="toc-资料链接">资料链接</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="ai-产品开发与获客经验分享xiaowei-goal-拆解">AI
+产品开发与获客经验分享：xiaowei-goal 拆解</h1>
+<p>资料范围：飞书智能纪要《AI产品开发与获客经验分享》，会议时间
+2026-05-10
+18:45-19:52。本文只发布结构化理解、外部资料补充和业务拆解，不公开原始逐字稿与私有飞书链接。</p>
+<p>处理方式：按 <code>xiaowei-goal</code>
+三阶段流程执行：先做广域联网调研，再做 Deep Research
+交叉判断，最后落到业务动作，并用「道法术器势」拆解。</p>
+<p>外部资料边界：只使用公开网页、公开论文、官方文档和公开产品页。会议中的私有链接、内部飞书资料、原始逐字稿和个人身份信息不进入本文。</p>
+<h2 id="一句话结论">一句话结论</h2>
+<p>这份纪要的核心是 <strong>AI
+产品不是从“我想做什么”开始，而是从“哪里已经有人痛、有人搜、有人付费、有人抱怨”开始</strong>。中小团队最适合的路径不是教育全新市场，而是在已有付费心智里继续变窄：按场景、语言、国家、身份、平台入口和交付方式做细分，然后用内容、搜索、商店页、KOL
+和 Agent 产品化跑小闭环。</p>
+<p>对小伟后续做 App、网站、AI agent 业务，最直接的落点是：</p>
+<ol type="1">
+<li>先用公开平台上的用户原话建立需求雷达。</li>
+<li>再用 SEO / GEO / 平台内容 / App Store / KOL 拆获客路径。</li>
+<li>最后把知识、方法论、案例和服务流程产品化为资料库、Agent、网站/小程序和订阅。</li>
+</ol>
+<h2 id="信息密度升级说明">信息密度升级说明</h2>
+<p>上一版更像会议总结，已经抓住了“从真实需求出发”“不要教育全新市场”“把知识产品化”等主线，但还不够细。本文升级为细拆版，增加四类信息密度：</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>升级项</th>
+<th>上一版状态</th>
+<th>本版处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>信息点颗粒度</td>
+<td>把会议要点合并成较粗的理解</td>
+<td>拆成“纪要信息点、字面意思、深层含义、业务动作、证据状态”</td>
+</tr>
+<tr>
+<td>获客路径</td>
+<td>提到 SEO、GEO、软文、矩阵、KOL</td>
+<td>分别拆 SEO / GEO / 平台内容 / App Store / KOL
+的入口、动作、指标和风险</td>
+</tr>
+<tr>
+<td>证据分层</td>
+<td>有资料链接，但事实、推断、假设混在一起</td>
+<td>增加 Deep Research 证据表和“事实 / 推断 / 假设”分层</td>
+</tr>
+<tr>
+<td>业务落地</td>
+<td>有可执行动作，但不够像增长工作台</td>
+<td>补成需求雷达、内容矩阵边界、知识产品化路线、风险清单和道法术器势动作</td>
+</tr>
+</tbody>
+</table>
+<p>阅读方式建议：先看“需求雷达”和“获客路径拆解”，再看“Deep Research
+证据表”，最后看“阶段 3：应用到业务”和“下一步 <code>/goal</code>”。</p>
+<h2 id="阶段-1广域联网调研补充">阶段 1：广域联网调研补充</h2>
+<p>本阶段目的不是堆链接，而是给会议判断补足公开证据。来源分为搜索官方文档、AI
+搜索/GEO 研究、内容分发工具、应用商店增长、Agent 工程和 LLM
+风险六类。</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>来源</th>
+<th>URL</th>
+<th>来源类型</th>
+<th>关键事实</th>
+<th>对本纪要的补充意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Google SEO Starter Guide</td>
+<td><a
+href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide"
+class="uri">https://developers.google.com/search/docs/fundamentals/seo-starter-guide</a></td>
+<td>官方文档</td>
+<td>SEO
+的核心是帮助搜索引擎理解内容，并帮助用户发现和判断是否访问。</td>
+<td>纪要里的内容获客要回到“用户真正要什么”，不能只堆关键词。</td>
+</tr>
+<tr>
+<td>Google 生成式 AI 搜索优化指南</td>
+<td><a
+href="https://developers.google.com/search/docs/fundamentals/ai-optimization-guide"
+class="uri">https://developers.google.com/search/docs/fundamentals/ai-optimization-guide</a></td>
+<td>官方文档</td>
+<td>Google 表示生成式 AI 搜索仍根植于核心搜索排名和质量系统。</td>
+<td>“ChatGPT/Gemini
+流量”要靠可抓取、可信、有独特价值的内容，不是单纯投机。</td>
+</tr>
+<tr>
+<td>Google Spam Policies</td>
+<td><a
+href="https://developers.google.com/search/docs/essentials/spam-policies"
+class="uri">https://developers.google.com/search/docs/essentials/spam-policies</a></td>
+<td>官方政策</td>
+<td>Google 明确反对欺骗用户或操纵搜索系统、操纵生成式 AI
+响应的垃圾策略。</td>
+<td>ADSY、软文、外链和大量文章必须有质量边界，不能做低质铺量。</td>
+</tr>
+<tr>
+<td>GEO: Generative Engine Optimization</td>
+<td><a href="https://arxiv.org/abs/2311.09735"
+class="uri">https://arxiv.org/abs/2311.09735</a></td>
+<td>公开论文</td>
+<td>论文提出 GEO
+框架，并报告部分优化策略可提升生成式答案中的可见性，但效果因领域而异。</td>
+<td>GEO 有研究基础，但不是“发软文就能被 AI 引用”的确定公式。</td>
+</tr>
+<tr>
+<td>Adsy 官方网站</td>
+<td><a href="https://adsy.com/" class="uri">https://adsy.com/</a></td>
+<td>工具/服务官网</td>
+<td>Adsy 定位为 Digital PR、Blog &amp; Guest Posting
+服务，提供站点筛选、内容投放、指标筛选等能力。</td>
+<td>软文投放可以作为分发工具，但要评估站点质量、真实性、相关性和长期 SEO
+风险。</td>
+</tr>
+<tr>
+<td>Apple Product Page Optimization</td>
+<td><a
+href="https://developer.apple.com/app-store/product-page-optimization/"
+class="uri">https://developer.apple.com/app-store/product-page-optimization/</a></td>
+<td>官方文档</td>
+<td>App Store
+支持测试图标、截图、预览视频等不同版本，观察转化表现。</td>
+<td>如果以后跑 App，获客不是只买量，要系统做商店页转化实验。</td>
+</tr>
+<tr>
+<td>Apple Custom Product Pages</td>
+<td><a
+href="https://developer.apple.com/app-store/custom-product-pages/"
+class="uri">https://developer.apple.com/app-store/custom-product-pages/</a></td>
+<td>官方文档</td>
+<td>App Store 可创建最多 70
+个自定义产品页，用不同素材和文案触达不同受众。</td>
+<td>“按场景/国家/语言变窄”可以落到不同 custom product page。</td>
+</tr>
+<tr>
+<td>Apple Ads Campaign Structure</td>
+<td><a
+href="https://ads.apple.com/app-store/best-practices/campaign-structure"
+class="uri">https://ads.apple.com/app-store/best-practices/campaign-structure</a></td>
+<td>官方广告指南</td>
+<td>Apple Ads
+建议按品牌、品类、竞品、发现等关键词主题拆分广告结构。</td>
+<td>App
+获客要从关键词意图、否定词和发现词迭代，不是一个广告组打天下。</td>
+</tr>
+<tr>
+<td>Google Play Acquisition Reporting</td>
+<td><a
+href="https://play.google.com/console/about/acquisitionreporting/"
+class="uri">https://play.google.com/console/about/acquisitionreporting/</a></td>
+<td>官方文档</td>
+<td>Play Console acquisition reports
+可监控获客趋势、营销影响和商店表现。</td>
+<td>Android App 出海时，必须用第一方数据拆渠道、国家和商店页表现。</td>
+</tr>
+<tr>
+<td>OpenAI Agents SDK</td>
+<td><a href="https://developers.openai.com/api/docs/guides/agents"
+class="uri">https://developers.openai.com/api/docs/guides/agents</a></td>
+<td>官方技术文档</td>
+<td>Agents SDK
+适合应用拥有编排、工具执行、审批和状态管理的复杂流程。</td>
+<td>“把知识付费产品化”可以做成 Agent 工作流，而不是只卖课程或咨询。</td>
+</tr>
+<tr>
+<td>OpenAI Agents SDK Python 文档</td>
+<td><a href="https://openai.github.io/openai-agents-python/agents/"
+class="uri">https://openai.github.io/openai-agents-python/agents/</a></td>
+<td>官方技术文档</td>
+<td>Agent 可由 instructions、tools、handoffs、guardrails、structured
+outputs 等组成。</td>
+<td>小伟的知识库 Agent 要把能力拆成角色、工具、边界和输出格式。</td>
+</tr>
+<tr>
+<td>OWASP Top 10 for LLM Applications</td>
+<td><a
+href="https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+class="uri">https://owasp.org/www-project-top-10-for-large-language-model-applications/</a></td>
+<td>安全项目</td>
+<td>OWASP 持续维护 LLM 应用关键风险清单。</td>
+<td>内容生成、招聘分析、自动化客服、Agent
+执行动作都必须有人审、权限和风控。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="逐句信息点级理解表">逐句/信息点级理解表</h2>
+<p>下表不是逐字稿，而是把会议中的结构化信息点转成公开可读的理解。证据状态分为：<code>会议信息</code>、<code>外部强化</code>、<code>需要验证</code>、<code>风险提示</code>。</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>纪要信息点</th>
+<th>字面意思</th>
+<th>深层含义</th>
+<th>业务动作</th>
+<th>证据状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>宏观趋势要跟着 AI 走</td>
+<td>AI 是大趋势，产品和获客都要利用 AI</td>
+<td>AI 是生产力基础设施，不等于产品定位本身</td>
+<td>每个产品方向都问：AI
+能否降低交付成本、提高响应速度、扩大内容覆盖或增强个性化</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>从小红书、抖音、微博、Reddit、YouTube 的抱怨里找需求</td>
+<td>去用户真实表达里找痛点</td>
+<td>抱怨包含场景、情绪、替代方案、付费阻力和原生语言</td>
+<td>每个方向收集至少 100
+条用户原话，按痛点、场景、对象、已有解决方案聚类</td>
+<td>会议信息，需要具体行业验证</td>
+</tr>
+<tr>
+<td>用 AI 分析评论</td>
+<td>让 AI 批量阅读用户评论</td>
+<td>AI 适合初筛和聚类，但商业判断必须人工复核</td>
+<td>建立评论分析模板：问题、对象、后果、现有替代、付费线索、复现难度</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>看付费榜、流量、订单和价格页</td>
+<td>找已经有人付钱的市场</td>
+<td>付费证据比“我觉得有人需要”更可靠</td>
+<td>需求验证必须同时看搜索量、评论量、价格、付费入口、退款/差评原因</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>不要教育全新市场</td>
+<td>小团队不要承担市场教育成本</td>
+<td>新品类需要预算、时间和信任，小团队更适合切入已有心智</td>
+<td>优先选“用户已经在买，但体验差、太贵、太复杂、不适配某人群”的方向</td>
+<td>会议信息，强业务建议</td>
+</tr>
+<tr>
+<td>在已教育市场里做细分</td>
+<td>不复制竞品，而是切一个更小的人群或场景</td>
+<td>细分不是变小，而是让文案、渠道、产品承诺更具体</td>
+<td>按身份、任务、国家、语言、预算、平台、交付速度拆 3-5 个细分页</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>按场景、语言、国家变窄</td>
+<td>市场切口要收窄</td>
+<td>变窄后才能做出精准 SEO、广告关键词、商店页和 KOL 选择</td>
+<td>建立“场景 x 语言 x 国家 x 渠道”矩阵，先选 1 个格子做 14 天验证</td>
+<td>会议信息，Apple/Google Play 外部强化</td>
+</tr>
+<tr>
+<td>ADSY / 软文 / GEO</td>
+<td>用软文和外部提及争取搜索与 AI 搜索流量</td>
+<td>外部提及有价值，但低质量外链和不真实提及有风险</td>
+<td>先做 5-10 篇高质量客座内容测试，不批量购买低相关站点</td>
+<td>外部强化 + 风险提示</td>
+</tr>
+<tr>
+<td>写大量文章获取 AI 搜索流量</td>
+<td>用内容规模覆盖搜索和生成式搜索</td>
+<td>规模只有在选题真实、内容独特、结构可抓取时才有用</td>
+<td>先做 20 篇验证集：对比、教程、清单、FAQ、案例、价格、替代方案</td>
+<td>外部强化</td>
+</tr>
+<tr>
+<td>多平台内容营销</td>
+<td>不把获客押在单一平台</td>
+<td>不同平台验证不同内容角度，官网负责沉淀和转化</td>
+<td>小红书/抖音测情绪与选题，知乎/官网承接搜索，YouTube/Reddit
+测英语市场</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>竞品和爆款拆解</td>
+<td>学习已经被市场验证的表达结构</td>
+<td>可迁移的是结构、受众、痛点顺序，不是文案和素材</td>
+<td>拆 10 个竞品页面和 30 个爆款内容，记录钩子、承诺、证据、CTA</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>多账号矩阵</td>
+<td>用多个账号测试人设、话题和平台分发</td>
+<td>矩阵本质是实验系统，不是重复发同质内容</td>
+<td>建立选题库、素材库、账号定位、发布节奏、违规红线和复盘表</td>
+<td>会议信息 + 风险提示</td>
+</tr>
+<tr>
+<td>KOL 合作</td>
+<td>有预算时借助达人分发和信任</td>
+<td>KOL 是买受众匹配和内容信用，不是买粉丝数</td>
+<td>投前要求历史案例、受众画像、内容样稿、追踪链接和结算指标</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>支付平台推荐</td>
+<td>支付/结算/平台生态也可能带来流量</td>
+<td>生态合作是 B2B/SaaS 的隐形获客渠道</td>
+<td>如果做订阅工具，争取
+Stripe、Paddle、Shopify、飞书/钉钉生态案例页或市场入口</td>
+<td>会议信息，需要验证</td>
+</tr>
+<tr>
+<td>知识付费和咨询有时间限制</td>
+<td>靠人交付不可无限扩张</td>
+<td>知识生意要把专家时间转成可复用产品</td>
+<td>把咨询流程拆为资料库、模板、Agent、自动报告和少量人工复核</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>把人产品化</td>
+<td>把专家经验封装成可调用系统</td>
+<td>不是复制人格，而是产品化判断路径、案例库和工作流</td>
+<td>定义专家方法论：输入、判断规则、输出模板、禁区、升级人工条件</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>飞书知识库可作为基础</td>
+<td>把课程、会议、材料、案例沉淀到知识库</td>
+<td>知识库是 Agent 的上下文资产，但需要结构化</td>
+<td>用“概念、案例、FAQ、流程、模板、反例、禁区”重整资料</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>Agent / 网站 / 小程序月费</td>
+<td>把一次性交付改成订阅型工具</td>
+<td>月费必须有持续更新、持续节省时间或持续带来结果</td>
+<td>先做一个网页 Agent 或小程序 MVP，围绕一个高频任务收费</td>
+<td>会议信息 + OpenAI 文档强化</td>
+</tr>
+<tr>
+<td>内容生产工作流</td>
+<td>AI 结合热点、参考内容、人工审核再二创</td>
+<td>人负责判断，AI 负责扩展表达和多格式改写</td>
+<td>形成“选题-资料-初稿-事实核查-风格化-发布-复盘”的流水线</td>
+<td>会议信息 + 风险提示</td>
+</tr>
+<tr>
+<td>老师宠物产品案例</td>
+<td>多次失败后找到有效切口</td>
+<td>产品成功常来自连续试错和复盘，而不是一次命中</td>
+<td>保留失败样本，记录每轮变动：受众、卖点、价格、渠道、素材</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>健身教练 MVP</td>
+<td>先做核心功能，不先做大平台</td>
+<td>MVP 要让用户当天得到结果</td>
+<td>先做“一键训练计划 + 饮食建议 + 周复盘”的最短付费路径</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>再小需求在大人口基数下也可能很大</td>
+<td>小切口不等于小生意</td>
+<td>前提是人群可触达、可支付、问题高频、交付可规模化</td>
+<td>不算总人口，先算可触达流量、转化率、客单价、留存和交付成本</td>
+<td>会议信息，需要验证</td>
+</tr>
+<tr>
+<td>AI 招聘：简历、MBTI、面试分析</td>
+<td>AI 可辅助招聘流程</td>
+<td>招聘属于高风险场景，不能用标签替代能力判断</td>
+<td>只做简历结构化、面试题生成、记录摘要和人工辅助评分，不做自动淘汰</td>
+<td>风险提示</td>
+</tr>
+<tr>
+<td>电商 AI 自动化要老板带头</td>
+<td>自动化从决策者关心的问题切入</td>
+<td>老板关心的是利润、效率、库存、客服和投放 ROI</td>
+<td>先自动化高频低风险任务：商品描述、客服草稿、差评归因、竞品价格监控</td>
+<td>会议信息</td>
+</tr>
+<tr>
+<td>视频生成先看流量</td>
+<td>早期内容别过度追求制作质量</td>
+<td>先验证选题和钩子，再提高制作成本</td>
+<td>每个方向先跑 10 个选题 x 3 种开头，按完播、互动、私信和转化筛选</td>
+<td>会议信息</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="需求雷达如何从用户原话找到产品">需求雷达：如何从用户原话找到产品</h2>
+<p>需求雷达的目标是把“我看到一个抱怨”变成“可以验证的产品机会”。它不是单纯抓评论，而是把用户语言转成产品、页面、内容和获客动作。</p>
+<h3 id="原话采集">1. 原话采集</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>来源</th>
+<th>适合找什么</th>
+<th>采集动作</th>
+<th>注意事项</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>小红书</td>
+<td>生活方式、女性消费、教育、宠物、职场、变美、旅游、育儿</td>
+<td>搜“太难了/踩坑/求推荐/有没有/避雷/后悔/平替”</td>
+<td>不只看爆文，要看评论区反复出现的问题</td>
+</tr>
+<tr>
+<td>抖音/视频号</td>
+<td>情绪强、演示型、交易近的需求</td>
+<td>看高赞评论、直播间问题、商品评价、同类视频脚本</td>
+<td>热度不等于付费，需要看商品或服务承接</td>
+</tr>
+<tr>
+<td>微博</td>
+<td>热点、舆情、公共议题、明星/品牌相关需求</td>
+<td>看转发评论里的反复吐槽和解决方案</td>
+<td>热点周期短，适合内容，不一定适合产品</td>
+</tr>
+<tr>
+<td>Reddit</td>
+<td>英语市场的真实讨论、替代方案和付费抱怨</td>
+<td>搜 “how do I / best tool for / tired of / alternative to / worth
+it”</td>
+<td>注意不同 subreddit 的用户画像和规则</td>
+</tr>
+<tr>
+<td>YouTube</td>
+<td>教程型、软件型、工具型需求</td>
+<td>看教程评论里的“能不能自动化/有没有模板/为什么不适合我”</td>
+<td>视频播放量代表兴趣，评论代表障碍</td>
+</tr>
+<tr>
+<td>App Store / Google Play 评论</td>
+<td>已有产品的满意点和差评</td>
+<td>抓 1-3 星评论、最近版本评论、订阅差评</td>
+<td>差评是改进机会，也可能只是个别 bug</td>
+</tr>
+<tr>
+<td>竞品价格页和 FAQ</td>
+<td>付费门槛、套餐切法和反对意见</td>
+<td>记录功能边界、限制项、退款说明、试用策略</td>
+<td>价格存在不代表小伟也能同价卖</td>
+</tr>
+</tbody>
+</table>
+<h3 id="原话到产品的判断字段">2. 原话到产品的判断字段</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>字段</th>
+<th>要回答的问题</th>
+<th>示例判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>痛点</td>
+<td>用户到底烦什么、怕什么、浪费什么</td>
+<td>“不会写 prompt”不一定是痛点，“写不出能直接发的招聘
+JD”才可能是痛点</td>
+</tr>
+<tr>
+<td>高频</td>
+<td>这个问题多久发生一次</td>
+<td>每天/每周发生的任务优先于一年一次的任务</td>
+</tr>
+<tr>
+<td>后果</td>
+<td>不解决会损失什么</td>
+<td>时间、钱、机会、客户、面子、合规、情绪</td>
+</tr>
+<tr>
+<td>现有替代</td>
+<td>用户现在怎么解决</td>
+<td>Excel、人工咨询、模板、竞品、外包、搜索</td>
+</tr>
+<tr>
+<td>付费线索</td>
+<td>是否有人已经为类似方案付费</td>
+<td>课程、订阅、代办、软件、KOL 社群、插件</td>
+</tr>
+<tr>
+<td>可交付</td>
+<td>AI 能否在 1-3 分钟内给出明显结果</td>
+<td>生成计划、拆解报告、审核清单、对比表、自动草稿</td>
+</tr>
+<tr>
+<td>可触达</td>
+<td>这群人在哪里聚集</td>
+<td>搜索、平台内容、应用商店、社群、KOL、行业论坛</td>
+</tr>
+<tr>
+<td>可防守</td>
+<td>为什么不是大厂顺手做掉</td>
+<td>垂直知识、工作流深度、数据沉淀、服务结合、渠道理解</td>
+</tr>
+</tbody>
+</table>
+<h3 id="需求评分表">3. 需求评分表</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>评分项</th>
+<th>1 分</th>
+<th>3 分</th>
+<th>5 分</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>痛感</td>
+<td>只是好奇</td>
+<td>有明显不便</td>
+<td>影响收入、效率、合规或关键决策</td>
+</tr>
+<tr>
+<td>频次</td>
+<td>偶发</td>
+<td>每月/每季度</td>
+<td>每天/每周</td>
+</tr>
+<tr>
+<td>付费证据</td>
+<td>无</td>
+<td>有相邻付费</td>
+<td>已有竞品、课程、服务或订阅</td>
+</tr>
+<tr>
+<td>AI 适配</td>
+<td>只能聊天</td>
+<td>可生成草稿</td>
+<td>可嵌入完整工作流并节省时间</td>
+</tr>
+<tr>
+<td>渠道清晰度</td>
+<td>不知道去哪找人</td>
+<td>有 1 个渠道</td>
+<td>有搜索、平台内容、KOL 或商店页多入口</td>
+</tr>
+<tr>
+<td>MVP 难度</td>
+<td>需要完整平台</td>
+<td>需要轻产品</td>
+<td>单页工具、Agent 或人工+AI 可先交付</td>
+</tr>
+</tbody>
+</table>
+<p>建议阈值：总分低于 18 分不进入 MVP；18-24 分可做内容验证；25
+分以上才进入原型或收费测试。</p>
+<h2 id="获客路径拆解seo-geo-平台内容-app-store-kol">获客路径拆解：SEO /
+GEO / 平台内容 / App Store / KOL</h2>
+<p>会议中提到的获客方式很多，关键不是“都做”，而是按产品阶段选择最便宜、最快验证的入口。</p>
+<h3 id="seo官网承接明确需求">SEO：官网承接明确需求</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>目标</th>
+<th>具体动作</th>
+<th>指标</th>
+<th>风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>承接已有搜索意图</td>
+<td>建 20 篇验证内容：教程、对比、替代方案、价格、FAQ、清单、案例</td>
+<td>收录、展示、点击、咨询、注册、试用</td>
+<td>只写关键词堆砌，无法转化</td>
+</tr>
+<tr>
+<td>让搜索引擎理解产品</td>
+<td>每页有明确标题、结构化小标题、问题-答案、案例、更新日期、作者/团队说明</td>
+<td>Google Search Console 展示和查询词</td>
+<td>页面薄、重复、没有独特经验</td>
+</tr>
+<tr>
+<td>做垂直主题权威</td>
+<td>一个细分方向先写完整主题簇，而不是每个热点都碰</td>
+<td>主题内多页面排名和内链点击</td>
+<td>主题太散，搜索引擎和用户都不理解定位</td>
+</tr>
+</tbody>
+</table>
+<p>小伟应用：如果做“AI 招聘助手”，不要只写“AI
+招聘工具”，要写“跨境电商运营岗位面试题生成”“小公司销售岗位简历筛选模板”“招聘
+JD 优化 checklist”等窄页面。</p>
+<h3
+id="geo让内容更容易被生成式搜索理解和引用">GEO：让内容更容易被生成式搜索理解和引用</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>目标</th>
+<th>具体动作</th>
+<th>指标</th>
+<th>风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>被 AI 搜索识别为可信来源</td>
+<td>内容包含清晰结论、步骤、定义、边界、案例、数据来源和 FAQ</td>
+<td>AI 搜索 referral、品牌搜索、被用户截图/引用</td>
+<td>误以为 GEO 是玄学外链</td>
+</tr>
+<tr>
+<td>适配问答型查询</td>
+<td>用用户原话做标题和 H2，例如“有没有适合新手健身教练的 AI
+训练计划工具”</td>
+<td>长尾查询展示</td>
+<td>只写泛泛百科，没有业务经验</td>
+</tr>
+<tr>
+<td>增强可验证性</td>
+<td>引用公开来源，区分事实、推断、假设，标注更新时间</td>
+<td>停留时间、转化、外部引用</td>
+<td>伪造权威、堆不真实提及，触发垃圾内容风险</td>
+</tr>
+</tbody>
+</table>
+<p>小伟应用：GEO 不单独成立为一个“技巧项目”，应并入 SEO
+内容质量、结构化证据和品牌可信度建设。</p>
+<h3
+id="平台内容用推荐系统测试情绪和角度">平台内容：用推荐系统测试情绪和角度</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>平台</th>
+<th>适合内容</th>
+<th>测试动作</th>
+<th>转化承接</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>小红书</td>
+<td>经验、踩坑、清单、对比、生活/职业场景</td>
+<td>10 个痛点标题 x 3 种封面结构</td>
+<td>私信、表单、官网文章、社群</td>
+</tr>
+<tr>
+<td>抖音/视频号</td>
+<td>强钩子、演示、前后对比、案例</td>
+<td>3 秒开头、结果展示、评论引导</td>
+<td>小程序、企微、直播、落地页</td>
+</tr>
+<tr>
+<td>知乎</td>
+<td>搜索型长内容、专业判断、工具对比</td>
+<td>回答高意图问题，沉淀长尾搜索</td>
+<td>官网、白皮书、试用链接</td>
+</tr>
+<tr>
+<td>Reddit/YouTube</td>
+<td>英语市场需求验证、工具演示、替代方案讨论</td>
+<td>找 subreddit 和教程评论，做英文 landing page</td>
+<td>邮件列表、waitlist、Stripe/Paddle</td>
+</tr>
+</tbody>
+</table>
+<p>小伟应用：平台内容负责“验证钩子和用户语言”，官网负责“沉淀搜索和转化”，不要让所有内容只留在平台里。</p>
+<h3 id="app-store把细分需求落到商店页实验">App
+Store：把细分需求落到商店页实验</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>入口</th>
+<th>具体动作</th>
+<th>指标</th>
+<th>外部依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>默认产品页</td>
+<td>测 icon、截图、预览视频、首屏卖点</td>
+<td>产品页转化率、下载、留存</td>
+<td>Apple Product Page Optimization</td>
+</tr>
+<tr>
+<td>Custom Product Pages</td>
+<td>为不同场景、国家、语言、广告关键词做不同页面</td>
+<td>每个页面下载、留存、付费</td>
+<td>Apple Custom Product Pages</td>
+</tr>
+<tr>
+<td>Apple Ads</td>
+<td>品牌、品类、竞品、发现四类 campaign 分开管理</td>
+<td>CPT、CPA、转化率、关键词扩展</td>
+<td>Apple Ads Campaign Structure</td>
+</tr>
+<tr>
+<td>Google Play</td>
+<td>用 acquisition reports 看渠道、国家、商店表现</td>
+<td>访问、安装、留存、购买</td>
+<td>Google Play Acquisition Reporting</td>
+</tr>
+</tbody>
+</table>
+<p>小伟应用：如果做
+App，不要只做一个“万能截图”。同一个工具可以有“健身教练版”“产后恢复版”“办公室久坐版”“英语市场版”四套素材和落地页。</p>
+<h3 id="kol买信任不买热闹">KOL：买信任，不买热闹</h3>
+<table>
+<thead>
+<tr>
+<th>判断项</th>
+<th>该看什么</th>
+<th>不该只看什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>受众匹配</td>
+<td>粉丝是谁、正在为什么付费、评论里问什么</td>
+<td>粉丝总数</td>
+</tr>
+<tr>
+<td>内容匹配</td>
+<td>KOL 是否能自然讲清产品使用场景</td>
+<td>硬广报价低</td>
+</tr>
+<tr>
+<td>转化路径</td>
+<td>是否有追踪链接、专属码、落地页、复盘数据</td>
+<td>曝光量截图</td>
+</tr>
+<tr>
+<td>合作方式</td>
+<td>先小额 CPA/CPS/混合模式，再放大</td>
+<td>一次性大额包量</td>
+</tr>
+</tbody>
+</table>
+<p>小伟应用：优先找“垂直小 KOL + 明确痛点 +
+可追踪链接”，比如健身教练工具找细分教练、招聘工具找
+HR/创业者、教师工具找班主任/教培博主。</p>
+<h2
+id="内容矩阵的边界什么能规模化什么不能规模化">内容矩阵的边界：什么能规模化，什么不能规模化</h2>
+<p>会议提到“写大量文章”“多账号矩阵”，这两件事都能做，但必须有边界。规模化不是把同一段内容换标题，而是把真实需求拆成多个入口。</p>
+<h3 id="能规模化的内容">能规模化的内容</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>类型</th>
+<th>为什么能规模化</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>长尾问题</td>
+<td>用户问法多，但底层结构相似</td>
+<td>“新手健身教练怎么给会员做训练计划”“产后恢复训练计划怎么排”</td>
+</tr>
+<tr>
+<td>模板类</td>
+<td>结构固定、场景可替换</td>
+<td>招聘 JD 模板、面试题模板、宠物护理清单</td>
+</tr>
+<tr>
+<td>对比类</td>
+<td>用户天然会比较替代方案</td>
+<td>A 工具 vs B 工具、人工咨询 vs AI Agent</td>
+</tr>
+<tr>
+<td>案例类</td>
+<td>每个案例有不同背景和结果</td>
+<td>老师宠物产品失败复盘、健身教练 MVP 试用记录</td>
+</tr>
+<tr>
+<td>FAQ 类</td>
+<td>可从评论和客服中持续沉淀</td>
+<td>价格、隐私、准确性、适用人群、退款</td>
+</tr>
+</tbody>
+</table>
+<h3 id="不能规模化或必须谨慎的内容">不能规模化或必须谨慎的内容</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>类型</th>
+<th>问题</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>无经验的泛百科</td>
+<td>没有独特价值，容易同质化</td>
+<td>只在能加入一手案例和判断时写</td>
+</tr>
+<tr>
+<td>批量伪原创</td>
+<td>对用户无帮助，也有搜索风险</td>
+<td>禁止使用</td>
+</tr>
+<tr>
+<td>侵权二创</td>
+<td>复制竞品文案、课程、脚本或图片</td>
+<td>只拆结构，不复制表达</td>
+</tr>
+<tr>
+<td>医疗/法律/金融定论</td>
+<td>高风险，可能误导用户</td>
+<td>只做信息整理和提示，必要时引导专业人士</td>
+</tr>
+<tr>
+<td>自动发布无审核</td>
+<td>容易事实错误、品牌失控、违规</td>
+<td>AI 初稿必须人工审核后发布</td>
+</tr>
+</tbody>
+</table>
+<h3 id="内容矩阵最小工作流">内容矩阵最小工作流</h3>
+<ol type="1">
+<li>需求池：每周新增 50 条用户原话。</li>
+<li>选题池：按痛点、场景、平台、关键词、产品阶段分组。</li>
+<li>素材池：案例、截图、公开资料、FAQ、禁用素材。</li>
+<li>生成池：AI 产出不同平台草稿。</li>
+<li>审核池：事实核查、版权检查、平台规则检查、品牌语气。</li>
+<li>发布池：记录标题、平台、账号、发布时间、CTA。</li>
+<li>复盘池：点击、收藏、评论、私信、注册、付费和内容复用价值。</li>
+</ol>
+<h2
+id="知识产品化路线资料库-agent-网站小程序-订阅">知识产品化路线：资料库 →
+Agent → 网站/小程序 → 订阅</h2>
+<p>会议里“把人产品化”的关键，不是把一个专家包装成
+IP，而是把专家的知识、判断和流程变成可复用系统。</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>阶段</th>
+<th>形态</th>
+<th>要做什么</th>
+<th>可收费点</th>
+<th>验证指标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>资料库</td>
+<td>飞书/Notion/Markdown/数据库</td>
+<td>整理课程、会议、案例、FAQ、流程、模板、反例和禁区</td>
+<td>暂不收费或作为交付资产</td>
+<td>资料复用次数、检索成功率、更新频率</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>网页 Agent / 企业微信 bot / 飞书 bot</td>
+<td>把资料库接入问答、报告生成、审核、建议和工作流</td>
+<td>单次报告、月费、内部工具</td>
+<td>成功完成任务率、人工修改比例、节省时间</td>
+</tr>
+<tr>
+<td>网站/小程序</td>
+<td>公开入口 + 登录 + 支付 + 历史记录</td>
+<td>提供稳定页面、SEO、用户账户、案例展示和付费闭环</td>
+<td>订阅、套餐、模板包、咨询升级</td>
+<td>注册率、激活率、付费率、留存</td>
+</tr>
+<tr>
+<td>订阅</td>
+<td>持续更新服务</td>
+<td>每月新增资料、模板、案例、自动化流程和复盘报告</td>
+<td>月费/年费/团队版</td>
+<td>续费率、使用频次、扩容率、取消原因</td>
+</tr>
+</tbody>
+</table>
+<h3 id="一个可落地的小伟版本">一个可落地的小伟版本</h3>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>业务方向</th>
+<th>资料库内容</th>
+<th>Agent 能力</th>
+<th>网站/小程序入口</th>
+<th>订阅理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AI 招聘</td>
+<td>岗位库、面试题、评分维度、优秀简历样本、法律/公平性禁区</td>
+<td>生成 JD、筛选摘要、面试问题、候选人对比表</td>
+<td>“输入岗位和简历，生成面试包”</td>
+<td>招聘是持续发生的企业任务</td>
+</tr>
+<tr>
+<td>健身教练 MVP</td>
+<td>动作库、训练计划、饮食建议、会员问卷、复盘模板</td>
+<td>生成训练计划、跟踪反馈、调整周期计划</td>
+<td>“3 分钟生成会员训练计划”</td>
+<td>教练每周都要给会员调计划</td>
+</tr>
+<tr>
+<td>电商自动化</td>
+<td>商品库、竞品、客服 FAQ、差评归因、促销模板</td>
+<td>生成商品描述、客服草稿、差评总结、价格监控报告</td>
+<td>“输入商品链接，生成优化建议”</td>
+<td>电商运营每天都有重复工作</td>
+</tr>
+<tr>
+<td>教师/宠物案例延展</td>
+<td>班级激励、宠物护理、家长沟通、活动模板</td>
+<td>生成活动方案、沟通话术、护理提醒</td>
+<td>“输入班级/宠物情况，生成方案”</td>
+<td>有情绪价值和持续互动，但需验证付费</td>
+</tr>
+</tbody>
+</table>
+<h2 id="阶段-2deep-research-判断">阶段 2：Deep Research 判断</h2>
+<p>Deep Research
+的任务是把“会议判断”和“外部来源”交叉，而不是把来源重述一遍。</p>
+<h3 id="deep-research-证据表">Deep Research 证据表</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr>
+<th>主题</th>
+<th>关键事实</th>
+<th>支撑来源</th>
+<th>反例/矛盾</th>
+<th>推断</th>
+<th>证据强度</th>
+<th>对本业务的意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SEO 仍是 AI 搜索基础</td>
+<td>Google 表示生成式 AI 搜索根植于核心搜索排名和质量系统</td>
+<td>Google AI optimization guide</td>
+<td>GEO 行业说法很多，但不同平台机制不透明</td>
+<td>做 GEO 前先做好基础 SEO、内容质量、可抓取和可信度</td>
+<td>高</td>
+<td>小伟网站内容要先满足用户和搜索，再考虑 AI 引用</td>
+</tr>
+<tr>
+<td>低质量外链和不真实提及有风险</td>
+<td>Google spam policies 覆盖操纵搜索系统和生成式 AI 响应的行为</td>
+<td>Google spam policies</td>
+<td>Adsy 这类工具提供投放便利，但不能保证长期质量</td>
+<td>软文可测试，不应作为核心增长护城河</td>
+<td>高</td>
+<td>客座内容要做相关站点、真实读者、可验证信息</td>
+</tr>
+<tr>
+<td>GEO 有研究价值但不确定性高</td>
+<td>GEO 论文提出黑盒优化框架，并报告最多可提升 40%
+可见性，且效果因领域而异</td>
+<td>GEO paper</td>
+<td>学术环境与真实商业搜索平台不同</td>
+<td>可把 GEO 当内容结构优化方向，不当成确定流量承诺</td>
+<td>中</td>
+<td>内容要有引用、统计、专家经验、结构化答案，但要持续看数据</td>
+</tr>
+<tr>
+<td>App 商店页可实验</td>
+<td>Apple 支持 product page optimization 和 custom product pages</td>
+<td>Apple Developer</td>
+<td>测试需要足够流量，否则结果不稳定</td>
+<td>App 获客要把素材和受众拆成实验，而不是一次定稿</td>
+<td>高</td>
+<td>后续 App 应设计多个截图和卖点版本</td>
+</tr>
+<tr>
+<td>App 广告应按意图拆结构</td>
+<td>Apple Ads 建议 Brand、Category、Competitor、Discovery campaign</td>
+<td>Apple Ads</td>
+<td>小预算阶段可能数据不足</td>
+<td>即使预算小，也要按关键词意图记录表现</td>
+<td>高</td>
+<td>先用发现 campaign 找词，再把高意图词拆出来</td>
+</tr>
+<tr>
+<td>Google Play 可看获客表现</td>
+<td>Play Console acquisition reports 可监控趋势、营销影响和机会</td>
+<td>Google Play Console</td>
+<td>不同账户权限和数据粒度可能不同</td>
+<td>Android 出海应从国家、渠道、商店页和留存分层</td>
+<td>高</td>
+<td>不能只看下载量，要看下载后留存和付费</td>
+</tr>
+<tr>
+<td>Agent 适合复杂工作流</td>
+<td>OpenAI Agents SDK 适合应用拥有编排、工具执行、审批和状态管理</td>
+<td>OpenAI Agents SDK</td>
+<td>简单任务不一定需要完整 Agent 架构</td>
+<td>知识产品化可先从单 Agent + 工具 + 人审开始</td>
+<td>高</td>
+<td>不要一开始做大平台，先做一个能稳定交付的 Agent</td>
+</tr>
+<tr>
+<td>LLM 应用需要安全边界</td>
+<td>OWASP LLM Top 10 持续维护 LLM 风险</td>
+<td>OWASP</td>
+<td>不同行业风险不同</td>
+<td>招聘、电商客服、内容发布都要输出校验、权限和人工复核</td>
+<td>高</td>
+<td>Agent 不能直接自动执行高风险决策</td>
+</tr>
+</tbody>
+</table>
+<h3 id="已被外部资料强化的判断">已被外部资料强化的判断</h3>
+<ol type="1">
+<li><strong>需求挖掘必须从真实语言和付费证据开始。</strong>
+搜索、社媒评论、商店页评论、竞品价格页、广告关键词都比闭门想象可靠。</li>
+<li><strong>AI 搜索/GEO 值得做，但底层仍是 SEO 和可信内容。</strong>
+Google 明确强调生成式搜索仍依赖核心搜索质量系统，所以“AI
+搜索优化”不能脱离内容质量、技术可抓取性和真实性。</li>
+<li><strong>App 获客需要商店页实验。</strong> Apple 和 Google Play
+都提供商店页转化、国家/语言、搜索词、UTM
+或获客报告能力，适合把“场景/国家/语言细分”落成实验。</li>
+<li><strong>知识产品化可以成为小伟业务的一条主线。</strong>
+把个人经验、会议纪要、案例、方法论变成可调用知识库，再做
+Agent/网站/订阅，符合会议方向。</li>
+</ol>
+<h3 id="需要修正的判断">需要修正的判断</h3>
+<ol type="1">
+<li><strong>软文和外链不是越多越好。</strong> Google
+对低质量、操纵性内容和不真实提及有明确风险提示。应优先做可被用户验证的内容，而不是只为机器写。</li>
+<li><strong>多账号矩阵不是无限开号。</strong>
+如果没有统一选题、素材、指标和合规边界，矩阵会变成低质量内容工厂。</li>
+<li><strong>AI 招聘不能用 MBTI 之类标签做决定性筛选。</strong>
+这类信息最多作为沟通参考，不能替代岗位能力和实际任务表现。</li>
+<li><strong>“小需求大市场”不能只看人口基数。</strong>
+必须同时看可触达流量、支付能力、复购频率、交付成本和竞争强度。</li>
+</ol>
+<h3 id="仍需验证的问题">仍需验证的问题</h3>
+<ol type="1">
+<li>小伟要做的 App/网站具体行业是什么，已有用户在哪里抱怨。</li>
+<li>目标市场是国内、小语种国家，还是英语市场。</li>
+<li>产品适合一次性售卖、订阅，还是服务+工具混合模式。</li>
+<li>哪个渠道最便宜：搜索、平台内容、App
+Store、KOL、生态推荐还是私域。</li>
+<li>用户是否愿意把关键资料交给
+Agent，例如简历、店铺数据、训练计划、课程资料。</li>
+</ol>
+<h2 id="关键判断分层事实-推断-假设">关键判断分层：事实 / 推断 /
+假设</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>层级</th>
+<th>判断</th>
+<th>依据</th>
+<th>应对动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>事实</td>
+<td>Google 公开文档仍把 SEO
+基础、可抓取、高质量内容作为生成式搜索可见性的基础</td>
+<td>Google SEO Starter Guide、Google AI optimization guide</td>
+<td>先建设官网内容质量和技术可抓取性</td>
+</tr>
+<tr>
+<td>事实</td>
+<td>Google 明确反对操纵搜索系统和生成式 AI 响应的垃圾策略</td>
+<td>Google spam policies</td>
+<td>禁止批量伪原创、低相关外链和不真实提及</td>
+</tr>
+<tr>
+<td>事实</td>
+<td>Apple 支持产品页优化测试和 custom product pages</td>
+<td>Apple Developer</td>
+<td>App 项目要预留多套商店页素材和数据复盘</td>
+</tr>
+<tr>
+<td>事实</td>
+<td>OpenAI Agents SDK 支持面向复杂流程的 Agent 编排思路</td>
+<td>OpenAI docs</td>
+<td>知识库产品可设计为 Agent 工作流</td>
+</tr>
+<tr>
+<td>推断</td>
+<td>从用户抱怨找需求，比从创始人灵感出发更适合小团队</td>
+<td>会议经验 + 增长常识 + 平台评论可观察</td>
+<td>建立需求雷达和原话样本库</td>
+</tr>
+<tr>
+<td>推断</td>
+<td>AI 搜索流量会更偏好结构清晰、可信、可引用的内容</td>
+<td>Google 文档 + GEO 论文</td>
+<td>内容要有清晰结论、引用、FAQ、案例和更新时间</td>
+</tr>
+<tr>
+<td>推断</td>
+<td>知识付费/咨询可以通过 Agent 和订阅提升复用率</td>
+<td>会议经验 + Agent 工程能力</td>
+<td>从一个高频任务做付费 MVP，不先做完整平台</td>
+</tr>
+<tr>
+<td>假设</td>
+<td>小伟后续最适合做“AI
+招聘、健身教练、电商自动化、教师/宠物”中的某一个方向</td>
+<td>来自会议案例，不等于市场选择</td>
+<td>需要按需求雷达评分和 14 天验证选择</td>
+</tr>
+<tr>
+<td>假设</td>
+<td>写 20 篇高质量文章能比直接写 200 篇更快找到有效主题</td>
+<td>内容策略推断</td>
+<td>先做 20 篇验证集，按搜索和转化决定扩量</td>
+</tr>
+<tr>
+<td>假设</td>
+<td>KOL 对小伟产品会有正 ROI</td>
+<td>会议提及，不同品类差异很大</td>
+<td>先小额测试，必须有追踪链接和付费指标</td>
+</tr>
+</tbody>
+</table>
+<h2 id="阶段-3应用到业务">阶段 3：应用到业务</h2>
+<p>这部分把纪要转成小伟后续做 App、网站、AI agent
+业务的可执行增长工作台。</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>业务环节</th>
+<th>可用资料/证据</th>
+<th>业务判断</th>
+<th>具体动作</th>
+<th>优先级</th>
+<th>验证方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求池</td>
+<td>平台原话、评论、榜单、价格页</td>
+<td>需求必须有痛感、频次、付费证据和渠道</td>
+<td>每个方向抓 100 条原话，做需求评分表</td>
+<td>P0</td>
+<td>是否出现 3 个以上高分痛点簇</td>
+</tr>
+<tr>
+<td>MVP</td>
+<td>会议中的健身教练、招聘、电商案例</td>
+<td>先交付一个结果，不先做平台</td>
+<td>每个方向只做一个核心承诺，如训练计划、JD 生成、商品优化报告</td>
+<td>P0</td>
+<td>24 小时内能否交付，用户是否愿意留资/付款</td>
+</tr>
+<tr>
+<td>官网 SEO</td>
+<td>Google SEO / AI 搜索指南</td>
+<td>官网是长期承接搜索和品牌信任的资产</td>
+<td>先写 20 篇验证内容，覆盖教程、对比、FAQ、案例</td>
+<td>P0</td>
+<td>收录、展示、点击、注册、咨询</td>
+</tr>
+<tr>
+<td>GEO</td>
+<td>GEO 论文 + Google AI optimization guide</td>
+<td>GEO 是内容结构和可信度升级，不是独立黑魔法</td>
+<td>每页补结论、步骤、引用、案例、FAQ、更新时间</td>
+<td>P1</td>
+<td>AI search referral、品牌搜索、外部引用</td>
+</tr>
+<tr>
+<td>App 商店</td>
+<td>Apple / Google Play 官方资料</td>
+<td>App 获客需要商店页和关键词实验</td>
+<td>准备默认页 + 3 个场景页 + 国家/语言素材</td>
+<td>P1</td>
+<td>产品页转化率、CPI、留存、付费</td>
+</tr>
+<tr>
+<td>平台内容</td>
+<td>会议中的多平台矩阵</td>
+<td>平台负责测试话题和情绪，官网负责沉淀</td>
+<td>每周 10 个选题，跨 2 个平台测试，不全平台铺开</td>
+<td>P0</td>
+<td>完播、收藏、评论、私信、表单</td>
+</tr>
+<tr>
+<td>KOL</td>
+<td>会议中的 KOL 建议</td>
+<td>KOL 适合有明确人群和追踪闭环后放大</td>
+<td>先找 3 个垂直小 KOL 做 CPA/CPS 或小额混合测试</td>
+<td>P2</td>
+<td>专属链接注册/付费、CAC、退款</td>
+</tr>
+<tr>
+<td>知识产品化</td>
+<td>飞书知识库、Agent SDK</td>
+<td>知识要变成可调用工作流</td>
+<td>整理资料库，做单 Agent 报告生成，接支付/订阅</td>
+<td>P0</td>
+<td>任务成功率、人工修改率、节省时间、续费</td>
+</tr>
+<tr>
+<td>风险控制</td>
+<td>OWASP、Google spam policies</td>
+<td>内容和 Agent 都需要边界</td>
+<td>设人工审核、引用来源、权限限制、输出免责声明</td>
+<td>P0</td>
+<td>错误率、违规率、用户投诉、人工升级次数</td>
+</tr>
+</tbody>
+</table>
+<h2 id="风险清单与验证动作">风险清单与验证动作</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>风险</th>
+<th>可能后果</th>
+<th>早期信号</th>
+<th>验证/控制动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>把会议经验当成所有行业通用真理</td>
+<td>做出没人买的产品</td>
+<td>内容有浏览但无咨询、无留资、无付费</td>
+<td>每个方向必须有 100 条原话和付费证据</td>
+</tr>
+<tr>
+<td>SEO/GEO 变成低质内容铺量</td>
+<td>搜索降权、品牌受损、转化低</td>
+<td>页面重复、跳出高、无收藏、无自然引用</td>
+<td>先做 20 篇高质量验证集，再扩量</td>
+</tr>
+<tr>
+<td>ADSY/软文使用不当</td>
+<td>外链风险、预算浪费</td>
+<td>来路流量低质、站点主题不相关</td>
+<td>只选相关站点，记录 referral、询盘和收录，不买低质包</td>
+</tr>
+<tr>
+<td>多账号矩阵失控</td>
+<td>内容同质、违规、团队疲劳</td>
+<td>账号数据下滑、重复内容高、审核压力大</td>
+<td>统一选题库、素材库、禁区和复盘表</td>
+</tr>
+<tr>
+<td>KOL 投放无追踪</td>
+<td>只买曝光，无法复盘</td>
+<td>KOL 只给播放量，不给转化数据</td>
+<td>必须使用专属链接、优惠码、落地页和结算指标</td>
+</tr>
+<tr>
+<td>App 商店测试样本不足</td>
+<td>误判素材效果</td>
+<td>每个版本流量太少，波动大</td>
+<td>先集中测 1-3 个关键假设，不同时改太多变量</td>
+</tr>
+<tr>
+<td>Agent 输出错误</td>
+<td>误导用户、造成业务损失</td>
+<td>用户大量修改、投诉、质疑来源</td>
+<td>加来源引用、置信度、人工复核和高风险拒答</td>
+</tr>
+<tr>
+<td>招聘/评估类功能越界</td>
+<td>公平性、合规和声誉风险</td>
+<td>用户要求自动淘汰候选人</td>
+<td>只做辅助摘要和问题生成，保留人工决策</td>
+</tr>
+<tr>
+<td>知识库未经结构化</td>
+<td>Agent 回答泛、错、不可控</td>
+<td>找不到资料、回答相互矛盾</td>
+<td>资料按概念、案例、流程、FAQ、模板、禁区重整</td>
+</tr>
+<tr>
+<td>订阅价值不足</td>
+<td>用户首月后取消</td>
+<td>使用频次低、用户只下载一次资料</td>
+<td>每月新增模板、案例、自动化能力和复盘报告</td>
+</tr>
+</tbody>
+</table>
+<h2 id="道法术器势拆解">道法术器势拆解</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>层级</th>
+<th>更具体的拆解</th>
+<th>对小伟 App/网站/AI agent 的获客动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>道</td>
+<td>商业机会来自真实需求、已教育市场和付费心智，不来自“我想做一个 AI
+产品”。</td>
+<td>每个产品方向必须先证明：有人抱怨、有人搜索、有人付费、有人愿意换更好的方案。</td>
+</tr>
+<tr>
+<td>法</td>
+<td>用“需求雷达 - MVP 交付 - 内容验证 - 渠道实验 - 数据复盘 -
+产品化订阅”跑闭环。</td>
+<td>14 天一轮：抓 100 条原话，做 1 个 MVP，发 20 个内容/页面，测 1
+个付费入口。</td>
+</tr>
+<tr>
+<td>术</td>
+<td>评论分析、竞品拆解、榜单观察、价格页分析、SEO 主题簇、GEO
+内容结构、平台矩阵、KOL 小测、商店页 A/B、Agent 工作流。</td>
+<td>先小样本验证，不先大规模铺内容、买 KOL 或做完整 App。</td>
+</tr>
+<tr>
+<td>器</td>
+<td>Google Search Console、App Store Connect、Google Play Console、Apple
+Ads、内容日历、需求评分表、飞书/Notion 知识库、OpenAI Agents
+SDK、埋点和支付数据。</td>
+<td>把需求、内容、渠道、付费和留存数据统一到一张增长仪表盘。</td>
+</tr>
+<tr>
+<td>势</td>
+<td>AI 搜索、内容平台、App 商店实验、知识产品化、Agent
+服务正在同时成熟，小团队可以用更低成本测试垂直机会。</td>
+<td>做“可搜索、可演示、可交付、可复用、可订阅”的产品，而不是只做一次性内容或纯咨询。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="道法术器势对应-30-天动作">道法术器势对应 30 天动作</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>时间</th>
+<th>目标</th>
+<th>动作</th>
+<th>输出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第 1-3 天</td>
+<td>选 3 个候选方向</td>
+<td>抓平台原话、竞品、价格页、评论</td>
+<td>需求评分表</td>
+</tr>
+<tr>
+<td>第 4-7 天</td>
+<td>选 1 个方向做 MVP</td>
+<td>做单页工具、Agent 或人工+AI 交付流程</td>
+<td>可演示 MVP</td>
+</tr>
+<tr>
+<td>第 8-14 天</td>
+<td>验证获客入口</td>
+<td>20 篇/条内容 + 1 个官网承接页 + 1 个付费/留资入口</td>
+<td>第一轮渠道数据</td>
+</tr>
+<tr>
+<td>第 15-21 天</td>
+<td>强化有效入口</td>
+<td>放大表现最好的 3 个选题和 1 个平台</td>
+<td>内容复盘表</td>
+</tr>
+<tr>
+<td>第 22-30 天</td>
+<td>产品化</td>
+<td>把交付资料沉淀进知识库，封装 Agent 输出模板</td>
+<td>订阅 MVP 和下一轮 goal</td>
+</tr>
+</tbody>
+</table>
+<h2 id="下一步-goal">下一步 <code>/goal</code></h2>
+<pre class="text"><code>/goal 围绕“为小伟选择一个可验证的 AI 产品方向并设计获客闭环”执行三阶段研究工作流。
+阶段 1 - 广域调研：检索 25 个公开来源，覆盖小红书/抖音/知乎/Reddit/YouTube/Google 搜索、直接竞品、App Store/Google Play 评论、价格页、内容爆款、官方 SEO 与应用商店资料；记录标题、URL、来源类型、检索日期、用户原话和初步价值判断。
+阶段 2 - Deep Research：筛选 10 个高价值来源深读，提取用户原话、痛点聚类、付费证据、竞品结构、内容打法、商店页策略、风险和证据强度；把事实、推断、假设分开写，矛盾信息标成不确定。
+阶段 3 - 业务应用：输出 3 个候选产品方向、每个方向的 MVP、首批 20 个内容选题、官网结构、App 商店页实验、KOL 小测方案、增长指标和 14 天验证计划。
+验证方式：每个方向必须有真实用户原话、现有付费证据和可触达渠道；每个业务动作必须对应产品、页面、文案、SEO、增长、技术实现或验证实验。
+限制：不复制竞品文案、素材、代码、课程；不做低质量外链堆砌；不公开私有链接、原始逐字稿或用户隐私；所有 AI 生成内容必须人工审核。
+停止标准：形成一份可执行研究应用简报，并明确最值得做的 1 个 MVP、1 个官网承接页、1 个内容验证计划和 1 个付费入口。</code></pre>
+<h2 id="资料链接">资料链接</h2>
+<ul>
+<li><a
+href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide">Google
+Search Central: SEO Starter Guide</a></li>
+<li><a
+href="https://developers.google.com/search/docs/fundamentals/ai-optimization-guide">Google
+Search Central: Optimizing for generative AI features</a></li>
+<li><a
+href="https://developers.google.com/search/docs/essentials/spam-policies">Google
+Search Central: Spam Policies for Google Web Search</a></li>
+<li><a href="https://arxiv.org/abs/2311.09735">GEO: Generative Engine
+Optimization</a></li>
+<li><a href="https://adsy.com/">Adsy: Digital PR &amp; Blog Guest
+Posting Service</a></li>
+<li><a
+href="https://developer.apple.com/app-store/product-page-optimization/">Apple
+Product Page Optimization</a></li>
+<li><a
+href="https://developer.apple.com/app-store/custom-product-pages/">Apple
+Custom Product Pages</a></li>
+<li><a
+href="https://ads.apple.com/app-store/best-practices/campaign-structure">Apple
+Ads Campaign Structure</a></li>
+<li><a
+href="https://play.google.com/console/about/acquisitionreporting/">Google
+Play Acquisition Reporting</a></li>
+<li><a
+href="https://developers.openai.com/api/docs/guides/agents">OpenAI
+Agents SDK</a></li>
+<li><a
+href="https://openai.github.io/openai-agents-python/agents/">OpenAI
+Agents SDK Python: Agents</a></li>
+<li><a
+href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">OWASP
+Top 10 for Large Language Model Applications</a></li>
+</ul>
+</body>
+</html>

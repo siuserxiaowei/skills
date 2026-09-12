@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="AI Agent 架构阅读台：汇总 Agent 入门、架构模式、工具与上下文、评估观测、安全治理和业务案例资料。"
+    />
+    <title>AI Agent 架构阅读台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="资料筛选">
+        <a class="brand" href="#top" aria-label="回到顶部">
+          <span class="brand-mark">AG</span>
+          <span>
+            <strong>AI Agent 架构</strong>
+            <small>阅读台</small>
+          </span>
+        </a>
+
+        <nav class="nav-stack" aria-label="页面导航">
+          <a href="#starter" class="nav-link">新手起步</a>
+          <a href="#sources" class="nav-link active">资料库</a>
+          <a href="#course" class="nav-link">学习路线</a>
+          <a href="#guardrails" class="nav-link">边界说明</a>
+          <a href="#candidates" class="nav-link">待深读候选</a>
+        </nav>
+
+        <section class="filter-panel" aria-label="分类筛选">
+          <p class="eyebrow">分类</p>
+          <div id="categoryFilters" class="filter-list"></div>
+        </section>
+
+        <section class="filter-panel" aria-label="阅读状态">
+          <p class="eyebrow">阅读状态</p>
+          <button class="filter-chip active" data-status="all">全部</button>
+          <button class="filter-chip" data-status="unread">未读</button>
+          <button class="filter-chip" data-status="read">已读</button>
+        </section>
+      </aside>
+
+      <main id="top" class="content">
+        <header class="topbar">
+          <div>
+            <h1>AI Agent 架构阅读台</h1>
+            <p>把 Agent 入门、架构模式、工具调用、上下文工程、评估、安全和业务案例放到一个可检索、可标记、可复盘的在线网页里。</p>
+          </div>
+          <nav class="contact-links" aria-label="外部联系方式">
+            <a data-contact="x" href="https://x.com/HIT_SZ" target="_blank" rel="noreferrer">X / Twitter</a>
+            <a data-contact="wechat" href="https://mp.weixin.qq.com/s/oBA6OwoGGelRZKX0AU70Bw" target="_blank" rel="noreferrer">微信公众号</a>
+            <a data-contact="github" href="https://github.com/siuserxiaowei/hr-agent-reading-hub" target="_blank" rel="noreferrer">GitHub 仓库</a>
+          </nav>
+        </header>
+
+        <section class="hero-grid" aria-label="阅读台总览">
+          <div class="hero-copy">
+            <p class="section-kicker">Agent 学习地图</p>
+            <h2>从“会用 AI”到“能架构业务 Agent”</h2>
+            <p>
+              这里收纳了 40+ 个已整理来源。公开网页不会整篇转载原文，而是提供阅读摘要、学习用途、重点问题和原文入口，方便你系统理解怎么做一个好的 Agent。
+            </p>
+            <div class="hero-actions">
+              <a class="primary-action" href="#starter">从零开始</a>
+              <a class="secondary-action" href="#course">看学习路线</a>
+            </div>
+          </div>
+          <figure class="hero-art">
+            <img src="./assets/agent-architecture-concept.png" alt="AI Agent 架构阅读台界面概念图" />
+          </figure>
+        </section>
+
+        <section id="starter" class="starter-section" aria-labelledby="starterTitle">
+          <div class="section-heading starter-heading">
+            <div>
+              <p class="section-kicker">给第一次来的你</p>
+              <h2 id="starterTitle">先走完这 3 站，再决定要不要深挖</h2>
+            </div>
+            <button class="secondary-action" type="button" data-open-onboarding>重新选择起点</button>
+          </div>
+          <p class="starter-intro">不用一次读完全部资料。先建立判断标准，再理解工具和上下文，最后完成一个小实践；每一站完成后再进入下一站。</p>
+          <ol class="starter-steps">
+            <li data-beginner-step>
+              <span class="starter-number">01</span>
+              <div>
+                <p class="starter-label">先建立判断</p>
+                <h3>什么任务才真的需要 Agent？</h3>
+                <p>先分清聊天机器人、自动化工作流和 Agent，避免为了“智能”而把简单问题做复杂。</p>
+                <button class="starter-source" type="button" data-starter-source="openai-practical-guide-agents">阅读 Agent 入门总览</button>
+              </div>
+            </li>
+            <li data-beginner-step>
+              <span class="starter-number">02</span>
+              <div>
+                <p class="starter-label">再理解能力边界</p>
+                <h3>工具和上下文为什么决定效果？</h3>
+                <p>先看 Agent 怎样获取资料、调用工具和接收错误反馈，不必急着研究复杂编排。</p>
+                <button class="starter-source" type="button" data-starter-source="anthropic-writing-tools">阅读工具设计入门</button>
+              </div>
+            </li>
+            <li data-beginner-step>
+              <span class="starter-number">03</span>
+              <div>
+                <p class="starter-label">最后做一次小实践</p>
+                <h3>跑通第一个可验证的小任务</h3>
+                <p>用官方最小示例完成一次调用，再回来看框架、记忆和多 Agent，理解会扎实很多。</p>
+                <button class="starter-source" type="button" data-starter-source="openai-developer-quickstart">打开第一个实操</button>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <section class="metrics-row" aria-label="资料统计">
+          <article>
+            <strong id="totalCount">20</strong>
+            <span>已整理来源</span>
+          </article>
+          <article>
+            <strong id="officialCount">8</strong>
+            <span>官方/一手资料</span>
+          </article>
+          <article>
+            <strong id="readCount">0</strong>
+            <span>已标记阅读</span>
+          </article>
+          <article>
+            <strong id="progressCount">0%</strong>
+            <span>阅读进度</span>
+          </article>
+        </section>
+
+        <section id="collections" class="collections-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">精选合集</p>
+              <h2>按学习目标打包阅读</h2>
+            </div>
+          </div>
+          <div id="collectionCards" class="collection-grid"></div>
+        </section>
+
+        <section id="sources" class="workspace">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">原文链接</p>
+              <h2>全部资料 <span id="activeCount" class="source-count">当前显示 0 / 总计 0</span></h2>
+            </div>
+            <div class="source-controls">
+              <label class="sort-box">
+                <span>排序</span>
+                <select id="sortSelect">
+                  <option value="priority">推荐优先</option>
+                  <option value="category">分类</option>
+                  <option value="platform">平台</option>
+                </select>
+              </label>
+              <label class="search-box">
+                <span>搜索内容、平台、学习模块</span>
+                <input id="searchInput" type="search" placeholder="例如：工具调用、MCP、evaluation、human-in-the-loop" />
+              </label>
+              <button class="clear-filters" type="button" data-clear-filters hidden>重置筛选</button>
+            </div>
+          </div>
+
+          <div class="workspace-layout">
+            <section class="source-list" aria-label="资料卡片列表">
+              <div id="categorySummary" class="category-summary" aria-label="当前显示资料的分类摘要"></div>
+              <div id="sourceCards" class="cards-grid"></div>
+            </section>
+
+            <aside class="reader-panel" aria-label="选中资料详情">
+              <div id="readerDetail" class="reader-card"></div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="course" class="course-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">学习路线</p>
+              <h2>从入门到可交付 Agent</h2>
+            </div>
+          </div>
+          <div id="courseTimeline" class="timeline"></div>
+        </section>
+
+        <section id="guardrails" class="guardrail-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">边界说明</p>
+              <h2>公开阅读页的内容边界</h2>
+            </div>
+          </div>
+          <div class="guardrail-grid">
+            <article>
+              <h3>不做全文搬运</h3>
+              <p>这个站点只提供阅读笔记、短摘要、课程关联和原文入口。受版权保护的文章请跳转原站阅读。</p>
+            </article>
+            <article>
+              <h3>高风险动作保留人工审核</h3>
+              <p>AI 可以辅助检索、摘要、工具调用和状态推进，但涉及权限、资金、候选人、客户承诺等关键动作应由人负责。</p>
+            </article>
+            <article>
+              <h3>资料状态透明</h3>
+              <p>已经深读和只是候选的资料会分开标注，避免把未验证信息当作课程结论。</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="candidates" class="candidate-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">继续深读</p>
+              <h2>已核验的扩展资料</h2>
+            </div>
+          </div>
+          <ul id="candidateList" class="candidate-list"></ul>
+        </section>
+
+      </main>
+    </div>
+
+    <dialog id="onboardingDialog" class="onboarding-dialog" aria-labelledby="onboardingTitle">
+      <div class="onboarding-content">
+        <p class="section-kicker">AI Agent 新手导航</p>
+        <h2 id="onboardingTitle">你想从哪里开始？</h2>
+        <p>先选一个起点。阅读台会把你带到最合适的第一步，不需要先看完全部资料。</p>
+        <div class="onboarding-options">
+          <button class="onboarding-choice" type="button" data-onboarding-choice="beginner">
+            <strong>我想先弄懂 Agent</strong>
+            <span>从概念、边界和真实应用场景开始。</span>
+          </button>
+          <button class="onboarding-choice" type="button" data-onboarding-choice="builder">
+            <strong>我想尽快动手做一个</strong>
+            <span>从官方最小实操开始，再回头补理论。</span>
+          </button>
+        </div>
+        <button class="onboarding-skip" type="button" data-dismiss-onboarding>我先自己看看</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

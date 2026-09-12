@@ -1,0 +1,31 @@
+{
+  "schema": "top50-router-probe/v1",
+  "probed_at": "2026-08-26T00:04:40.222023Z",
+  "engines": {
+    "python": {
+      "engine_id": "python-ranker",
+      "version": "deterministic-v2",
+      "contract": "top50-python-adapter/v1",
+      "ready": true,
+      "returncode": 0,
+      "capabilities": ["control", "platform_orchestration", "platform_cli", "browser_session", "rank", "contract_validation", "publish_orchestration"]
+    },
+    "go": {
+      "engine_id": "go-collector",
+      "version": "0.2.0",
+      "contract": "top50-engine/v1",
+      "ready": true,
+      "returncode": 0,
+      "capabilities": ["public_http_collect", "robots_rfc9309", "fixed_transparent_user_agent", "bounded_concurrency", "input_sha256_binding"]
+    },
+    "rust": {
+      "engine_id": "rust-processor",
+      "version": "0.1.0",
+      "contract": "top50-engine/v1",
+      "ready": true,
+      "returncode": 0,
+      "capabilities": ["candidate_normalization", "safe_url_validation", "strict_content_fingerprinting", "transitive_exact_clustering", "near_duplicate_review_flags"]
+    }
+  },
+  "evidence_note": "原始 probe 命令与 stdout 已在任务工具日志中保留；本文件保存通过合同校验后的能力摘要。"
+}

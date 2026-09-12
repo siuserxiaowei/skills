@@ -1,0 +1,508 @@
+{
+  "artifacts": {
+    "curator_acceptance": "route-runs/pi-agent-runtime-20260826/shards/local-bundle/curate-result.json",
+    "extraction_result": "route-runs/pi-agent-runtime-20260826/shards/local-bundle/extraction-result.json",
+    "merge_result": "route-runs/pi-agent-runtime-20260826/merge/merged-sources.json",
+    "ranking_result": "route-runs/pi-agent-runtime-20260826/shards/local-bundle/ranking-output/run_summary.json",
+    "shard_result_manifest": "route-runs/pi-agent-runtime-20260826/merge/shard-results.manifest.json"
+  },
+  "assumptions": [],
+  "bundle_digest_sha256": "7e04fea33a1c358c233b476621f1943aecfc20dc6150eedaab4a1a48377dcd02",
+  "coverage_targets": [
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "csdn",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "wechat_official_accounts",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "zhihu",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "xiaohongshu",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "weibo",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "douyin",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "x",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "bilibili",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "juejin",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "youtube",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "linuxdo",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "github",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "baidu_search",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "google_search",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "bing_search",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "toutiao",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "36kr",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "infoq",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "segmentfault",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "oschina",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "v2ex",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "reddit",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    },
+    {
+      "access_kind": "platform_cli",
+      "platform_id": "hacker_news",
+      "required": true,
+      "route_status": "planned"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "medium",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "linkedin",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "kuaishou",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "wechat_channels",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    },
+    {
+      "access_kind": "browser_session",
+      "platform_id": "tiktok",
+      "required": true,
+      "route_status": "pending_checkpoint"
+    }
+  ],
+  "dual_run": false,
+  "engine_mode": "auto",
+  "login_mode": "user-assisted",
+  "omissions": [],
+  "plan_filenames": {
+    "browser-session-discovery": "route-runs/pi-agent-runtime-20260826/plans/browser-session-discovery.plan.json",
+    "browser-session-fetch": "route-runs/pi-agent-runtime-20260826/plans/browser-session-fetch.plan.json",
+    "platform-cli-discovery": "route-runs/pi-agent-runtime-20260826/plans/platform-cli-discovery.plan.json",
+    "platform-cli-fetch": "route-runs/pi-agent-runtime-20260826/plans/platform-cli-fetch.plan.json"
+  },
+  "platform_scope_mode": "required_plus_default",
+  "query_plan_binding": {
+    "artifact_sha256": "60ad7fe825f04997992b70af1c575aee1d52c41b224c63969c53963457c20a1e",
+    "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/query_plan.json",
+    "plan_digest_sha256": "8934f777c375b856fdba8cd453d8132a936b5cf78ba6e4b7a9b1b9af1dae49ea",
+    "query_count": 280,
+    "query_ids_sha256": "3b39bcc0428ea4c7ebe9454771ba558c0063cada2ac2092b8a9695e53a10a00f"
+  },
+  "risk": "medium",
+  "run_id": "pi-agent-runtime-20260826",
+  "schema": "top50-route-bundle/v1",
+  "shards": [
+    {
+      "depends_on": [],
+      "input_count": 16,
+      "login_requested": false,
+      "merge_contract": "top50-route-shard-result/v1",
+      "plan_filename": "route-runs/pi-agent-runtime-20260826/plans/platform-cli-discovery.plan.json",
+      "platform_ids": [
+        "csdn",
+        "x",
+        "bilibili",
+        "juejin",
+        "youtube",
+        "github",
+        "baidu_search",
+        "google_search",
+        "bing_search",
+        "toutiao",
+        "36kr",
+        "infoq",
+        "segmentfault",
+        "oschina",
+        "v2ex",
+        "hacker_news"
+      ],
+      "required_platform_ids": [
+        "csdn",
+        "x",
+        "bilibili",
+        "juejin",
+        "youtube",
+        "github",
+        "baidu_search",
+        "google_search",
+        "bing_search",
+        "toutiao",
+        "36kr",
+        "infoq",
+        "segmentfault",
+        "oschina",
+        "v2ex",
+        "hacker_news"
+      ],
+      "router_request": {
+        "dual_run": false,
+        "engine_mode": "python",
+        "query_plan_binding": {
+          "artifact_sha256": "60ad7fe825f04997992b70af1c575aee1d52c41b224c63969c53963457c20a1e",
+          "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/query_plan.json",
+          "plan_digest_sha256": "8934f777c375b856fdba8cd453d8132a936b5cf78ba6e4b7a9b1b9af1dae49ea",
+          "query_count": 280,
+          "query_ids_sha256": "3b39bcc0428ea4c7ebe9454771ba558c0063cada2ac2092b8a9695e53a10a00f"
+        },
+        "required_capabilities": [],
+        "risk": "medium",
+        "run_dir": "route-runs/pi-agent-runtime-20260826/shards/platform-cli-discovery",
+        "run_id": "pi-agent-runtime-20260826",
+        "schema": "top50-router-request/v1",
+        "source_kind": "platform_cli",
+        "stage": "discovery",
+        "top_n": 50,
+        "workload": "small"
+      },
+      "run_dir": "route-runs/pi-agent-runtime-20260826/shards/platform-cli-discovery",
+      "shard_id": "platform-cli-discovery",
+      "source_kind": "platform_cli",
+      "stage": "discovery",
+      "status": "ready_to_plan",
+      "workload": "small"
+    },
+    {
+      "depends_on": [
+        "platform-cli-discovery"
+      ],
+      "input_count": 16,
+      "login_requested": false,
+      "merge_contract": "top50-route-shard-result/v1",
+      "plan_filename": "route-runs/pi-agent-runtime-20260826/plans/platform-cli-fetch.plan.json",
+      "platform_ids": [
+        "csdn",
+        "x",
+        "bilibili",
+        "juejin",
+        "youtube",
+        "github",
+        "baidu_search",
+        "google_search",
+        "bing_search",
+        "toutiao",
+        "36kr",
+        "infoq",
+        "segmentfault",
+        "oschina",
+        "v2ex",
+        "hacker_news"
+      ],
+      "required_platform_ids": [
+        "csdn",
+        "x",
+        "bilibili",
+        "juejin",
+        "youtube",
+        "github",
+        "baidu_search",
+        "google_search",
+        "bing_search",
+        "toutiao",
+        "36kr",
+        "infoq",
+        "segmentfault",
+        "oschina",
+        "v2ex",
+        "hacker_news"
+      ],
+      "router_request": {
+        "dual_run": false,
+        "engine_mode": "python",
+        "required_capabilities": [],
+        "risk": "medium",
+        "run_dir": "route-runs/pi-agent-runtime-20260826/shards/platform-cli-fetch",
+        "run_id": "pi-agent-runtime-20260826",
+        "schema": "top50-router-request/v1",
+        "source_kind": "platform_cli",
+        "stage": "fetch",
+        "top_n": 50,
+        "workload": "small"
+      },
+      "run_dir": "route-runs/pi-agent-runtime-20260826/shards/platform-cli-fetch",
+      "shard_id": "platform-cli-fetch",
+      "source_kind": "platform_cli",
+      "stage": "fetch",
+      "status": "ready_to_plan",
+      "workload": "small"
+    },
+    {
+      "checkpoint": {
+        "access_kind": "browser_session",
+        "contract": "top50-login-checkpoint/v1",
+        "next_gate": "authenticated_read_only_probe",
+        "path": "route-runs/pi-agent-runtime-20260826/checkpoints/browser-session.json",
+        "platform_ids": [
+          "wechat_official_accounts",
+          "zhihu",
+          "xiaohongshu",
+          "weibo",
+          "douyin",
+          "linuxdo",
+          "reddit",
+          "medium",
+          "linkedin",
+          "kuaishou",
+          "wechat_channels",
+          "tiktok"
+        ],
+        "required_before_plan": true,
+        "run_id": "pi-agent-runtime-20260826"
+      },
+      "depends_on": [],
+      "input_count": 12,
+      "login_requested": false,
+      "merge_contract": "top50-route-shard-result/v1",
+      "plan_filename": "route-runs/pi-agent-runtime-20260826/plans/browser-session-discovery.plan.json",
+      "platform_ids": [
+        "wechat_official_accounts",
+        "zhihu",
+        "xiaohongshu",
+        "weibo",
+        "douyin",
+        "linuxdo",
+        "reddit",
+        "medium",
+        "linkedin",
+        "kuaishou",
+        "wechat_channels",
+        "tiktok"
+      ],
+      "reason_code": "browser_session_requires_authenticated_probe",
+      "required_platform_ids": [
+        "wechat_official_accounts",
+        "zhihu",
+        "xiaohongshu",
+        "weibo",
+        "douyin",
+        "linuxdo",
+        "reddit",
+        "medium",
+        "linkedin",
+        "kuaishou",
+        "wechat_channels",
+        "tiktok"
+      ],
+      "run_dir": "route-runs/pi-agent-runtime-20260826/shards/browser-session-discovery",
+      "shard_id": "browser-session-discovery",
+      "source_kind": "browser_session",
+      "stage": "discovery",
+      "status": "pending_checkpoint",
+      "workload": "small"
+    },
+    {
+      "checkpoint": {
+        "access_kind": "browser_session",
+        "contract": "top50-login-checkpoint/v1",
+        "next_gate": "authenticated_read_only_probe",
+        "path": "route-runs/pi-agent-runtime-20260826/checkpoints/browser-session.json",
+        "platform_ids": [
+          "wechat_official_accounts",
+          "zhihu",
+          "xiaohongshu",
+          "weibo",
+          "douyin",
+          "linuxdo",
+          "reddit",
+          "medium",
+          "linkedin",
+          "kuaishou",
+          "wechat_channels",
+          "tiktok"
+        ],
+        "required_before_plan": true,
+        "run_id": "pi-agent-runtime-20260826"
+      },
+      "depends_on": [
+        "browser-session-discovery"
+      ],
+      "input_count": 12,
+      "login_requested": false,
+      "merge_contract": "top50-route-shard-result/v1",
+      "plan_filename": "route-runs/pi-agent-runtime-20260826/plans/browser-session-fetch.plan.json",
+      "platform_ids": [
+        "wechat_official_accounts",
+        "zhihu",
+        "xiaohongshu",
+        "weibo",
+        "douyin",
+        "linuxdo",
+        "reddit",
+        "medium",
+        "linkedin",
+        "kuaishou",
+        "wechat_channels",
+        "tiktok"
+      ],
+      "reason_code": "browser_session_requires_authenticated_probe",
+      "required_platform_ids": [
+        "wechat_official_accounts",
+        "zhihu",
+        "xiaohongshu",
+        "weibo",
+        "douyin",
+        "linuxdo",
+        "reddit",
+        "medium",
+        "linkedin",
+        "kuaishou",
+        "wechat_channels",
+        "tiktok"
+      ],
+      "run_dir": "route-runs/pi-agent-runtime-20260826/shards/browser-session-fetch",
+      "shard_id": "browser-session-fetch",
+      "source_kind": "browser_session",
+      "stage": "fetch",
+      "status": "pending_checkpoint",
+      "workload": "small"
+    }
+  ],
+  "shared_handoffs": [
+    {
+      "fail_closed": true,
+      "from_stage": "shard_results",
+      "handoff_id": "shards-to-merge",
+      "input_artifact": "route-runs/pi-agent-runtime-20260826/merge/shard-results.manifest.json",
+      "input_contract": "top50-route-shard-result-manifest/v1",
+      "input_shard_ids": [
+        "platform-cli-discovery",
+        "platform-cli-fetch"
+      ],
+      "output_artifact": "route-runs/pi-agent-runtime-20260826/merge/merged-sources.json",
+      "output_contract": "top50-route-merge-result/v1",
+      "required_status": "complete",
+      "to_stage": "merge"
+    },
+    {
+      "fail_closed": true,
+      "from_stage": "merge",
+      "handoff_id": "merge-to-curate",
+      "input_artifact": "route-runs/pi-agent-runtime-20260826/merge/merged-sources.json",
+      "input_contract": "top50-route-merge-result/v1",
+      "output_artifact": "route-runs/pi-agent-runtime-20260826/shards/local-bundle/curate-result.json",
+      "output_contract": "top50-curator-acceptance/v1",
+      "required_status": "complete",
+      "to_stage": "curate"
+    },
+    {
+      "fail_closed": true,
+      "from_stage": "curate",
+      "handoff_id": "curate-to-rank",
+      "input_artifact": "route-runs/pi-agent-runtime-20260826/shards/local-bundle/curate-result.json",
+      "input_contract": "top50-curator-acceptance/v1",
+      "output_artifact": "route-runs/pi-agent-runtime-20260826/shards/local-bundle/ranking-output/run_summary.json",
+      "output_contract": "top50-ranking-summary/v1",
+      "required_status": "accepted",
+      "to_stage": "rank"
+    }
+  ],
+  "top_n": 50,
+  "topic": "earendil-works/pi Agent 运行时与 DeepSeek Harness"
+}

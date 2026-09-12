@@ -1,0 +1,112 @@
+{
+  "assumptions": [
+    "Pi 指 earendil-works/pi，而非 Raspberry Pi、加密货币 PI 或其他同名项目",
+    "DeepSeek Harness 指 deepseek-ai/deepseek-harness 开发者预览版",
+    "Top 50 是本次冻结范围、时间、路由与 deterministic-v2 评分下的策展榜单，不是全网绝对排名",
+    "GitHub Pages 发布属于用户在当前请求明确授权的外部写入"
+  ],
+  "audience": "想从 API demo 进阶到生产级 Agent 系统设计的中文开发者",
+  "candidate_pool_target": 150,
+  "completed_at": "2026-08-26T18:30:00+08:00",
+  "counts": {
+    "candidates": 50,
+    "discovered": 50,
+    "evidence_cards": 50,
+    "platforms": 28,
+    "queries": 56,
+    "sources": 50
+  },
+  "curator": {
+    "id": "primary-curator-codex"
+  },
+  "dual_run": false,
+  "engine_mode": "auto",
+  "login_mode": "user-assisted",
+  "original_request": "研究 Pi Agent，比较 DeepSeek Harness，覆盖至少 30 个平台，策展商业化/技巧/入门/进阶 Top 50，并发布 GitHub Pages 学习知识库",
+  "phases": {
+    "curator_acceptance": "complete",
+    "discovery": "complete",
+    "extraction": "complete",
+    "fetch": "complete",
+    "ranking": "pending",
+    "scope": "complete",
+    "worker_check": "complete"
+  },
+  "publish_mode": "github-pages",
+  "purpose": "knowledge_base",
+  "ranking_profile": "balanced",
+  "recent_social_mode": "auto",
+  "research_mode": "standard",
+  "research_question": "开发者如何从源码理解 Pi 的运行时设计、工程化使用与商业化机会，它与 DeepSeek Harness 的架构取舍有何不同？",
+  "run_id": "pi-agent-runtime-20260826",
+  "schema_version": "1.1",
+  "scope": {
+    "claim_20_plus_platforms": true,
+    "geography": "CN+global",
+    "languages": [
+      "zh",
+      "en"
+    ],
+    "required_platforms": [
+      "csdn",
+      "wechat_official_accounts",
+      "zhihu",
+      "xiaohongshu",
+      "weibo",
+      "douyin",
+      "x",
+      "bilibili",
+      "juejin",
+      "youtube",
+      "linuxdo",
+      "github",
+      "baidu_search",
+      "google_search",
+      "bing_search",
+      "toutiao",
+      "36kr",
+      "infoq",
+      "segmentfault",
+      "oschina",
+      "v2ex",
+      "reddit",
+      "hacker_news",
+      "medium",
+      "linkedin",
+      "kuaishou",
+      "wechat_channels",
+      "tiktok"
+    ],
+    "timeframe": {
+      "end": "2026-08-26",
+      "start": "2024-01-01"
+    },
+    "topic": "earendil-works/pi Agent 运行时与 DeepSeek Harness"
+  },
+  "score_model": "deterministic-v2",
+  "started_at": "2026-08-26T08:04:40+08:00",
+  "status": "curation_complete",
+  "stop_conditions": [
+    "36 个计划渠道均进入 complete|partial|blocked|rejected|not_applicable 终态",
+    "至少 20 个 canonical 平台有已审查终态，至少 12 个平台真实召回候选",
+    "所有 Top 50 条目均有可解析、被 curator 接受的 strong/medium 证据",
+    "本地站点构建、链接与移动端可用性验证通过，GitHub Pages 回读成功"
+  ],
+  "top_n": 50,
+  "topic": "earendil-works/pi Agent 运行时与 DeepSeek Harness",
+  "wigolo_mode": "disabled",
+  "workers": [
+    {
+      "id": "china-discovery"
+    },
+    {
+      "id": "international-discovery"
+    },
+    {
+      "id": "pi-source-architecture"
+    },
+    {
+      "id": "merged-discovery-workers"
+    }
+  ]
+}

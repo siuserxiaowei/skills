@@ -1,0 +1,51 @@
+name: Daily Xiaowei Goal Evolution
+
+on:
+  schedule:
+    # 09:00 Asia/Shanghai every day.
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  daily-evolution-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Run daily evolution audit
+        id: audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/daily_evolution_audit.py --check-release --report /tmp/daily-evolution-report.md --github-output "$GITHUB_OUTPUT"
+
+      - name: Upload daily evolution report
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-evolution-report
+          path: /tmp/daily-evolution-report.md
+
+      - name: Create or update evolution handoff issue
+        if: steps.audit.outputs.action_required == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          issue_number="$(gh issue list --state open --search 'Daily evolution audit in:title' --json number --jq '.[0].number // ""')"
+          if [ -n "$issue_number" ]; then
+            gh issue comment "$issue_number" --body-file /tmp/daily-evolution-report.md
+          else
+            gh issue create --title "Daily evolution audit: action required" --body-file /tmp/daily-evolution-report.md
+          fi

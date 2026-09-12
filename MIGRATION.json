@@ -1,0 +1,192 @@
+[
+  {
+    "name": "siuser-agent-network-workbench",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "Agent 调度与编程工具",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/Agent 调度与编程工具/siuser-agent-network-workbench",
+    "sourceCommit": "fa9f657eea39e4352e5ab378c1d580a81a6d8fd1",
+    "historyRefs": 1,
+    "originalUrl": "https://github.com/siuserxiaowei/siuser-agent-network-workbench"
+  },
+  {
+    "name": "feishu-claude-code-bridge",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "Agent 调度与编程工具",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/Agent 调度与编程工具/feishu-claude-code-bridge",
+    "sourceCommit": "314f6dc301c18fc42027d139bea4cd48306cad5c",
+    "historyRefs": 1,
+    "originalUrl": "https://github.com/siuserxiaowei/feishu-claude-code-bridge"
+  },
+  {
+    "name": "agent-task-spec",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "Agent 调度与编程工具",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/Agent 调度与编程工具/agent-task-spec",
+    "sourceCommit": "fedece64f6d8ae543bd760ce5599e56338d9d7a3",
+    "historyRefs": 1,
+    "originalUrl": "https://github.com/siuserxiaowei/agent-task-spec"
+  },
+  {
+    "name": "xiaowei-goal",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "Agent 调度与编程工具",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/Agent 调度与编程工具/xiaowei-goal",
+    "sourceCommit": "672ce7a7b8fdecdbe4745326bafa8fad2982e82b",
+    "historyRefs": 12,
+    "originalUrl": "https://github.com/siuserxiaowei/xiaowei-goal"
+  },
+  {
+    "name": "codex-task-status-skill",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "Agent 调度与编程工具",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/Agent 调度与编程工具/codex-task-status-skill",
+    "sourceCommit": "733e7f50b2bf507006b38fb23c5434ef2b578214",
+    "historyRefs": 5,
+    "originalUrl": "https://github.com/siuserxiaowei/codex-task-status-skill"
+  },
+  {
+    "name": "codex-efficiency-skills",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "Agent 调度与编程工具",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/Agent 调度与编程工具/codex-efficiency-skills",
+    "sourceCommit": "367f9e4b85c30e23a7d9b40477c14c2645386bfa",
+    "historyRefs": 1,
+    "originalUrl": "https://github.com/siuserxiaowei/codex-efficiency-skills"
+  },
+  {
+    "name": "Codex-Bugfire-Skin",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "Agent 调度与编程工具",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/Agent 调度与编程工具/Codex-Bugfire-Skin",
+    "sourceCommit": "071c244ab946f1ca172fcdbabbffe990f4877911",
+    "historyRefs": 4,
+    "originalUrl": "https://github.com/siuserxiaowei/Codex-Bugfire-Skin"
+  },
+  {
+    "name": "Agent-Reach",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "Agent 调度与编程工具",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/Agent 调度与编程工具/Agent-Reach",
+    "sourceCommit": "dccc70650085164af1e51320b3f36765ff00e192",
+    "historyRefs": 10,
+    "originalUrl": "https://github.com/siuserxiaowei/Agent-Reach"
+  },
+  {
+    "name": "AQBot",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "Agent 调度与编程工具",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/Agent 调度与编程工具/AQBot",
+    "sourceCommit": "9a7d35aa390c277abb01ad57b6e2d544cbc8cc4a",
+    "historyRefs": 1,
+    "originalUrl": "https://github.com/siuserxiaowei/AQBot"
+  },
+  {
+    "name": "ai-coding-knowledge-framework",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "AI 编程学习资料",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/AI 编程学习资料/ai-coding-knowledge-framework",
+    "sourceCommit": "f7483ed8190ef3d73f299bbb1129df036b8ac7a5",
+    "historyRefs": 1,
+    "originalUrl": "https://github.com/siuserxiaowei/ai-coding-knowledge-framework"
+  },
+  {
+    "name": "hr-agent-reading-hub",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "AI 编程学习资料",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/AI 编程学习资料/hr-agent-reading-hub",
+    "sourceCommit": "7e32841342b5244be83d718b33a41700dad40404",
+    "historyRefs": 1,
+    "originalUrl": "https://github.com/siuserxiaowei/hr-agent-reading-hub"
+  },
+  {
+    "name": "pi-runtime-field-guide",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "AI 编程学习资料",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/AI 编程学习资料/pi-runtime-field-guide",
+    "sourceCommit": "6ff002710b6d0a56964fffade5da6fe21fd138ef",
+    "historyRefs": 2,
+    "originalUrl": "https://github.com/siuserxiaowei/pi-runtime-field-guide"
+  },
+  {
+    "name": "skills",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "技能集合与工具目录",
+    "target": "xiaowei-ai-tools",
+    "path": ".",
+    "sourceCommit": "2d34c86546f24bd27db5c3be268646de96e8bd5b",
+    "historyRefs": 5,
+    "originalUrl": "https://github.com/siuserxiaowei/skills"
+  },
+  {
+    "name": "awesome-agent-skills",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "技能集合与工具目录",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/技能集合与工具目录/awesome-agent-skills",
+    "sourceCommit": "cdf5ae3ff506e6f3737122bb9d24ac7d727cb6a0",
+    "historyRefs": 2,
+    "originalUrl": "https://github.com/siuserxiaowei/awesome-agent-skills"
+  },
+  {
+    "name": "awesome-codex-skills",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "技能集合与工具目录",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/技能集合与工具目录/awesome-codex-skills",
+    "sourceCommit": "9f4fccb5a80518c471ad3e0b8b447d72f8b7c12d",
+    "historyRefs": 2,
+    "originalUrl": "https://github.com/siuserxiaowei/awesome-codex-skills"
+  },
+  {
+    "name": "heilcheng-awesome-agent-skills",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "技能集合与工具目录",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/技能集合与工具目录/heilcheng-awesome-agent-skills",
+    "sourceCommit": "de9056857eb0e96da833469d2ee3ac392058225d",
+    "historyRefs": 2,
+    "originalUrl": "https://github.com/siuserxiaowei/heilcheng-awesome-agent-skills"
+  },
+  {
+    "name": "jacky-awesome-agent-skills",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "技能集合与工具目录",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/技能集合与工具目录/jacky-awesome-agent-skills",
+    "sourceCommit": "2961d1eaf19948804cc228113cdf80f31bba2731",
+    "historyRefs": 2,
+    "originalUrl": "https://github.com/siuserxiaowei/jacky-awesome-agent-skills"
+  },
+  {
+    "name": "awesome-ai-tools",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "技能集合与工具目录",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/技能集合与工具目录/awesome-ai-tools",
+    "sourceCommit": "9d8b9d49fa26114fcc635a80ac1db1e950d3542a",
+    "historyRefs": 2,
+    "originalUrl": "https://github.com/siuserxiaowei/awesome-ai-tools"
+  },
+  {
+    "name": "eudk-awesome-ai-tools",
+    "group": "AI 工具与 Agent 开发",
+    "subgroup": "技能集合与工具目录",
+    "target": "xiaowei-ai-tools",
+    "path": "projects/技能集合与工具目录/eudk-awesome-ai-tools",
+    "sourceCommit": "626be08c52c330c8aadf000e7ad3046d16481904",
+    "historyRefs": 3,
+    "originalUrl": "https://github.com/siuserxiaowei/eudk-awesome-ai-tools"
+  }
+]

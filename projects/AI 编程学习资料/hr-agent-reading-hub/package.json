@@ -1,0 +1,11 @@
+{
+  "name": "agent-architecture-reading-hub",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate:sources": "node tools/validate-sources.mjs",
+    "check:links": "node tools/validate-sources.mjs --check-links",
+    "smoke": "node tools/smoke-check.mjs"
+  }
+}

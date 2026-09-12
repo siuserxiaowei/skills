@@ -1,0 +1,962 @@
+[
+  {
+    "name": "Agent Skills Open Standard",
+    "nameZh": "Agent Skills 开放标准",
+    "desc": "Agent Skills 官方规范文档",
+    "descEn": "Official Agent Skills specification",
+    "stars": "-",
+    "platform": "all",
+    "category": "official",
+    "url": "https://skill.md"
+  },
+  {
+    "name": "Agent Skills Specification",
+    "nameZh": "Agent Skills 规范",
+    "desc": "SKILL.md 格式规范",
+    "descEn": "SKILL.md format specification",
+    "stars": "-",
+    "platform": "all",
+    "category": "official",
+    "url": "https://agentskills.io/specification"
+  },
+  {
+    "name": "agentskills/agentskills",
+    "nameZh": "agentskills/agentskills",
+    "desc": "Agent Skills 官方规范与文档仓库",
+    "descEn": "Official Agent Skills specification and documentation repository",
+    "stars": "19.9k",
+    "platform": "all",
+    "category": "official",
+    "url": "https://github.com/agentskills/agentskills"
+  },
+  {
+    "name": "anthropics/skills",
+    "nameZh": "anthropics/skills",
+    "desc": "Anthropic 官方 Agent Skills 仓库",
+    "descEn": "Official Anthropic Agent Skills repository",
+    "stars": "169.8k",
+    "platform": "all",
+    "category": "official",
+    "url": "https://github.com/anthropics/skills"
+  },
+  {
+    "name": "GitHub Docs: About agent skills",
+    "nameZh": "GitHub Docs: About agent skills",
+    "desc": "GitHub 官方 agent skills 概览，涵盖支持的宿主环境与 gh skill",
+    "descEn": "GitHub official overview of agent skills, supported hosts, and gh skill",
+    "stars": "-",
+    "platform": "copilot",
+    "category": "official",
+    "url": "https://docs.github.com/en/copilot/concepts/agents/about-agent-skills"
+  },
+  {
+    "name": "GitHub Docs: Adding agent skills for GitHub Copilot",
+    "nameZh": "GitHub Docs: Adding agent skills for GitHub Copilot",
+    "desc": "GitHub 官方创建、安装与发布 agent skills 指南",
+    "descEn": "GitHub official guide for creating, installing, and publishing agent skills",
+    "stars": "-",
+    "platform": "copilot",
+    "category": "official",
+    "url": "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/add-skills"
+  },
+  {
+    "name": "GitHub CLI: gh skill",
+    "nameZh": "GitHub CLI: gh skill",
+    "desc": "GitHub CLI 官方 Skills 命令，用于发现、安装、更新和发布 Agent Skills",
+    "descEn": "Official GitHub CLI commands for discovering, installing, updating, and publishing Agent Skills",
+    "stars": "-",
+    "platform": "all",
+    "category": "official",
+    "url": "https://cli.github.com/manual/gh_skill"
+  },
+  {
+    "name": "VS Code Docs: Use Agent Skills in VS Code",
+    "nameZh": "VS Code Docs: Use Agent Skills in VS Code",
+    "desc": "VS Code 官方 Agent Skills 使用指南，面向 GitHub Copilot in VS Code",
+    "descEn": "Official VS Code guide for using Agent Skills with GitHub Copilot",
+    "stars": "-",
+    "platform": "copilot",
+    "category": "official",
+    "url": "https://code.visualstudio.com/docs/copilot/customization/agent-skills"
+  },
+  {
+    "name": "vercel-labs/skills",
+    "nameZh": "vercel-labs/skills",
+    "desc": "Vercel 官方 Skills CLI 工具（npx skills add）",
+    "descEn": "Vercel official Skills CLI tool",
+    "stars": "5.4k",
+    "platform": "all",
+    "category": "official",
+    "url": "https://github.com/vercel-labs/add-skill"
+  },
+  {
+    "name": "microsoft/skills",
+    "nameZh": "microsoft/skills",
+    "desc": "微软官方 131 个 Azure SDK Skills",
+    "descEn": "Microsoft official 131 Azure SDK Skills",
+    "stars": "1.2k",
+    "platform": "all",
+    "category": "official",
+    "url": "https://github.com/microsoft/agent-skills"
+  },
+  {
+    "name": "microsoft/azure-skills",
+    "nameZh": "microsoft/azure-skills",
+    "desc": "微软官方 Azure Skills 插件，内置 MCP 配置与 20 个 Azure 技能",
+    "descEn": "Official Azure skills plugin with MCP server configurations and 20 curated Azure skills",
+    "stars": "670",
+    "platform": "all",
+    "category": "official",
+    "url": "https://github.com/microsoft/azure-skills"
+  },
+  {
+    "name": "OpenAI Codex: Agent Skills",
+    "nameZh": "OpenAI Codex: Agent Skills",
+    "desc": "OpenAI 官方 Codex Agent Skills 使用指南，覆盖 CLI、IDE 扩展和 Codex app",
+    "descEn": "OpenAI official guide for using Agent Skills in Codex CLI, IDE extension, and Codex app",
+    "stars": "-",
+    "platform": "codex",
+    "category": "official",
+    "url": "https://developers.openai.com/codex/skills"
+  },
+  {
+    "name": "GitHub Awesome Copilot",
+    "nameZh": "github/awesome-copilot",
+    "desc": "GitHub 官方 Copilot 资源合集",
+    "descEn": "Official Copilot resources collection",
+    "stars": "-",
+    "platform": "copilot",
+    "category": "official",
+    "url": "https://github.com/github/awesome-copilot"
+  },
+  {
+    "name": "Agent Skills Index",
+    "nameZh": "Agent Skills 索引",
+    "desc": "社区 Skills 搜索引擎",
+    "descEn": "Community Skills search engine",
+    "stars": "-",
+    "platform": "all",
+    "category": "official",
+    "url": "https://agent-skills.md"
+  },
+  {
+    "name": "Skills Leaderboard",
+    "nameZh": "Skills 排行榜",
+    "desc": "开放 Agent Skills 生态目录",
+    "descEn": "Open Agent Skills ecosystem directory",
+    "stars": "-",
+    "platform": "all",
+    "category": "official",
+    "url": "https://skills.sh"
+  },
+  {
+    "name": "Tencent SkillHub",
+    "nameZh": "腾讯 SkillHub",
+    "desc": "腾讯 Skills 社区，收录 1.3 万+ 技能，国内镜像加速",
+    "descEn": "Tencent's Skills community with 13k+ skills, optimized for Chinese users",
+    "stars": "-",
+    "platform": "all",
+    "category": "official",
+    "url": "https://skillhub.tencent.com"
+  },
+  {
+    "name": "ClawHub",
+    "nameZh": "ClawHub",
+    "desc": "OpenClaw 官方 Skills 注册中心",
+    "descEn": "OpenClaw's public skills registry for discovering and sharing skills",
+    "stars": "-",
+    "platform": "openclaw",
+    "category": "official",
+    "url": "https://docs.openclaw.ai/skills"
+  },
+  {
+    "name": "awesome-cursorrules",
+    "nameZh": "awesome-cursorrules",
+    "desc": "最全面的 Cursor Rules 合集",
+    "descEn": "The most comprehensive Cursor Rules collection",
+    "stars": "40.6k",
+    "platform": "cursor",
+    "category": "collection",
+    "url": "https://github.com/PatrickJS/awesome-cursorrules"
+  },
+  {
+    "name": "everything-claude-code",
+    "nameZh": "everything-claude-code",
+    "desc": "Claude Code 配置大全（agents/skills/hooks）",
+    "descEn": "Complete Claude Code configs (agents/skills/hooks)",
+    "stars": "185.6k",
+    "platform": "claude",
+    "category": "collection",
+    "url": "https://github.com/affaan-m/everything-claude-code"
+  },
+  {
+    "name": "heilcheng/awesome-agent-skills",
+    "nameZh": "heilcheng/awesome-agent-skills",
+    "desc": "社区维护的 Agent Skills 导航，聚焦工程团队实际使用的真实 Skills",
+    "descEn": "Community-curated Agent Skills directory focused on real-world skills used by engineering teams",
+    "stars": "5.3k",
+    "platform": "all",
+    "category": "collection",
+    "url": "https://github.com/heilcheng/awesome-agent-skills"
+  },
+  {
+    "name": "kasetto",
+    "nameZh": "kasetto",
+    "desc": "用 Rust 编写的极速 AI 技能管理器",
+    "descEn": "An extremely fast AI skills manager, written in Rust",
+    "stars": "-",
+    "platform": "all",
+    "category": "collection",
+    "url": "https://github.com/pivoshenko/kasetto"
+  },
+  {
+    "name": "awesome-claude-skills",
+    "nameZh": "awesome-claude-skills",
+    "desc": "Composio 维护的 Claude Skills 合集",
+    "descEn": "Claude Skills collection by Composio",
+    "stars": "72.6k",
+    "platform": "claude",
+    "category": "collection",
+    "url": "https://github.com/ComposioHQ/awesome-claude-skills"
+  },
+  {
+    "name": "awesome-claude-code",
+    "nameZh": "awesome-claude-code",
+    "desc": "Claude Code skills/hooks/插件合集",
+    "descEn": "Claude Code skills/hooks/plugins collection",
+    "stars": "52.4k",
+    "platform": "claude",
+    "category": "collection",
+    "url": "https://github.com/hesreallyhim/awesome-claude-code"
+  },
+  {
+    "name": "openskills",
+    "nameZh": "openskills",
+    "desc": "通用 Skills 加载器（npm 安装）",
+    "descEn": "Universal Skills loader (npm install)",
+    "stars": "10.7k",
+    "platform": "all",
+    "category": "collection",
+    "url": "https://github.com/numman-ali/openskills"
+  },
+  {
+    "name": "awesome-claude-skills",
+    "nameZh": "awesome-claude-skills",
+    "desc": "VoltAgent 维护的 Claude Skills 合集",
+    "descEn": "Claude Skills collection by VoltAgent",
+    "stars": "4.4k",
+    "platform": "claude",
+    "category": "collection",
+    "url": "https://github.com/VoltAgent/awesome-claude-skills"
+  },
+  {
+    "name": "claude-skills",
+    "nameZh": "claude-skills",
+    "desc": "Simon Willison 的 Claude Skills 文档",
+    "descEn": "Claude Skills documentation by Simon Willison",
+    "stars": "930",
+    "platform": "claude",
+    "category": "collection",
+    "url": "https://github.com/simonw/claude-skills"
+  },
+  {
+    "name": "claude-skills-collection",
+    "nameZh": "claude-skills-collection",
+    "desc": "官方与社区 Skills 精选集合",
+    "descEn": "Curated official and community Skills",
+    "stars": "1.0k",
+    "platform": "claude",
+    "category": "collection",
+    "url": "https://github.com/abubakarsiddik31/claude-skills-collection"
+  },
+  {
+    "name": "cursor-rules-and-prompts",
+    "nameZh": "cursor-rules-and-prompts",
+    "desc": "Cursor 规则与提示词集合",
+    "descEn": "Cursor rules and prompts collection",
+    "stars": "245",
+    "platform": "cursor",
+    "category": "collection",
+    "url": "https://github.com/thehimel/cursor-rules-and-prompts"
+  },
+  {
+    "name": "Ai-Agent-Skills",
+    "nameZh": "Ai-Agent-Skills",
+    "desc": "AI Skills 通用安装器（Homebrew for Skills）",
+    "descEn": "Universal AI Skills installer (Homebrew for Skills)",
+    "stars": "774",
+    "platform": "all",
+    "category": "collection",
+    "url": "https://github.com/skillcreatorai/Ai-Agent-Skills"
+  },
+  {
+    "name": "claude-code-kit",
+    "nameZh": "claude-code-kit",
+    "desc": "Claude Code 工具包，自动激活 skills",
+    "descEn": "Claude Code toolkit with auto-activating skills",
+    "stars": "101",
+    "platform": "claude",
+    "category": "collection",
+    "url": "https://github.com/blencorp/claude-code-kit"
+  },
+  {
+    "name": "best-skills",
+    "nameZh": "best-skills",
+    "desc": "通用高质量 Skills 合集，涵盖论文写作、开发流程、自媒体创作等",
+    "descEn": "High-quality Skills collection for paper writing, dev workflow, and content creation",
+    "stars": "264",
+    "platform": "all",
+    "category": "collection",
+    "url": "https://github.com/xstongxue/best-skills"
+  },
+  {
+    "name": "skillkit",
+    "nameZh": "skillkit",
+    "desc": "跨平台 Skills 管理器，可安装、转换并同步 Skills 到 40+ Agent",
+    "descEn": "Cross-platform skills manager that installs, translates, and syncs skills across 40+ agents",
+    "stars": "875",
+    "platform": "all",
+    "category": "collection",
+    "url": "https://github.com/rohitg00/skillkit"
+  },
+  {
+    "name": "OrkasVideoStudio",
+    "nameZh": "OrkasVideoStudio",
+    "desc": "面向 Agent 的视频制作 Skills 合集，配套 CLI 与 MCP 运行时",
+    "descEn": "Agent video-production skill pack with CLI and MCP runtime",
+    "stars": "515",
+    "platform": "all",
+    "category": "collection",
+    "url": "https://github.com/Orkas-AI/Orkas-VideoStudio"
+  },
+  {
+    "name": "Skywork-Skills",
+    "nameZh": "Skywork-Skills",
+    "desc": "Skywork 官方维护的 agent skills，面向 AI 办公场景，覆盖 PPT、文档、Excel、设计、搜索和音乐工作流",
+    "descEn": "Officially maintained Skywork agent skills for AI office workflows, including PPT, documents, Excel, design, search, and music",
+    "stars": "48",
+    "platform": "all",
+    "category": "collection",
+    "url": "https://github.com/SkyworkAI/Skywork-Skills"
+  },
+  {
+    "name": "suede-creator-skills",
+    "nameZh": "suede-creator-skills",
+    "desc": "面向 Claude Code 与 Codex 的 Skills 合集，覆盖代码质量与评审、设计、营销与 SEO、Agent 工作流和移动应用发布",
+    "descEn": "Skills pack for Claude Code and Codex covering code review and grading, design, marketing and SEO, agent workflows, and mobile app shipping",
+    "stars": "153",
+    "platform": "claude",
+    "category": "collection",
+    "url": "https://github.com/JasonColapietro/suede-creator-skills"
+  },
+  {
+    "name": "unifapi-agent/skills",
+    "nameZh": "unifapi-agent/skills",
+    "desc": "基于 UnifAPI MCP 的公共数据与 KOL 定价 Skills",
+    "descEn": "Public-data MCP and KOL pricing Skills for Codex, Claude Code, Cursor, and other agents",
+    "stars": "481",
+    "platform": "claude",
+    "category": "collection",
+    "url": "https://github.com/unifapi-agent/skills"
+  },
+  {
+    "name": "youtube-skills",
+    "nameZh": "youtube-skills",
+    "desc": "面向 YouTube 的转录、视频搜索、频道浏览与播放列表 Skills，适用于 Claude Code、OpenClaw、Hermes Agent 等 Agent 运行时",
+    "descEn": "YouTube transcript, video search, channel and playlist skills for Claude Code, OpenClaw, Hermes Agent, and other agent runtimes",
+    "stars": "504",
+    "platform": "openclaw",
+    "category": "collection",
+    "url": "https://github.com/ZeroPointRepo/youtube-skills"
+  },
+  {
+    "name": "agenttrace-session-audit",
+    "nameZh": "agenttrace-session-audit",
+    "desc": "审计本地 AI 编程 Agent 会话的健康度、成本、失败与差异",
+    "descEn": "Audit local AI coding-agent session health, cost, failures, and diffs",
+    "stars": "-",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/luoyuctl/agenttrace/blob/master/skills/agenttrace-session-audit/SKILL.md"
+  },
+  {
+    "name": "addyosmani/agent-skills",
+    "nameZh": "addyosmani/agent-skills",
+    "desc": "面向 AI 编程代理的生产级工程技能与斜杠命令工作流",
+    "descEn": "Production-grade engineering skills and slash-command workflows for AI coding agents",
+    "stars": "-",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/addyosmani/agent-skills"
+  },
+  {
+    "name": "claude-code-security-review",
+    "nameZh": "claude-code-security-review",
+    "desc": "AI 安全审查 GitHub Action（官方）",
+    "descEn": "AI security review GitHub Action (Official)",
+    "stars": "-",
+    "platform": "claude",
+    "category": "devtools",
+    "url": "https://github.com/anthropics/claude-code-security-review"
+  },
+  {
+    "name": "trailofbits/skills",
+    "nameZh": "trailofbits/skills",
+    "desc": "Trail of Bits 安全研究和审计 Skills",
+    "descEn": "Trail of Bits security research and audit Skills",
+    "stars": "-",
+    "platform": "claude",
+    "category": "devtools",
+    "url": "https://github.com/trailofbits/skills"
+  },
+  {
+    "name": "playwright-skill",
+    "nameZh": "playwright-skill",
+    "desc": "Playwright 浏览器自动化测试 Skill",
+    "descEn": "Playwright browser automation testing Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "devtools",
+    "url": "https://github.com/lackeyjb/playwright-skill"
+  },
+  {
+    "name": "gh-code-review",
+    "nameZh": "gh-code-review",
+    "desc": "GitHub PR 代码审查 Skill",
+    "descEn": "PR code review Skill for GitHub",
+    "stars": "-",
+    "platform": "copilot",
+    "category": "devtools",
+    "url": "https://github.com/bkircher/skills"
+  },
+  {
+    "name": "markstream-install",
+    "nameZh": "markstream-install",
+    "desc": "为 Vue、React、Svelte、Angular 和 Vue 2 项目安装流式 Markdown 渲染器",
+    "descEn": "Install streaming Markdown renderers across Vue, React, Svelte, Angular, and Vue 2 projects",
+    "stars": "-",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/Simon-He95/markstream-vue/tree/main/.agents/skills/markstream-install"
+  },
+  {
+    "name": "skill-codex",
+    "nameZh": "skill-codex",
+    "desc": "将任务委派给 Codex 的 Skill",
+    "descEn": "Delegate tasks to Codex Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "devtools",
+    "url": "https://github.com/skills-directory/skill-codex"
+  },
+  {
+    "name": "claude-code-skills",
+    "nameZh": "claude-code-skills",
+    "desc": "专业级 Skills 市场",
+    "descEn": "Professional Skills marketplace",
+    "stars": "-",
+    "platform": "claude",
+    "category": "devtools",
+    "url": "https://github.com/daymade/claude-code-skills"
+  },
+  {
+    "name": "skillset-example",
+    "nameZh": "skillset-example",
+    "desc": "GitHub Copilot 扩展示例",
+    "descEn": "GitHub Copilot extension example",
+    "stars": "-",
+    "platform": "copilot",
+    "category": "devtools",
+    "url": "https://github.com/copilot-extensions/skillset-example"
+  },
+  {
+    "name": "elastic/agent-skills",
+    "nameZh": "elastic/agent-skills",
+    "desc": "Elastic 官方 Skills，覆盖 Elasticsearch、Kibana、可观测性与安全工作流",
+    "descEn": "Official Elastic skills for Elasticsearch, Kibana, Observability, and Security workflows",
+    "stars": "-",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/elastic/agent-skills"
+  },
+  {
+    "name": "vercel-labs/agent-skills",
+    "nameZh": "vercel-labs/agent-skills",
+    "desc": "Vercel React/Web 设计最佳实践 Skills",
+    "descEn": "Vercel React/Web design best practices Skills",
+    "stars": "19.7k",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/vercel-labs/agent-skills"
+  },
+  {
+    "name": "antfu/skills",
+    "nameZh": "antfu/skills",
+    "desc": "Vue/Vite/Vitest 开发 Skills",
+    "descEn": "Vue/Vite/Vitest development Skills",
+    "stars": "3.2k",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/antfu/skills"
+  },
+  {
+    "name": "Supabase Agent Skills",
+    "nameZh": "supabase/agent-skills",
+    "desc": "Supabase Postgres 最佳实践 Skill",
+    "descEn": "PostgreSQL best practices Skill by Supabase",
+    "stars": "1.2k",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/supabase/agent-skills"
+  },
+  {
+    "name": "Expo Skills",
+    "nameZh": "expo/skills",
+    "desc": "Expo/React Native 开发 Skills",
+    "descEn": "Expo/React Native development Skills",
+    "stars": "931",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/expo/skills"
+  },
+  {
+    "name": "browser-use/browser-use",
+    "nameZh": "browser-use/browser-use",
+    "desc": "浏览器自动化 Skill",
+    "descEn": "Browser automation Skill",
+    "stars": "78.1k",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/browser-use/browser-use"
+  },
+  {
+    "name": "Xquik x-twitter-scraper",
+    "nameZh": "Xquik x-twitter-scraper",
+    "desc": "X（Twitter）数据平台 Skill，提供 REST API、MCP 工具、webhooks、SDK 和自动化工作流",
+    "descEn": "X (Twitter) data Skill with REST endpoints, MCP tools, webhooks, SDKs, and automation workflows",
+    "stars": "66",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/Xquik-dev/x-twitter-scraper"
+  },
+  {
+    "name": "code-review",
+    "nameZh": "code-review",
+    "desc": "智能代码审查示例 Skill",
+    "descEn": "Smart code review example Skill",
+    "stars": "-",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/JackyST0/awesome-agent-skills/tree/main/examples/code-review"
+  },
+  {
+    "name": "git-commit",
+    "nameZh": "git-commit",
+    "desc": "Git 提交信息生成示例 Skill",
+    "descEn": "Git commit message generator Skill",
+    "stars": "-",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/JackyST0/awesome-agent-skills/tree/main/examples/git-commit"
+  },
+  {
+    "name": "unit-test-generator",
+    "nameZh": "unit-test-generator",
+    "desc": "单元测试自动生成 Skill",
+    "descEn": "Unit test auto-generator Skill",
+    "stars": "-",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/JackyST0/awesome-agent-skills/tree/main/examples/unit-test-generator"
+  },
+  {
+    "name": "api-doc-generator",
+    "nameZh": "api-doc-generator",
+    "desc": "API 文档生成 Skill",
+    "descEn": "API documentation generator Skill",
+    "stars": "-",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/JackyST0/awesome-agent-skills/tree/main/examples/api-doc-generator"
+  },
+  {
+    "name": "debug-helper",
+    "nameZh": "debug-helper",
+    "desc": "代码调试助手 Skill",
+    "descEn": "Code debugging assistant Skill",
+    "stars": "-",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/JackyST0/awesome-agent-skills/tree/main/examples/debug-helper"
+  },
+  {
+    "name": "authsome",
+    "nameZh": "authsome",
+    "desc": "AI Agent 本地凭据代理，加密本地保管库与基于代理的凭据注入",
+    "descEn": "Local credential broker for AI agents with encrypted local vault storage and proxy-based credential injection",
+    "stars": "-",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/agentrhq/authsome"
+  },
+  {
+    "name": "Sverklo",
+    "nameZh": "Sverklo",
+    "desc": "本地优先的仓库记忆 MCP，支持证明回执、符号引用、影响分析与差异审查",
+    "descEn": "Local-first repo-memory MCP for coding agents: proof receipts, symbol refs, impact, and diff review",
+    "stars": "-",
+    "platform": "all",
+    "category": "devtools",
+    "url": "https://github.com/sverklo/sverklo"
+  },
+  {
+    "name": "claude-code-workflows",
+    "nameZh": "claude-code-workflows",
+    "desc": "生产级开发工作流，自动化质量检查",
+    "descEn": "Production-grade dev workflows with quality checks",
+    "stars": "-",
+    "platform": "claude",
+    "category": "productivity",
+    "url": "https://github.com/shinpr/claude-code-workflows"
+  },
+  {
+    "name": "claude-skills",
+    "nameZh": "claude-skills",
+    "desc": "20+ 生产力工具，含 8 个专家 Agent",
+    "descEn": "20+ productivity tools with 8 expert Agents",
+    "stars": "-",
+    "platform": "claude",
+    "category": "productivity",
+    "url": "https://github.com/alirezarezvani/claude-skills"
+  },
+  {
+    "name": "claude-code-skill-factory",
+    "nameZh": "claude-code-skill-factory",
+    "desc": "Skills 工厂，批量生成和部署 Skills",
+    "descEn": "Skills factory for batch generation and deployment",
+    "stars": "-",
+    "platform": "claude",
+    "category": "productivity",
+    "url": "https://github.com/alirezarezvani/claude-code-skill-factory"
+  },
+  {
+    "name": "obra/superpowers",
+    "nameZh": "obra/superpowers",
+    "desc": "完整开发工作流（调试/TDD/代码审查/计划）",
+    "descEn": "Complete dev workflow (Debug/TDD/Code Review/Planning)",
+    "stars": "48.8k",
+    "platform": "all",
+    "category": "productivity",
+    "url": "https://github.com/obra/superpowers"
+  },
+  {
+    "name": "cognyai/claude-code-marketing-skills",
+    "nameZh": "cognyai/claude-code-marketing-skills",
+    "desc": "AI 营销技能（SEO 审计/落地页评审/竞品分析/广告文案/线索筛选），支持 MCP 服务器集成",
+    "descEn": "AI marketing skills (SEO Audit/Landing Page Review/Competitor Analysis/Ad Copywriting/Lead Qualification) with MCP server integration",
+    "stars": "-",
+    "platform": "all",
+    "category": "productivity",
+    "url": "https://github.com/cognyai/claude-code-marketing-skills"
+  },
+  {
+    "name": "coreyhaines31/marketingskills",
+    "nameZh": "coreyhaines31/marketingskills",
+    "desc": "营销 Skills（SEO/文案/CRO/广告）",
+    "descEn": "Marketing Skills (SEO/Copywriting/CRO/Ads)",
+    "stars": "7.1k",
+    "platform": "all",
+    "category": "productivity",
+    "url": "https://github.com/coreyhaines31/marketingskills"
+  },
+  {
+    "name": "nowork-studio/NotFair",
+    "nameZh": "nowork-studio/NotFair",
+    "desc": "Claude Code SEO、GEO、Google Ads 和 Meta Ads 技能集；通过 Google Ads MCP、Meta Ads MCP、Google Search Console MCP 和 Google Analytics (GA4) MCP 接入实时数据",
+    "descEn": "Claude Code skills for SEO, GEO, Google Ads, and Meta Ads; connects to live data via Google Ads MCP, Meta Ads MCP, Google Search Console MCP, and Google Analytics (GA4) MCP",
+    "stars": "-",
+    "platform": "claude",
+    "category": "productivity",
+    "url": "https://github.com/nowork-studio/NotFair"
+  },
+  {
+    "name": "gingiris-launch",
+    "nameZh": "gingiris-launch",
+    "desc": "AI 产品、创业公司与开源项目的 Product Hunt 发布与 GTM 指南",
+    "descEn": "Product Hunt launch playbook for AI products, startups, and open source GTM",
+    "stars": "-",
+    "platform": "all",
+    "category": "productivity",
+    "url": "https://github.com/Gingiris/gingiris-launch"
+  },
+  {
+    "name": "gingiris-opensource",
+    "nameZh": "gingiris-opensource",
+    "desc": "面向 GitHub 增长与开源发布策略的营销 Playbook",
+    "descEn": "Open source marketing playbook focused on GitHub growth and launch strategy",
+    "stars": "-",
+    "platform": "all",
+    "category": "productivity",
+    "url": "https://github.com/Gingiris/gingiris-opensource"
+  },
+  {
+    "name": "gingiris-b2b-growth",
+    "nameZh": "gingiris-b2b-growth",
+    "desc": "覆盖 PLG、SLG 与 GTM 策略的 B2B SaaS 增长 Playbook",
+    "descEn": "B2B SaaS growth playbook covering PLG, SLG, and go-to-market strategy",
+    "stars": "-",
+    "platform": "all",
+    "category": "productivity",
+    "url": "https://github.com/Gingiris/gingiris-b2b-growth"
+  },
+  {
+    "name": "gingiris-aso-growth",
+    "nameZh": "gingiris-aso-growth",
+    "desc": "面向冷启动、UGC 与分发策略的 ASO 与移动增长 Playbook",
+    "descEn": "ASO and mobile app growth playbook for cold start, UGC, and distribution",
+    "stars": "-",
+    "platform": "all",
+    "category": "productivity",
+    "url": "https://github.com/Gingiris/gingiris-aso-growth"
+  },
+  {
+    "name": "alpha-insights",
+    "nameZh": "alpha-insights",
+    "desc": "带 Harness 门控的商业研究 Skill，内置咨询框架、证据分级、阶段门控与 HTML 报告",
+    "descEn": "Harness-enforced business research skill with consulting frameworks, evidence grading, stage gates, and HTML reports",
+    "stars": "-",
+    "platform": "claude/codex",
+    "category": "productivity",
+    "url": "https://github.com/Ericyoung-183/alpha-insights"
+  },
+  {
+    "name": "salespeak-ai/buyer-eval-skill",
+    "nameZh": "salespeak-ai/buyer-eval-skill",
+    "desc": "结构化 B2B 软件供应商评估：7 维度评分与证据追踪的评分卡，用于采购与自建/采购决策",
+    "descEn": "B2B vendor evaluation skill: 7-dimension scoring and evidence-tracked scorecards for procurement and build-vs-buy decisions",
+    "stars": "-",
+    "platform": "all",
+    "category": "productivity",
+    "url": "https://github.com/salespeak-ai/buyer-eval-skill"
+  },
+  {
+    "name": "changelog-generator",
+    "nameZh": "changelog-generator",
+    "desc": "从 Git 提交自动生成 Changelog",
+    "descEn": "Generate changelogs from Git commits",
+    "stars": "-",
+    "platform": "claude",
+    "category": "productivity",
+    "url": "https://github.com/ComposioHQ/awesome-claude-skills"
+  },
+  {
+    "name": "wiki",
+    "nameZh": "wiki",
+    "desc": "构建带索引的 Markdown 知识库，供 Agent 映射、搜索、读取、更新与检查",
+    "descEn": "Build indexed Markdown knowledge bases that agents map, search, read, update, and lint",
+    "stars": "-",
+    "platform": "claude/codex",
+    "category": "productivity",
+    "url": "https://github.com/plasma-ai/wiki/blob/main/wiki/skills/wiki/SKILL.md"
+  },
+  {
+    "name": "devops-claude-skills",
+    "nameZh": "devops-claude-skills",
+    "desc": "DevOps 工作流市场，含 Terraform/K8s",
+    "descEn": "DevOps workflow marketplace with Terraform/K8s",
+    "stars": "-",
+    "platform": "claude",
+    "category": "devops",
+    "url": "https://github.com/ahmedasmar/devops-claude-skills"
+  },
+  {
+    "name": "devops-engineer",
+    "nameZh": "devops-engineer",
+    "desc": "DevOps 工程师 Skill，云基础设施管理",
+    "descEn": "DevOps engineer Skill for cloud infrastructure management",
+    "stars": "-",
+    "platform": "all",
+    "category": "devops",
+    "url": "https://claude-plugins.dev/skills/@Jeffallan/claude-skills/devops-engineer"
+  },
+  {
+    "name": "ci-cd",
+    "nameZh": "ci-cd",
+    "desc": "CI/CD 管道设计、优化和安全扫描",
+    "descEn": "Design, optimize, and security-scan CI/CD pipelines",
+    "stars": "-",
+    "platform": "all",
+    "category": "devops",
+    "url": "https://claude-plugins.dev/skills/@ahmedasmar/devops-claude-skills/ci-cd"
+  },
+  {
+    "name": "claudekit-skills",
+    "nameZh": "claudekit-skills",
+    "desc": "Docker/GCP/Cloudflare 部署和管理",
+    "descEn": "Docker/GCP/Cloudflare deployment and management",
+    "stars": "-",
+    "platform": "claude",
+    "category": "devops",
+    "url": "https://github.com/mrgoonie/claudekit-skills"
+  },
+  {
+    "name": "claudebox",
+    "nameZh": "claudebox",
+    "desc": "Docker 容器化 Claude Code 开发环境",
+    "descEn": "Dockerized Claude Code dev environment",
+    "stars": "-",
+    "platform": "claude",
+    "category": "devops",
+    "url": "https://github.com/RchGrav/claudebox"
+  },
+  {
+    "name": "bilig-workpaper",
+    "nameZh": "bilig-workpaper",
+    "desc": "公式驱动的 WorkPaper Skill，可让 Agent 编辑单元格、重新计算、校验回读并持久化表格业务逻辑",
+    "descEn": "Formula-backed WorkPaper skill for editing cells, recalculating, verifying readback, and persisting spreadsheet logic from agents",
+    "stars": "-",
+    "platform": "all",
+    "category": "data",
+    "url": "https://github.com/proompteng/bilig/tree/main/skills/bilig-workpaper"
+  },
+  {
+    "name": "d3-visualization",
+    "nameZh": "d3-visualization",
+    "desc": "D3.js 数据可视化 Skill",
+    "descEn": "D3.js data visualization Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "data",
+    "url": "https://github.com/ComposioHQ/awesome-claude-skills#data-visualization"
+  },
+  {
+    "name": "context-engineering",
+    "nameZh": "context-engineering",
+    "desc": "上下文工程和多 Agent 架构 Skills",
+    "descEn": "Context engineering and multi-Agent architecture",
+    "stars": "-",
+    "platform": "all",
+    "category": "data",
+    "url": "https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering"
+  },
+  {
+    "name": "doc-coauthoring",
+    "nameZh": "doc-coauthoring",
+    "desc": "文档协作撰写 Skill",
+    "descEn": "Document co-authoring Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "writing",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/doc-coauthoring"
+  },
+  {
+    "name": "internal-comms",
+    "nameZh": "internal-comms",
+    "desc": "内部沟通文档生成 Skill",
+    "descEn": "Internal communications generation Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "writing",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/internal-comms"
+  },
+  {
+    "name": "docx",
+    "nameZh": "docx",
+    "desc": "Word 文档读写处理 Skill",
+    "descEn": "Word document processing Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "writing",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/docx"
+  },
+  {
+    "name": "pdf",
+    "nameZh": "pdf",
+    "desc": "PDF 文档处理 Skill",
+    "descEn": "Portable document format processing Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "writing",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/pdf"
+  },
+  {
+    "name": "pptx",
+    "nameZh": "pptx",
+    "desc": "PPT 演示文稿生成 Skill",
+    "descEn": "PowerPoint presentation generator Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "writing",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/pptx"
+  },
+  {
+    "name": "xlsx",
+    "nameZh": "xlsx",
+    "desc": "Excel 表格处理 Skill",
+    "descEn": "Excel spreadsheet processing Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "writing",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/xlsx"
+  },
+  {
+    "name": "frontend-design",
+    "nameZh": "frontend-design",
+    "desc": "前端 UI 设计 Skill",
+    "descEn": "Frontend UI design Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "design",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/frontend-design"
+  },
+  {
+    "name": "brand-guidelines",
+    "nameZh": "brand-guidelines",
+    "desc": "品牌设计规范 Skill",
+    "descEn": "Brand design guidelines Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "design",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/brand-guidelines"
+  },
+  {
+    "name": "canvas-design",
+    "nameZh": "canvas-design",
+    "desc": "Canvas 画布设计 Skill",
+    "descEn": "Canvas design Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "design",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/canvas-design"
+  },
+  {
+    "name": "theme-factory",
+    "nameZh": "theme-factory",
+    "desc": "主题样式工厂 Skill",
+    "descEn": "Theme style factory Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "design",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/theme-factory"
+  },
+  {
+    "name": "algorithmic-art",
+    "nameZh": "algorithmic-art",
+    "desc": "算法艺术生成 Skill",
+    "descEn": "Algorithmic art generation Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "design",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/algorithmic-art"
+  },
+  {
+    "name": "slack-gif-creator",
+    "nameZh": "slack-gif-creator",
+    "desc": "Slack GIF 创建 Skill",
+    "descEn": "Slack GIF creator Skill",
+    "stars": "-",
+    "platform": "claude",
+    "category": "design",
+    "url": "https://github.com/anthropics/skills/tree/main/skills/slack-gif-creator"
+  }
+]

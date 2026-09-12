@@ -1,0 +1,15 @@
+{
+  "record_type": "pending_human_review_example",
+  "decision": "pending",
+  "reviewer": "",
+  "reason": "",
+  "metric_id": "first-validation-page",
+  "success_metric_override": null,
+  "acknowledgements": {
+    "metric_reviewed": false,
+    "evidence_reviewed": false,
+    "action_reviewed": false,
+    "execution_scope_reviewed": false
+  },
+  "notice": "录制示例：这份文件不代表真人已批准；必须由实际审批者编辑后才能使用。"
+}

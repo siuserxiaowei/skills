@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="AI 时代的软件工程纪律知识框架：复杂度、spec、测试、接口契约、Agent 设计与 AI 编程实践。">
+<title>AI 工程纪律 · 研究档案</title>
+<link rel="stylesheet" href="assets/v2.css">
+</head>
+<body class="research-theme">
+<a class="skip-link" href="#content">跳到正文</a>
+<nav class="top-switch" aria-label="版本导航">
+  <a class="brand-mark" href="index.html">AI 工程纪律</a>
+  <div><a href="research.html">研究档案</a><a href="magazine.html">杂志长卷</a><a href="blueprint.html">蓝图控制台</a></div>
+</nav>
+
+<main id="content" class="research-sheet">
+  <header class="research-cover">
+    <p class="file-code">ARCHIVE / VERIFIED SOURCES / 2026-05-21</p>
+    <h1>AI 时代的工程纪律</h1>
+    <p class="abstract">一份给 AI 编程实践者的工程档案：把复杂度、spec、代码纪律、测试、契约、schema 演进、Agent 设计与上下文工程放到同一张可审阅的桌面上。</p>
+    <div class="archive-stats" role="group" aria-label="页面统计">
+      <span><b>09</b> directions</span>
+      <span><b>01</b> meta layer</span>
+      <span><b>16</b> verified sources</span>
+    </div>
+  </header>
+  <aside class="archive-index" aria-label="目录"><a href="#complexity"><b>01</b><span>复杂度是软件工程的第一公敌</span></a><a href="#spec"><b>02</b><span>Spec 是强制 design 的工具</span></a><a href="#code"><b>03</b><span>代码纪律：让读赢，不让写赢</span></a><a href="#testing"><b>04</b><span>测试是把未知映射到已知</span></a><a href="#api"><b>05</b><span>接口与契约的工业实践</span></a><a href="#schema"><b>06</b><span>Schema 演进：时间维度的契约</span></a><a href="#agent"><b>07</b><span>AI Agent 设计：控制流的新维度</span></a><a href="#ai-coding"><b>08</b><span>AI 编程实战：把 LLM 当成什么</span></a><a href="#meta"><b>09</b><span>横切的元原则</span></a></aside>
+  <section class="research-map" aria-label="框架地图">
+    <a href="#complexity"><span>01</span>Foundation</a><a href="#spec"><span>02</span>Spec Engineering</a><a href="#code"><span>03</span>Code Discipline</a><a href="#testing"><span>04</span>Testing</a><a href="#api"><span>05</span>API Contract</a><a href="#schema"><span>06</span>Schema Evolution</a><a href="#agent"><span>07</span>Agent Design</a><a href="#ai-coding"><span>08</span>AI Coding Practice</a><a href="#meta"><span>09</span>Meta Principles</a>
+  </section>
+
+  <section class="record" id="complexity">
+    <div class="record-number">01</div>
+    <div class="record-body">
+      <p class="record-kicker">Foundation</p>
+      <h2>复杂度是软件工程的第一公敌</h2>
+      <p class="record-claim">软件工程的主战场不是语法，而是人脑有限。好设计持续降低认知负载、变更放大和未知的未知。</p>
+      <div class="keyword-strip"><span>cognitive load</span><span>change amplification</span><span>unknown unknowns</span><span>deep modules</span></div>
+      <div class="finding-grid">
+  <article class="finding">
+    <span>01</span>
+    <h3>复杂度三症状</h3>
+    <p>Ousterhout 把复杂度拆成认知负载、变更放大、未知的未知。第三项最危险，因为你甚至不知道边界在哪里。</p>
+  </article>
+  <article class="finding">
+    <span>02</span>
+    <h3>战略编程</h3>
+    <p>战术编程追求当下最快通过；战略编程愿意多花 10-20% 时间换结构复利。</p>
+  </article>
+  <article class="finding">
+    <span>03</span>
+    <h3>深模块</h3>
+    <p>界面简单、实现复杂才叫抽象。浅模块只是把同样复杂的东西又包了一层。</p>
+  </article>
+  <article class="finding">
+    <span>04</span>
+    <h3>设计两遍</h3>
+    <p>重要 design 至少做两版方案再选；如果一个东西难注释，通常是设计还没想清楚。</p>
+  </article></div>
+      <p class="evidence-line">复杂度不是一次事故，而是无数小妥协复利出来的。战略编程是一种持续纪律。</p>
+    </div>
+  </section>
+  <section class="record" id="spec">
+    <div class="record-number">02</div>
+    <div class="record-body">
+      <p class="record-kicker">Spec Engineering</p>
+      <h2>Spec 是强制 design 的工具</h2>
+      <p class="record-claim">写 spec 不是为了文档好看，而是在代码还没产生沉没成本时，把设计做完。</p>
+      <div class="keyword-strip"><span>spec forces design</span><span>declarative state</span><span>spec/status</span><span>12-factor</span></div>
+      <div class="finding-grid">
+  <article class="finding">
+    <span>01</span>
+    <h3>Joel 的要点</h3>
+    <p>用自然语言设计产品，只需要几分钟就能删除、重写、比较方案；等代码写出来再改，成本会变成几周。</p>
+  </article>
+  <article class="finding">
+    <span>02</span>
+    <h3>Kubernetes 范本</h3>
+    <p>声明式 desired state、spec/status 分离、conditions、opaque resourceVersion 和 lists-over-maps 是工业 API 的硬约束。</p>
+  </article>
+  <article class="finding">
+    <span>03</span>
+    <h3>12-Factor</h3>
+    <p>deploy 维度也需要 spec：配置进 env，服务视为 attached resources，日志作为 event streams，进程无状态。</p>
+  </article>
+  <article class="finding">
+    <span>04</span>
+    <h3>TigerStyle</h3>
+    <p>70 行函数、100 列、零依赖、命名按显著性递减，把“怎么写代码”变成可执行契约。</p>
+  </article></div>
+      <p class="evidence-line">Spec 的价值是把延后的决策提前，把口头默契转成可审计的工程输入。</p>
+    </div>
+  </section>
+  <section class="record" id="code">
+    <div class="record-number">03</div>
+    <div class="record-body">
+      <p class="record-kicker">Code Discipline</p>
+      <h2>代码纪律：让读赢，不让写赢</h2>
+      <p class="record-claim">代码被读的次数远多于被写。所有多花时间写的纪律，最终都是为了让未来读者省时间。</p>
+      <div class="keyword-strip"><span>assertions</span><span>naming</span><span>bounded loops</span><span>memory lifetime</span></div>
+      <div class="finding-grid">
+  <article class="finding">
+    <span>01</span>
+    <h3>Assertion</h3>
+    <p>TigerStyle 认为 assert 不是 debug 工具，而是 mental model 的契约。每个函数平均至少两条断言。</p>
+  </article>
+  <article class="finding">
+    <span>02</span>
+    <h3>正负空间</h3>
+    <p>既断言“这是真的”，也断言“这不可能”。边界穿越处最容易藏 bug。</p>
+  </article>
+  <article class="finding">
+    <span>03</span>
+    <h3>命名学</h3>
+    <p>不缩写、带单位、显著性递减，例如 latency_ms_max，让变量排序后自然对齐。</p>
+  </article>
+  <article class="finding">
+    <span>04</span>
+    <h3>控制流</h3>
+    <p>避免递归，循环必须可证有界，复合条件拆开，所有错误必须处理。</p>
+  </article></div>
+      <p class="evidence-line">可读性不是审美偏好，而是系统长期演进的生存条件。</p>
+    </div>
+  </section>
+  <section class="record" id="testing">
+    <div class="record-number">04</div>
+    <div class="record-body">
+      <p class="record-kicker">Testing</p>
+      <h2>测试是把未知映射到已知</h2>
+      <p class="record-claim">测试不是证明正确，而是把你不知道的状态空间系统化地挖出来检视。</p>
+      <div class="keyword-strip"><span>MC/DC</span><span>fuzzing</span><span>anomaly injection</span><span>deterministic simulation</span></div>
+      <div class="finding-grid">
+  <article class="finding">
+    <span>01</span>
+    <h3>SQLite</h3>
+    <p>155.8 KSLOC 核心对应 92,053 KSLOC 测试脚本，约 1:590。真正值得学的是多探针结构。</p>
+  </article>
+  <article class="finding">
+    <span>02</span>
+    <h3>覆盖率层级</h3>
+    <p>statement 最弱，branch 更强，MC/DC 要证明每个条件能独立影响结果。</p>
+  </article>
+  <article class="finding">
+    <span>03</span>
+    <h3>Anomaly</h3>
+    <p>OOM、I/O 错误、断电都可以被人为注入，让最差路径成为日常测试输入。</p>
+  </article>
+  <article class="finding">
+    <span>04</span>
+    <h3>Antithesis</h3>
+    <p>决定性模拟测试让事件顺序、网络延迟、崩溃都可重放；bug 出现后必须能复现。</p>
+  </article></div>
+      <p class="evidence-line">你不能预见未知未知，但可以构造系统化探针逼它们现身。</p>
+    </div>
+  </section>
+  <section class="record" id="api">
+    <div class="record-number">05</div>
+    <div class="record-body">
+      <p class="record-kicker">API Contract</p>
+      <h2>接口与契约的工业实践</h2>
+      <p class="record-claim">分布式系统里，请求可能丢失、重复、乱序。好 API 用契约消除不确定性，而不是靠希望。</p>
+      <div class="keyword-strip"><span>idempotency</span><span>resourceVersion</span><span>conditions</span><span>jitter</span></div>
+      <div class="finding-grid">
+  <article class="finding">
+    <span>01</span>
+    <h3>乐观并发</h3>
+    <p>Kubernetes 用 resourceVersion 做读改写一致性；客户端必须把它当不透明字符串。</p>
+  </article>
+  <article class="finding">
+    <span>02</span>
+    <h3>Conditions</h3>
+    <p>状态不应塞进单一 phase enum，而应拆成可叠加、可演化的条件数组。</p>
+  </article>
+  <article class="finding">
+    <span>03</span>
+    <h3>Idempotency-Key</h3>
+    <p>POST 这类副作用操作必须让客户端传唯一 key，服务端按 key 缓存结果。</p>
+  </article>
+  <article class="finding">
+    <span>04</span>
+    <h3>Backoff + jitter</h3>
+    <p>指数退避避免持续砸服务，jitter 避免所有客户端同时重试造成羊群效应。</p>
+  </article></div>
+      <p class="evidence-line">幂等性把“做了没做”的不确定性，从用户心智中移到系统契约里。</p>
+    </div>
+  </section>
+  <section class="record" id="schema">
+    <div class="record-number">06</div>
+    <div class="record-body">
+      <p class="record-kicker">Schema Evolution</p>
+      <h2>Schema 演进：时间维度的契约</h2>
+      <p class="record-claim">改一张活表是在同时和昨天的写者、读者、数据与回滚路径谈判。</p>
+      <div class="keyword-strip"><span>dual-write</span><span>backfill</span><span>Scientist</span><span>level-based reconciliation</span></div>
+      <div class="finding-grid">
+  <article class="finding">
+    <span>01</span>
+    <h3>Stripe 四阶段</h3>
+    <p>先 dual-write + backfill，再切 read path，再切 write path，最后删除旧数据。</p>
+  </article>
+  <article class="finding">
+    <span>02</span>
+    <h3>不同时改读写</h3>
+    <p>永远不要一次同时改读和写；每个 phase 都要能回退。</p>
+  </article>
+  <article class="finding">
+    <span>03</span>
+    <h3>Scientist</h3>
+    <p>dual-read 时同时跑新旧实现并比对差异，不一致就告警。</p>
+  </article>
+  <article class="finding">
+    <span>04</span>
+    <h3>Level-based</h3>
+    <p>Kubernetes controller 看最新 desired state 收敛，不依赖每个中间 edge 都被观察到。</p>
+  </article></div>
+      <p class="evidence-line">在线迁移不是一次发布，而是一组可观测、可回退、可逐步收敛的状态机。</p>
+    </div>
+  </section>
+  <section class="record" id="agent">
+    <div class="record-number">07</div>
+    <div class="record-body">
+      <p class="record-kicker">Agent Design</p>
+      <h2>AI Agent 设计：控制流的新维度</h2>
+      <p class="record-claim">Workflow 的控制流由代码定，Agent 的下一步由 LLM 决定。复杂度每升一档都要有测量证明。</p>
+      <div class="keyword-strip"><span>workflow vs agent</span><span>augmented LLM</span><span>evaluator-optimizer</span><span>ACI</span></div>
+      <div class="finding-grid">
+  <article class="finding">
+    <span>01</span>
+    <h3>复杂度梯度</h3>
+    <p>从 augmented LLM 到 prompt chaining、routing、parallelization、orchestrator-workers、evaluator-optimizer，再到 autonomous agent。</p>
+  </article>
+  <article class="finding">
+    <span>02</span>
+    <h3>Start simple</h3>
+    <p>Anthropic 的核心建议是从最简单可行方案开始，只在结果证明需要时增加复杂度。</p>
+  </article>
+  <article class="finding">
+    <span>03</span>
+    <h3>ACI</h3>
+    <p>给 agent 的 tool 就像给人的 UI。参数、边界、例子、重叠关系都要设计。</p>
+  </article>
+  <article class="finding">
+    <span>04</span>
+    <h3>Poka-yoke</h3>
+    <p>避免要求模型数行号、嵌套 JSON 转义或在一堆功能重叠的工具里猜。</p>
+  </article></div>
+      <p class="evidence-line">Agent 不是魔法，是控制流、工具契约和环境反馈共同组成的新运行时。</p>
+    </div>
+  </section>
+  <section class="record" id="ai-coding">
+    <div class="record-number">08</div>
+    <div class="record-body">
+      <p class="record-kicker">AI Coding Practice</p>
+      <h2>AI 编程实战：把 LLM 当成什么</h2>
+      <p class="record-claim">不是把代码外包给 LLM，而是和它协作压缩你的意图。人写约束和签名，模型填实现，人保留判断权。</p>
+      <div class="keyword-strip"><span>context engineering</span><span>right altitude</span><span>repo map</span><span>human verification</span></div>
+      <div class="finding-grid">
+  <article class="finding">
+    <span>01</span>
+    <h3>最小高信号集</h3>
+    <p>Context engineering 的目标是找到最小但足够高信号的 token 集，而不是把所有材料塞进去。</p>
+  </article>
+  <article class="finding">
+    <span>02</span>
+    <h3>即时检索</h3>
+    <p>保留路径、查询、链接，让 agent 用工具按需拉上下文，避免上下文腐烂。</p>
+  </article>
+  <article class="finding">
+    <span>03</span>
+    <h3>Right altitude</h3>
+    <p>System prompt 要足够具体能指导行为，又足够灵活让模型自己找路径。</p>
+  </article>
+  <article class="finding">
+    <span>04</span>
+    <h3>Aider repo map</h3>
+    <p>tree-sitter 抽取符号和签名，按相关度排序，给模型结构而非整仓实现。</p>
+  </article></div>
+      <p class="evidence-line">LLM 放大的是已有专业能力；不能把“它真的能跑”这件事外包给机器。</p>
+    </div>
+  </section>
+  <section class="record" id="meta">
+    <div class="record-number">09</div>
+    <div class="record-body">
+      <p class="record-kicker">Meta Principles</p>
+      <h2>横切的元原则</h2>
+      <p class="record-claim">九个方向最后汇成同一件事：把靠记性、靠默契、靠聪明，换成靠系统、工具和契约。</p>
+      <div class="keyword-strip"><span>explicitness</span><span>constraints</span><span>auditability</span><span>reader first</span></div>
+      <div class="finding-grid">
+  <article class="finding">
+    <span>01</span>
+    <h3>简单是练出来的</h3>
+    <p>简单不是第一稿，而是多轮约束、比较和删除后的结果。</p>
+  </article>
+  <article class="finding">
+    <span>02</span>
+    <h3>约束是创造的助产士</h3>
+    <p>硬限制不是束缚，而是迫使设计者发现更稳的结构。</p>
+  </article>
+  <article class="finding">
+    <span>03</span>
+    <h3>显式打败隐式</h3>
+    <p>可选/必填、Idempotency-Key、assert 正负空间，都在拒绝“你应该懂”。</p>
+  </article>
+  <article class="finding">
+    <span>04</span>
+    <h3>对模型可见</h3>
+    <p>AI 时代的工程纪律多了新维度：spec、tool 设计、context 工程都成为 agent runtime 的一部分。</p>
+  </article></div>
+      <p class="evidence-line">大神和普通工程师的差距，不在于谁更聪明，而在于谁更不依赖聪明。</p>
+    </div>
+  </section>
+  <section class="source-ledger" id="sources">
+    <p class="ledger-stamp">已核对来源 · 16 / 16</p>
+    <h2>来源参考</h2>
+    <div class="source-grid">
+  <article class="source-item">
+    <a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener noreferrer">01 · Building Effective Agents</a>
+    <span>Anthropic Engineering · 2024</span>
+    <p>Workflow vs agent 分类法，模式梯度，ACI 概念，start simple 原则。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank" rel="noopener noreferrer">02 · Effective Context Engineering for AI Agents</a>
+    <span>Anthropic Applied AI · 2025</span>
+    <p>最小高信号 token 集、just-in-time retrieval、compaction、structured notes、sub-agents、right altitude。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://github.com/tigerbeetle/tigerbeetle/blob/main/docs/TIGER_STYLE.md" target="_blank" rel="noopener noreferrer">03 · TIGER_STYLE.md</a>
+    <span>TigerBeetle</span>
+    <p>NASA Power of Ten、assertion 密度、命名学、控制流硬规则、静态内存。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://web.stanford.edu/~ouster/cgi-bin/aposd.php" target="_blank" rel="noopener noreferrer">04 · A Philosophy of Software Design</a>
+    <span>John Ousterhout</span>
+    <p>复杂度三症状、战术 vs 战略、深模块、design twice、注释即设计。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://www.joelonsoftware.com/2000/10/02/painless-functional-specifications-part-1-why-bother/" target="_blank" rel="noopener noreferrer">05 · Painless Functional Specifications</a>
+    <span>Joel Spolsky</span>
+    <p>Spec 强制设计、沟通只发生一次、排期前置、代码沉没成本。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://www.sqlite.org/testing.html" target="_blank" rel="noopener noreferrer">06 · How SQLite Is Tested</a>
+    <span>SQLite</span>
+    <p>四套测试、MC/DC、anomaly testing、mutation testing、测试/代码 1:590。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://antithesis.com/blog/is_something_bugging_you/" target="_blank" rel="noopener noreferrer">07 · Is Something Bugging You?</a>
+    <span>Will Wilson · Antithesis</span>
+    <p>决定性模拟测试、FoundationDB 经验、50x productivity 论点。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://12factor.net/" target="_blank" rel="noopener noreferrer">08 · The Twelve-Factor App</a>
+    <span>Adam Wiggins</span>
+    <p>SaaS app 的 12 条 deploy 契约：config、backing services、logs、process model。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md" target="_blank" rel="noopener noreferrer">09 · K8s API Conventions</a>
+    <span>kubernetes/community</span>
+    <p>声明式 API、spec/status、conditions、resourceVersion、lists over maps。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://stripe.com/blog/online-migrations" target="_blank" rel="noopener noreferrer">10 · Online Migrations at Scale</a>
+    <span>Stripe Blog</span>
+    <p>dual-write、backfill、dual-read、Scientist、增量切换写路径、删除旧数据。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://stripe.com/blog/idempotency" target="_blank" rel="noopener noreferrer">11 · Designing Robust APIs with Idempotency</a>
+    <span>Stripe Blog</span>
+    <p>Idempotency-Key、指数退避、jitter、thundering herd 防护。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://simonwillison.net/2025/Mar/11/using-llms-for-code/" target="_blank" rel="noopener noreferrer">12 · Using LLMs to Help Write Code</a>
+    <span>Simon Willison</span>
+    <p>LLM expectations、training cutoff、context is king、测试责任、专家能力放大。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://aider.chat/2023/10/22/repomap.html" target="_blank" rel="noopener noreferrer">13 · Building a Better Repository Map with Tree-Sitter</a>
+    <span>Paul Gauthier · Aider</span>
+    <p>tree-sitter、PageRank、repo map、结构性压缩优于截断。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://karpathy.medium.com/software-2-0-a64152b37c35" target="_blank" rel="noopener noreferrer">14 · Software 2.0</a>
+    <span>Andrej Karpathy</span>
+    <p>数据集作为 source code，训练把目标函数编译成神经网络权重。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://matklad.github.io/2023/11/15/push-ifs-up-and-fors-down.html" target="_blank" rel="noopener noreferrer">15 · Push Ifs Up And Fors Down</a>
+    <span>matklad · 2023</span>
+    <p>把条件上推、循环下沉，集中分支并让批处理成为基础形态。</p>
+  </article>
+  <article class="source-item">
+    <a href="https://www.usenix.org/conference/osdi14/technical-sessions/presentation/yuan" target="_blank" rel="noopener noreferrer">16 · Simple Testing Can Prevent Most Critical Failures</a>
+    <span>Yuan et al. · OSDI 2014</span>
+    <p>198 个生产故障分析，92% 灾难性故障来自非致命错误处理不当。</p>
+  </article></div>
+  </section>
+</main>
+</body>
+</html>

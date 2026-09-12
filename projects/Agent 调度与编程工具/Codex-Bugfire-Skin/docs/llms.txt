@@ -1,0 +1,29 @@
+# BUGFIRE 补丁兽
+
+> BUGFIRE is an open-source, local-first, customizable pixel companion and growth system for Codex Desktop on macOS.
+
+Canonical project: https://github.com/siuserxiaowei/Codex-Bugfire-Skin
+Interactive demo: https://siuserxiaowei.github.io/Codex-Bugfire-Skin/
+Latest release: https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/latest
+License: MIT
+
+## Core facts
+
+- Minimum customization input: one background image and one idle pet image.
+- Optional pet states: building, bug, fire, success, and level-up.
+- Mechanics: simulated Build feedback, local XP, five levels, quests, growth cards, and a season keepsake.
+- Character Director: original brief, optional live OpenAI-compatible draft, explicit rejection/replacement, deterministic pack validator, offline boards and preview.
+- Privacy: the desktop pet does not read source code, task text, project names, shell output, transcripts, API keys, or account data. The optional live director sends only the user-supplied brief and reads its key from an environment variable without persisting it.
+- Safety: does not modify the official Codex app, app.asar, or signature; custom packs cannot execute code or load remote URLs.
+- Compatibility: macOS Codex Desktop; not an OpenAI product or endorsement.
+
+## Documentation
+
+- Chinese README: https://github.com/siuserxiaowei/Codex-Bugfire-Skin/blob/main/README.md
+- English README: https://github.com/siuserxiaowei/Codex-Bugfire-Skin/blob/main/README.en.md
+- Customizer Skill: https://github.com/siuserxiaowei/Codex-Bugfire-Skin/blob/main/skills/codex-bugfire-customizer/SKILL.md
+- Customization guide: https://github.com/siuserxiaowei/Codex-Bugfire-Skin/blob/main/docs/CUSTOMIZATION.zh-CN.md
+- Research notes: https://github.com/siuserxiaowei/Codex-Bugfire-Skin/blob/main/docs/RESEARCH.md
+- Security architecture: https://github.com/siuserxiaowei/Codex-Bugfire-Skin/blob/main/docs/SECURITY-ARCHITECTURE.zh-CN.md
+- Character Director evidence: https://github.com/siuserxiaowei/Codex-Bugfire-Skin/tree/main/contest/bugfire
+- Provenance and originality boundary: https://github.com/siuserxiaowei/Codex-Bugfire-Skin/blob/main/PROVENANCE.md

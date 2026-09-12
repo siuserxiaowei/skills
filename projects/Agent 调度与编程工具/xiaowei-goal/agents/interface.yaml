@@ -1,0 +1,26 @@
+interface:
+  display_name: "Goal Compiler｜需求编译器"
+  short_description: "Compile vague intent into evidence-gated goal contracts."
+  default_prompt: "Use $xiaowei-goal to produce complete task-specific semantics with Smart Router, Strategy Gate, measurable metrics, disconfirming evidence, kill criteria, tool/evidence gates, and a first step that remains pending until I approve it."
+compatibility:
+  canonical_format: "agent-skills"
+  adapter_targets:
+    - "openai"
+    - "claude"
+    - "codex"
+    - "generic"
+  activation:
+    mode: "manual"
+    paths: []
+  execution:
+    context: "inline"
+    shell: "bash"
+  trust:
+    source_tier: "public"
+    remote_inline_execution: "forbid"
+    remote_metadata_policy: "allow-metadata-only"
+  degradation:
+    openai: "drafts three-stage research Codex /goal commands from available task context"
+    claude: "drafts structured agent goals with broad research, Deep Research, business application, and execution guardrails"
+    codex: "drafts durable /goal commands with evidence, boundaries, and pause conditions"
+    generic: "uses the Xiaowei goal contract and asks for missing high-impact decisions"

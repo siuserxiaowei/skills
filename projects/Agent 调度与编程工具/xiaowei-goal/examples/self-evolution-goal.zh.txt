@@ -1,0 +1,22 @@
+决策摘要：任务类型=docs；成熟度=已有仓库；外部信息需求=不需要；风险等级=中；输出长度=标准版；是否先提问=否
+默认假设：目标仓库是 xiaowei-goal，远程 GitHub 仓库是发布源；本次自动进化只在用户显式触发后运行，不做无人值守后台任务。
+偏好应用：优先把进化落到可验证小闭环：反馈、评估、validator、示例、CI、发布；不做大而全重写。
+反馈调整：如果用户提供上次执行反馈，先提取有效、无效、太重、缺失、错误假设和下次调整；未提供反馈时只使用当前请求、示例、validator 和 CI 信号。
+策略判断：问题重构=不是无限制自改，而是针对一个明确行为缺陷做最小能力升级；最小验证=至少一个正向示例或负向 validator case 能证明新行为；成功指标=本地完整校验、GitHub Actions、release 和安装自检全部一致；反证信号=改动只能改善文案但无法被测试捕捉，或导致示例变长变重；终止/暂缓条件=需要凭证、允许路径外文件、生产数据或同因 CI 连续失败时暂停。
+优先级判断：业务价值=高；证据强度=中；执行成本=中；分发潜力=中；变现路径=提升 skill 使用可靠性和后续项目效率；风险=自动改坏自身或过度拟合单次反馈；建议=立即做，但必须保留验证、CI、发布和回滚门槛。
+输出长度：标准版；给出完整自动进化 goal 和必要护栏。
+选择理由：这是明确的 skill 维护任务，外部市场研究不是瓶颈；直接执行比三阶段研究更合适，但必须把自动化边界写清楚。
+推荐执行版（中文，可直接复制）
+/goal 围绕 xiaowei-goal 仓库执行一次完全自动化自我进化：收集反馈信号，定位 skill 行为缺口，修改允许路径内的 SKILL、references、examples、scripts、tests、README、manifest 或 CI，运行完整校验，提交推送，等待 GitHub Actions，通过后创建语义化版本 release，并清理临时目录。
+自动化边界：用户显式触发后自动收集反馈、修改允许路径、运行校验、提交、推送和发布；不是无人值守后台任务，不定时运行，不跨仓库扩散。
+反馈来源：用户当前反馈、上次执行结果、examples、tests/invalid-goals、validator 报错、README 展示不一致、安装自检结果、GitHub Actions 日志和最近 release 差异。
+允许修改路径：仅限 `SKILL.md`、`README.md`、`manifest.json`、`agents/interface.yaml`、`.github/workflows/validate.yml`、`references/`、`examples/`、`scripts/`、`tests/`；不改 docs 历史归档、本地安装副本、私有文件、生产数据或无关仓库。
+评估方式：运行 `python3 scripts/evaluate_goal_output.py examples/*.txt` 评分；新行为必须至少有一个正向示例或一个负向 validator case；不能因为单次反馈永久改变偏好，除非能被测试或规则验证。
+验证方式：运行 `python3 scripts/validate_xiaowei_goal.py examples/*.txt`、`python3 scripts/evaluate_goal_output.py examples/*.txt`、`python3 scripts/test_validator_negative_cases.py`、`python3 scripts/check_installed_skill.py .`、`python3 -m json.tool manifest.json`、`python3 scripts/check_readme_topics.py`、`python3 -m py_compile scripts/*.py`、`git diff --check`；如果改了 YAML，再验证 workflow 和 interface YAML 可解析。
+发布规则：本地检查全部通过后提交并推送；等待 GitHub Actions Validate 成功；只有 CI 成功才创建语义化版本 tag/release，release 指向通过 CI 的同一个 commit。
+回滚方式：release 前发现问题优先 fix forward；如果需要回滚，只回滚本轮自动进化产生的 commit；release 后发现问题则创建修复 release，除非用户明确要求，否则不删除 tag/release。
+限制：不提交凭证、Cookie、Token、私域内容、生产数据或版权材料；不修改允许路径外文件；不把自动进化写成无限制后台自治；不绕过 GitHub Actions、validator 或 release 门槛。
+工作边界：只在临时目录克隆仓库并修改允许路径；推送远程 GitHub；完成后删除临时目录并确认本地 home 目录没有持久 clone。
+推进规则：先做 failing validator case 或目标评估缺口，再实现最小规则和示例，然后跑完整校验；失败时先读错误再修，不跳过测试，不带失败发布。
+停止标准：远程 main、manifest、README、examples、validator、CI 和 release 对同一版本一致；最新 GitHub Actions 成功；临时目录已删除；输出变更摘要、验证结果、commit 和 release 链接。
+暂停条件：需要凭证、Cookie、Token、付费服务、生产数据、私域内容、删除允许路径外文件、破坏性操作、法律/隐私判断、CI 同一原因连续失败两次或要修改无关仓库时暂停。

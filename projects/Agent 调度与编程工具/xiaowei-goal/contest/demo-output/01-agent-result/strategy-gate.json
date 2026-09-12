@@ -1,0 +1,40 @@
+{
+  "disconfirming_evidence": [
+    {
+      "response": "停止增加功能，重写用户和问题假设。",
+      "signal": "5 名目标用户中少于 2 名能复述页面所解决的问题。",
+      "threshold": {
+        "max_comprehension_count": 1,
+        "sample_size": 5
+      }
+    }
+  ],
+  "kill_criteria": [
+    {
+      "action": "pause_full_build",
+      "condition": "连续 2 轮调整人群与承诺后，5 次测试仍然没有 CTA 意图。",
+      "threshold": {
+        "max_cta_intent_count": 0,
+        "max_rounds": 2,
+        "sample_size_per_round": 5
+      }
+    }
+  ],
+  "problem_reframe": "不是立即开发完整 AI 网站，而是先验证一个具体人群、一个问题和一个可点击承诺是否值得继续。",
+  "smallest_bet": "在取得最低来源证据与人工批准后，仅写入一个本地静态假设页，并用确定性 HTML 检查验收。",
+  "success_metrics": [
+    {
+      "evidence_path": "first-output/execution-report.json",
+      "id": "first-validation-page",
+      "measurement": {
+        "method": "HTML 结构检查",
+        "target": {
+          "assumption_label_required": true,
+          "min_html_pages": 1,
+          "min_primary_cta": 1
+        }
+      },
+      "statement": "生成 1 个可打开的本地 HTML 假设页，包含 1 个主标题、1 个主 CTA 和明确假设标记。"
+    }
+  ]
+}

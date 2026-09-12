@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "name": "Patchling Zero｜零号补丁兽",
+  "audience": "第一次用 Vibe Coding 做出可运行作品、但经常跳过验证的新手创作者",
+  "purpose": "把发现问题、人工判断、修复和重新验证变成一个轻量桌宠反馈循环。",
+  "character": "一只原创的像素电路蝾螈：短四肢、方形尾巴、背部有三个补丁节点；它不是龙、不是任何现有游戏角色，也不使用品牌 Logo。",
+  "visualDirection": "深色本地工作台，低分辨率像素轮廓，酸性绿色状态灯，单一高对比强调色；图形清晰而克制。",
+  "constraints": [
+    "不得模仿或引用已知角色、影视、游戏或品牌视觉",
+    "图片内部不放文字，标签由 BUGFIRE UI 提供",
+    "只使用仓库自制的矢量源文件与本地导出 PNG",
+    "AI 只提出方向；人工必须拒绝并替换至少一个创意选择",
+    "只有 deterministic validator 通过后才能 build 或 install"
+  ],
+  "rights": {
+    "declaration": "角色 brief、矢量源文件与演示素材由本项目为 VibeLab 演示原创制作，可随 MIT 仓库使用。",
+    "sourceUrl": "https://github.com/siuserxiaowei/Codex-Bugfire-Skin"
+  }
+}

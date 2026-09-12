@@ -1,0 +1,16 @@
+{
+  "schema": "top50-router-request/v1",
+  "run_id": "pi-agent-runtime-20260826",
+  "stage": "rank",
+  "workload": "large",
+  "source_kind": "local_bundle",
+  "risk": "medium",
+  "required_capabilities": [
+    "rank"
+  ],
+  "engine_mode": "auto",
+  "dual_run": false,
+  "run_dir": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826",
+  "top_n": 50,
+  "timeout_seconds": 300
+}

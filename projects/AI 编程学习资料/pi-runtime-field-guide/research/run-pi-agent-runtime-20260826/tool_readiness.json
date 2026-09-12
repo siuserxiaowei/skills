@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-08-26T08:04:58+08:00",
+  "authorization": "granted_for_current_task",
+  "backends": [
+    {"backend": "gh CLI", "tool_readiness": "available", "bridge_state": "not_required", "auth_state": "authenticated", "quota_state": "available", "probe_result": "success", "notes": "GitHub metadata and repository reads succeeded."},
+    {"backend": "Exa via mcporter", "tool_readiness": "available", "bridge_state": "not_required", "auth_state": "anonymous", "quota_state": "available", "probe_result": "success", "notes": "Discovery only; every result must be opened at source."},
+    {"backend": "Jina Reader", "tool_readiness": "available", "bridge_state": "not_required", "auth_state": "anonymous", "quota_state": "not_applicable", "probe_result": "success", "notes": "Public web readback only."},
+    {"backend": "yt-dlp", "tool_readiness": "available", "bridge_state": "not_required", "auth_state": "anonymous", "quota_state": "not_applicable", "probe_result": "success", "notes": "YouTube search returned Pi Coding Agent video XhliUzOmSa8."},
+    {"backend": "bili-cli", "tool_readiness": "available", "bridge_state": "not_required", "auth_state": "anonymous", "quota_state": "not_applicable", "probe_result": "success", "notes": "CLI works, but broad query produced generic Agent noise; exact-query filtering required."},
+    {"backend": "twitter-cli", "tool_readiness": "available", "bridge_state": "not_required", "auth_state": "authenticated", "quota_state": "unknown", "probe_result": "error", "notes": "Exact search returned HTTP 404 after client transaction warning; no upgrade attempted."},
+    {"backend": "V2EX public API", "tool_readiness": "available", "bridge_state": "not_required", "auth_state": "anonymous", "quota_state": "not_applicable", "probe_result": "success", "notes": "Hot endpoint succeeded; keyword discovery still uses public search then topic readback."},
+    {"backend": "Hacker News Algolia", "tool_readiness": "available", "bridge_state": "not_required", "auth_state": "anonymous", "quota_state": "not_applicable", "probe_result": "success", "notes": "Exact Pi query returned story records."},
+    {"backend": "OpenCLI Browser Bridge", "tool_readiness": "configured", "bridge_state": "disconnected", "auth_state": "unknown", "quota_state": "unknown", "probe_result": "blocked", "notes": "Daemon available, Chrome extension not connected; dynamic/login routes require user-assisted handoff."},
+    {"backend": "LinkedIn MCP", "tool_readiness": "unavailable", "bridge_state": "not_required", "auth_state": "required", "quota_state": "unknown", "probe_result": "blocked", "notes": "Not configured; only public discovery can proceed."}
+  ]
+}

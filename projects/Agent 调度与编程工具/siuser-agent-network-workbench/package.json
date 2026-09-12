@@ -1,0 +1,36 @@
+{
+  "name": "siuser-agent-network-workbench",
+  "version": "0.2.2",
+  "private": true,
+  "description": "Local-only agent-network workbench for Obsidian daily digests, article pipelines, and Codex skill maintenance.",
+  "homepage": "https://siuserxiaowei.github.io/siuser-agent-network-workbench/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/siuserxiaowei/siuser-agent-network-workbench.git"
+  },
+  "scripts": {
+    "postinstall": "bash scripts/install-runtime.sh",
+    "anet": "bash scripts/anet.sh",
+    "doctor": "python3 scripts/workbench.py doctor",
+    "init": "python3 scripts/workbench.py init",
+    "roles": "python3 scripts/workbench.py roles",
+    "task:daily": "python3 scripts/workbench.py create-task daily_digest",
+    "task:article": "python3 scripts/workbench.py create-task article_pipeline --source ../wechat-articles/ai-security-scan-skill-tanstack-2026-05-14.md",
+    "task:skill": "python3 scripts/workbench.py create-task skill_maintenance --source ../.agents/skills/security-scan",
+    "pilot:daily": "python3 scripts/workbench.py pilot daily_digest",
+    "pilot:article": "python3 scripts/workbench.py pilot article_pipeline --source ../wechat-articles/ai-security-scan-skill-tanstack-2026-05-14.md",
+    "pilot:skill": "python3 scripts/workbench.py pilot skill_maintenance --source ../.agents/skills/security-scan",
+    "hub": "bash scripts/start-hub.sh",
+    "dashboard": "bash scripts/start-dashboard.sh",
+    "start:local": "bash scripts/start-local.sh",
+    "stop:local": "bash scripts/stop-local.sh",
+    "login": "npm run -s anet -- login",
+    "passwd": "npm run -s anet -- passwd",
+    "nodes:create": "bash scripts/create-nodes.sh",
+    "nodes:harden": "bash scripts/harden-nodes.sh",
+    "demo:article": "bash scripts/demo-article-flow.sh",
+    "smoke:send-task": "bash scripts/send-task-smoke.sh",
+    "smoke": "bash scripts/smoke-test.sh",
+    "site:preview": "python3 -m http.server 4173 -d docs"
+  }
+}

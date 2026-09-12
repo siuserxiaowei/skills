@@ -1,0 +1,187 @@
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f6f8f7;
+    --paper: #ffffff;
+    --ink: #17202a;
+    --muted: #5d6670;
+    --line: #d9e0df;
+    --accent: #0f766e;
+    --accent-2: #b45309;
+    --soft: #edf7f5;
+    --soft-2: #fff5eb;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: var(--page);
+    color: var(--ink);
+  }
+
+  body {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 42px 24px 64px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-size: 16px;
+    line-height: 1.82;
+    box-shadow: 0 20px 60px rgba(23, 32, 42, .08);
+  }
+
+  h1 {
+    margin: 0 0 18px;
+    padding-bottom: 18px;
+    border-bottom: 3px solid var(--accent);
+    color: var(--ink);
+    font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+    font-size: clamp(2rem, 4.6vw, 3.2rem);
+    line-height: 1.2;
+  }
+
+  h2 {
+    margin-top: 42px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--accent);
+    font-size: 1.5rem;
+    line-height: 1.35;
+  }
+
+  h3 {
+    margin-top: 30px;
+    color: var(--ink);
+    font-size: 1.18rem;
+    line-height: 1.35;
+  }
+
+  h4 {
+    margin-top: 22px;
+    font-size: 1rem;
+  }
+
+  p {
+    margin: .82rem 0;
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration-thickness: .08em;
+    text-underline-offset: .18em;
+  }
+
+  blockquote {
+    margin: 18px 0;
+    padding: 12px 16px;
+    border-left: 4px solid var(--accent);
+    background: var(--soft);
+    color: var(--muted);
+  }
+
+  strong {
+    color: var(--ink);
+  }
+
+  code {
+    border: 1px solid rgba(15, 118, 110, .20);
+    border-radius: 4px;
+    padding: .08rem .28rem;
+    background: var(--soft);
+    color: #134e4a;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: .92em;
+  }
+
+  pre {
+    overflow: auto;
+  }
+
+  pre code {
+    display: block;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #17202a;
+    color: #f6f8f7;
+    white-space: pre-wrap;
+  }
+
+  table {
+    width: 100%;
+    margin: 18px 0 28px;
+    border-collapse: collapse;
+    background: var(--paper);
+  }
+
+  th,
+  td {
+    border: 1px solid var(--line);
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--soft);
+    color: #134e4a;
+    font-weight: 700;
+  }
+
+  tbody tr:nth-child(even) {
+    background: #fbfdfc;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.4rem;
+  }
+
+  li {
+    margin: .3rem 0;
+  }
+
+  hr {
+    margin: 36px 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  nav#TOC {
+    margin: 18px 0 30px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    background: #fbfdfc;
+  }
+
+  nav#TOC ul {
+    margin: 0;
+  }
+
+  body::after {
+    content: "xiaowei-goal · broad research → Deep Research → business application";
+    display: block;
+    margin-top: 54px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: .92rem;
+    text-align: center;
+  }
+
+  @media (max-width: 720px) {
+    body {
+      padding: 28px 14px 48px;
+      font-size: 15px;
+      box-shadow: none;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+  }
+</style>

@@ -1,0 +1,24 @@
+{
+  "acknowledgements": {
+    "action_reviewed": false,
+    "evidence_reviewed": false,
+    "execution_scope_reviewed": false,
+    "metric_reviewed": false
+  },
+  "agent_proposed_metric": {
+    "evidence_path": "first-output/execution-report.json",
+    "id": "first-validation-page",
+    "measurement": {
+      "method": "主观感受",
+      "target": {}
+    },
+    "statement": "看起来足够好看"
+  },
+  "decision": "pending",
+  "metric_id": "first-validation-page",
+  "notice": "这是待人工填写的记录模板，不是已审批证明。",
+  "reason": "",
+  "record_type": "pending_human_review_example",
+  "reviewer": "",
+  "success_metric_override": null
+}

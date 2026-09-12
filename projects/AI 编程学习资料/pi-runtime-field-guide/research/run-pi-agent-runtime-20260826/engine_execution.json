@@ -1,0 +1,619 @@
+{
+  "completed_at": "2026-08-26T00:36:06.993032Z",
+  "executions": [
+    {
+      "completion_artifact": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/curate-result.json",
+      "completion_artifact_sha256": "bbd8615cdd5e2fd15b159c7842a1edf50264903c920b71eac88a71d9e8d65c91",
+      "engine": "python",
+      "id": "curate-primary",
+      "parsed_output": {
+        "accepted_candidate_ids": [
+          "src-c133b93b912dffd605a2",
+          "src-28038f119d8ce8d4b9b2",
+          "src-a07be01a683872e820e6",
+          "src-60c8323ea4aa84ac979c",
+          "src-ba1c4fb96968f306b285",
+          "src-836c146efc2e9b5e760e",
+          "src-fb825629b04010da2d2f",
+          "src-163e5146463a5e8815fa",
+          "src-e54a64531a193c3f5a27",
+          "src-1b3867d49c4b7cd3189f",
+          "src-bcc6aa6f2f966d1ed532",
+          "src-f3286dcb60e4fe624fe3",
+          "src-8830149ed8d66cbb13e1",
+          "src-f359b4889090cb3bec03",
+          "src-495821254458a81d946e",
+          "src-9ee3cee511f9b43173cd",
+          "src-fc13252fcf800545b4ec",
+          "src-590c5a3faed6d24e1cdb",
+          "src-2bb843c7fee616c919b3",
+          "src-e9314ed1416da9038e36",
+          "src-890a56b0d2aff0c91c90",
+          "src-bc134af50dc2b3d9be0b",
+          "src-06c8a49d709e2f4060ef",
+          "src-f71ccca1aeb5d2bd946f",
+          "src-810907e7268d7b547731",
+          "src-ebfbad2737c56b90b567",
+          "src-a1c6924245412ec56344",
+          "src-af62c40b2f21f4e353d7",
+          "src-7635a0ee17a298360975",
+          "src-492469019ce2c8164489",
+          "src-a28f044de78810a35d13",
+          "src-78884637d612b888613f",
+          "src-0803712f4e0b658ceae3",
+          "src-231d1ea4c5b6c6f8c68e",
+          "src-4e186aee7889a9350ed5",
+          "src-619bc35efe8c6d853e7c",
+          "src-2107e167382a6350cc56",
+          "src-caded312a6d733d14cc2",
+          "src-3caf2672b77424a27dd1",
+          "src-a224d950c0a2ea042211",
+          "src-d32035a5146dd570b3b0",
+          "src-5d91b221ff35d3ec5d09",
+          "src-6de59c030f92ac4fb971",
+          "src-fd9b7a8c422f55c8536d",
+          "src-307ccd1084955781a24a",
+          "src-04e92a34121cc7b235a9",
+          "src-ba5bd4830070afd0b7be",
+          "src-cc7e4abeb84dccc706f4",
+          "src-3fc053a9a80a47815371",
+          "src-a0b1e71a83fa714fee3f"
+        ],
+        "contract_version": "top50-curator-acceptance/v1",
+        "counts": {
+          "accepted": 50,
+          "blocked": 0,
+          "input_candidates": 50,
+          "rejected": 0
+        },
+        "curator": {
+          "id": "primary-curator-codex"
+        },
+        "decisions": [
+          {
+            "candidate_id": "src-c133b93b912dffd605a2",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-c133b93b912dffd605a2"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-28038f119d8ce8d4b9b2",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-28038f119d8ce8d4b9b2"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-a07be01a683872e820e6",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-a07be01a683872e820e6"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-60c8323ea4aa84ac979c",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-60c8323ea4aa84ac979c"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-ba1c4fb96968f306b285",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-ba1c4fb96968f306b285"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-836c146efc2e9b5e760e",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-836c146efc2e9b5e760e"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-fb825629b04010da2d2f",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-fb825629b04010da2d2f"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-163e5146463a5e8815fa",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-163e5146463a5e8815fa"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-e54a64531a193c3f5a27",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-e54a64531a193c3f5a27"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-1b3867d49c4b7cd3189f",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-1b3867d49c4b7cd3189f"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-bcc6aa6f2f966d1ed532",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-bcc6aa6f2f966d1ed532"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-f3286dcb60e4fe624fe3",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-f3286dcb60e4fe624fe3"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-8830149ed8d66cbb13e1",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-8830149ed8d66cbb13e1"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-f359b4889090cb3bec03",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-f359b4889090cb3bec03"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-495821254458a81d946e",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-495821254458a81d946e"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-9ee3cee511f9b43173cd",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-9ee3cee511f9b43173cd"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-fc13252fcf800545b4ec",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-fc13252fcf800545b4ec"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-590c5a3faed6d24e1cdb",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-590c5a3faed6d24e1cdb"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-2bb843c7fee616c919b3",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-2bb843c7fee616c919b3"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-e9314ed1416da9038e36",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-e9314ed1416da9038e36"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-890a56b0d2aff0c91c90",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-890a56b0d2aff0c91c90"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-bc134af50dc2b3d9be0b",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-bc134af50dc2b3d9be0b"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-06c8a49d709e2f4060ef",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-06c8a49d709e2f4060ef"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-f71ccca1aeb5d2bd946f",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-f71ccca1aeb5d2bd946f"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-810907e7268d7b547731",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-810907e7268d7b547731"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-ebfbad2737c56b90b567",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-ebfbad2737c56b90b567"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-a1c6924245412ec56344",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-a1c6924245412ec56344"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-af62c40b2f21f4e353d7",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-af62c40b2f21f4e353d7"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-7635a0ee17a298360975",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-7635a0ee17a298360975"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-492469019ce2c8164489",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-492469019ce2c8164489"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-a28f044de78810a35d13",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-a28f044de78810a35d13"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-78884637d612b888613f",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-78884637d612b888613f"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-0803712f4e0b658ceae3",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-0803712f4e0b658ceae3"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-231d1ea4c5b6c6f8c68e",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-231d1ea4c5b6c6f8c68e"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-4e186aee7889a9350ed5",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-4e186aee7889a9350ed5"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-619bc35efe8c6d853e7c",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-619bc35efe8c6d853e7c"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-2107e167382a6350cc56",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-2107e167382a6350cc56"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-caded312a6d733d14cc2",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-caded312a6d733d14cc2"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-3caf2672b77424a27dd1",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-3caf2672b77424a27dd1"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-a224d950c0a2ea042211",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-a224d950c0a2ea042211"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-d32035a5146dd570b3b0",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-d32035a5146dd570b3b0"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-5d91b221ff35d3ec5d09",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-5d91b221ff35d3ec5d09"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-6de59c030f92ac4fb971",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-6de59c030f92ac4fb971"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-fd9b7a8c422f55c8536d",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-fd9b7a8c422f55c8536d"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-307ccd1084955781a24a",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-307ccd1084955781a24a"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-04e92a34121cc7b235a9",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-04e92a34121cc7b235a9"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-ba5bd4830070afd0b7be",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-ba5bd4830070afd0b7be"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-cc7e4abeb84dccc706f4",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-cc7e4abeb84dccc706f4"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-3fc053a9a80a47815371",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-3fc053a9a80a47815371"
+            ],
+            "reason_codes": []
+          },
+          {
+            "candidate_id": "src-a0b1e71a83fa714fee3f",
+            "decision": "accepted",
+            "evidence_ids": [
+              "evidence-a0b1e71a83fa714fee3f"
+            ],
+            "reason_codes": []
+          }
+        ],
+        "evidence_ledger_binding": {
+          "artifact_sha256": "e15be12ad43d8d6f8158e6c59c4a571df47c87ace78f6168a8b9d0372c993362"
+        },
+        "input_bindings": [
+          {
+            "artifact_sha256": "2b4f90fec4911f7d57ee26f93d9c85aa218ececf7af1c9ffb2d1c53a397957f1",
+            "contract": "top50-process-result/v1",
+            "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/process-result.json",
+            "producer_engine_id": "rust-processor",
+            "record_count": 50,
+            "record_ids_sha256": "0cb2f284e98765a8745fc6746f80dce008a7c8dbfd0fd0b9d9a96458f6e76114",
+            "record_kind": "candidate",
+            "relation": "process_result",
+            "required_status": "complete",
+            "result_digest_sha256": "c26e1f21b2f17585622f32fbe65e8be1ac5ce8acb7f0e6a16b5e559d96546988",
+            "run_id": "pi-agent-runtime-20260826",
+            "stage": "process"
+          },
+          {
+            "artifact_sha256": "eee74e3da305696b6adf62cd30f8ec1dffd572e3d7fe7170a4a0b9e88ef5b18d",
+            "contract": "top50-rank-input-manifest/v1",
+            "path": "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/rank-input-manifest.json",
+            "producer_engine_id": "python-control-plane",
+            "record_count": 7,
+            "record_ids_sha256": "caeb5bfbc03ad9ea499da9328e048789d838f4c9fc83487728b8896e8f5d12a3",
+            "record_kind": "file",
+            "relation": "rank_input_manifest",
+            "required_status": "complete",
+            "result_digest_sha256": "78d70a4dfa0408c1a1880be9dc901d4d1030069d31911e4514a7f8cad0aa8e28",
+            "run_id": "pi-agent-runtime-20260826",
+            "stage": "worker_check"
+          }
+        ],
+        "producer": {
+          "engine_id": "python-control-plane",
+          "engine_version": "1.1.0"
+        },
+        "result_digest_sha256": "66f76800a01096267188ca9993b2a97e1128ec3d92e6457ec16628629f597b7c",
+        "run_id": "pi-agent-runtime-20260826",
+        "source_ledger_binding": {
+          "artifact_sha256": "7af57e7ec18292113e0fed74d7d557a8750a099e320ba155f588821a2f6b33fc"
+        },
+        "stage": "curate",
+        "status": "accepted",
+        "worker_ids": [
+          "china-discovery",
+          "international-discovery",
+          "pi-source-architecture",
+          "merged-discovery-workers"
+        ]
+      },
+      "role": "primary",
+      "semantic_digest": "c296b8426fe27f9cbae9a2e0df3c8b42ad97a8648415ff2dce13bc3069447bf4",
+      "stage": "curate",
+      "status": "covered"
+    },
+    {
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "/Users/siuserxiaowei/.codex/skills/cross-platform-top50/scripts/rank_candidates.py",
+        "--input",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/candidates.json",
+        "--manifest",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/run_manifest.json",
+        "--queries",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/queries.tsv",
+        "--sources",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/sources.tsv",
+        "--source-outcomes",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/source_outcomes.jsonl",
+        "--evidence-cards",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/evidence_cards.tsv",
+        "--platform-coverage",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/platform_coverage.tsv",
+        "--lineage-manifest",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/rank-input-manifest.json",
+        "--curator-acceptance",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/curate-result.json",
+        "--output-dir",
+        "/Users/siuserxiaowei/Documents/商业研究/pi-runtime-field-guide/research/run-pi-agent-runtime-20260826/ranking-output",
+        "--top",
+        "50"
+      ],
+      "duration_ms": 315,
+      "engine": "python",
+      "gate_artifact_sha256": "bbd8615cdd5e2fd15b159c7842a1edf50264903c920b71eac88a71d9e8d65c91",
+      "id": "rank-primary",
+      "parsed_output": {
+        "contract_version": "top50-ranking-summary/v1",
+        "engine_id": "python-ranker",
+        "run_id": "pi-agent-runtime-20260826",
+        "stage": "rank",
+        "status": "complete",
+        "summary": {
+          "actual_count": 50,
+          "completion_label": "本次检索范围内 Top 50",
+          "count_conservation_passed": true,
+          "eligible_unique_count": 50,
+          "exact_duplicate_count": 0,
+          "input_count": 50,
+          "near_duplicate_review_count": 0,
+          "platform_counts": {
+            "bilibili": 1,
+            "github": 28,
+            "google_search": 5,
+            "hacker_news": 1,
+            "infoq": 1,
+            "juejin": 1,
+            "linkedin": 2,
+            "linuxdo": 1,
+            "medium": 1,
+            "segmentfault": 1,
+            "v2ex": 2,
+            "youtube": 5,
+            "zhihu": 1
+          },
+          "ranking_version": "deterministic-v2",
+          "rejected_count": 0,
+          "requested_top_n": 50,
+          "selected_count": 50,
+          "shortfall": 0,
+          "top_n_filled": true,
+          "unique_count": 50
+        }
+      },
+      "returncode": 0,
+      "role": "primary",
+      "semantic_digest": "2e38ed540ad91c46dc89887048dc41bc82c2ec2110b11b65b0d399733de8e783",
+      "stage": "rank",
+      "status": "complete",
+      "stderr": "",
+      "stdout": "{\"actual_count\": 50, \"completion_label\": \"本次检索范围内 Top 50\", \"count_conservation_passed\": true, \"eligible_unique_count\": 50, \"exact_duplicate_count\": 0, \"input_count\": 50, \"near_duplicate_review_count\": 0, \"platform_counts\": {\"bilibili\": 1, \"github\": 28, \"google_search\": 5, \"hacker_news\": 1, \"infoq\": 1, \"juejin\": 1, \"linkedin\": 2, \"linuxdo\": 1, \"medium\": 1, \"segmentfault\": 1, \"v2ex\": 2, \"youtube\": 5, \"zhihu\": 1}, \"ranking_version\": \"deterministic-v2\", \"rejected_count\": 0, \"requested_top_n\": 50, \"selected_count\": 50, \"shortfall\": 0, \"top_n_filled\": true, \"unique_count\": 50}\n"
+    }
+  ],
+  "run_id": "pi-agent-runtime-20260826",
+  "schema": "top50-router-result/v1",
+  "selected_engines": [
+    "python"
+  ],
+  "status": "complete",
+  "validation": {
+    "comparisons": [],
+    "matched": true,
+    "required": false
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "artifactType": "bugfire-character-director-plan",
+  "status": "ai-draft",
+  "provenance": {
+    "mode": "recorded-agent-fixture",
+    "provider": "OpenAI Codex agent session",
+    "model": "Codex agent session (model ID not independently attested)",
+    "generatedAt": "2026-08-31T05:49:09Z",
+    "briefSha256": "1ee20d9a42e8cb7d105591c40201c4d59b51812502595bf95130ab52d3bbf664",
+    "promptSha256": "72a10feb263d76b073efc96fdc2878f2449bd526f3816918d23b94ebcdf2e3e0",
+    "endpointOrigin": "",
+    "sourceNotice": "Recorded AI output authored in an OpenAI Codex agent session for this repository. It is checksum-locked for offline replay; it is not presented as a live API call or as proof of human approval."
+  },
+  "creativeDecisions": [
+    {
+      "id": "identity-and-silhouette",
+      "title": "把轮廓做成可一眼识别的电路蝾螈",
+      "choice": "采用短四肢、方尾、三枚背部补丁节点，命名为 Patchling Zero｜零号补丁兽。",
+      "rationale": "低分辨率下仍有独立轮廓，也能避开已有龙类与知名游戏角色的视觉联想。",
+      "manifestPatch": {
+        "/name": "Patchling Zero｜零号补丁兽",
+        "/pet/name": "零号补丁兽",
+        "/pet/seasonLabel": "PATCHLING ZERO · VERIFY TO EVOLVE"
+      }
+    },
+    {
+      "id": "alert-first-palette",
+      "title": "用告警橙作为第一强调色",
+      "choice": "主强调色为告警橙，酸性绿退到行动按钮和成功反馈。",
+      "rationale": "橙色能把注意力快速拉到错误与修复动作，适合强调发现问题的戏剧性。",
+      "manifestPatch": {
+        "/theme/colors/accent": "#ff7a1a",
+        "/theme/colors/accentAlt": "#ffd166",
+        "/theme/colors/secondary": "#83ff45",
+        "/theme/colors/highlight": "#ff3d0a"
+      }
+    },
+    {
+      "id": "verification-voice",
+      "title": "台词持续提醒先验证再奖励",
+      "choice": "互动台词围绕描述、反证、修复和重新验证，不把失败包装成成长奖励。",
+      "rationale": "让角色语言与产品的确定性验证边界一致。",
+      "manifestPatch": {
+        "/gameplay/sayings": [
+          "先写清楚预期，再点 Build。",
+          "失败不加 XP，修复后重新验证。",
+          "我负责提醒，你负责判断。",
+          "通过测试，才算补丁落地。"
+        ],
+        "/gameplay/certificateTitle": "Patchling Zero 验证循环纪念"
+      }
+    },
+    {
+      "id": "repair-before-reward",
+      "title": "把修复重验放在奖励之前",
+      "choice": "每次通过修复重验奖励 30 XP，并把首个任务设置为完成一次修复重建。",
+      "rationale": "奖励与验证后的行为绑定，而不是与第一次尝试或单纯点击绑定。",
+      "manifestPatch": {
+        "/gameplay/rewardXp": 30,
+        "/gameplay/quests": [
+          {
+            "id": "first-repair",
+            "title": "完成一次修复重验",
+            "metric": "repairedBuilds",
+            "target": 1
+          },
+          {
+            "id": "three-valid-builds",
+            "title": "累计完成 3 次 Build",
+            "metric": "successfulBuilds",
+            "target": 3
+          },
+          {
+            "id": "level-three",
+            "title": "成长到 Lv3",
+            "metric": "level",
+            "target": 3
+          }
+        ]
+      }
+    }
+  ],
+  "manifestProposal": {
+    "schemaVersion": 1,
+    "id": "patchling-zero-vibelab",
+    "name": "Patchling Zero｜零号补丁兽",
+    "theme": {
+      "background": "assets/background.png",
+      "tagline": "AI 提案，人工把关，验证后再进化。",
+      "quote": "DIRECT · REJECT · VALIDATE · SHIP",
+      "colors": {
+        "background": "#050704",
+        "panel": "#0a0e09",
+        "panelAlt": "#11180e",
+        "accent": "#ff7a1a",
+        "accentAlt": "#ffd166",
+        "secondary": "#83ff45",
+        "highlight": "#ff3d0a",
+        "text": "#f4efd8",
+        "muted": "#9aa58d"
+      }
+    },
+    "pet": {
+      "name": "零号补丁兽",
+      "seasonId": "vibelab-2026",
+      "seasonLabel": "PATCHLING ZERO · VERIFY TO EVOLVE",
+      "art": {
+        "idle": "assets/pet-idle.png"
+      }
+    },
+    "gameplay": {
+      "rewardXp": 30,
+      "sayings": [
+        "先写清楚预期，再点 Build。",
+        "失败不加 XP，修复后重新验证。",
+        "我负责提醒，你负责判断。",
+        "通过测试，才算补丁落地。"
+      ],
+      "quests": [
+        {
+          "id": "first-repair",
+          "title": "完成一次修复重验",
+          "metric": "repairedBuilds",
+          "target": 1
+        },
+        {
+          "id": "three-valid-builds",
+          "title": "累计完成 3 次 Build",
+          "metric": "successfulBuilds",
+          "target": 3
+        },
+        {
+          "id": "level-three",
+          "title": "成长到 Lv3",
+          "metric": "level",
+          "target": 3
+        }
+      ],
+      "certificateTitle": "Patchling Zero 验证循环纪念"
+    },
+    "rights": {
+      "declaration": "角色 brief、矢量源文件与演示素材由本项目为 VibeLab 演示原创制作，可随 MIT 仓库使用。",
+      "sourceUrl": "https://github.com/siuserxiaowei/Codex-Bugfire-Skin"
+    }
+  },
+  "productionNotes": [
+    "先由人类检查四项创意决策；至少明确否决并替换一项后再进入 materialize。",
+    "AI 输出不能证明素材权利、可安装性或运行状态；这些分别由权利表、pack validator 与 live verifier 提供证据。",
+    "六态演示可以在首版复用 idle 图，之后再由拥有权利的本地 PNG 逐态替换。",
+    "告警色在小尺寸可能压过角色识别，建议人工重点复核。"
+  ],
+  "humanReview": null
+}

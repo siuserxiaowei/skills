@@ -1,0 +1,8 @@
+interface:
+  display_name: "Goal Compiler｜需求编译器"
+  short_description: "Compile vague intent into evidence-gated goals"
+  brand_color: "#7557FF"
+  default_prompt: "Use $xiaowei-goal to produce complete task-specific semantics for this vague request, expose evidence gaps, and leave the exact metric and execution approval to me."
+
+policy:
+  allow_implicit_invocation: true

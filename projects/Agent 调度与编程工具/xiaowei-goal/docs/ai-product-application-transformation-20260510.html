@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>AI 产品应用与转型讨论：xiaowei-goal 拆解</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f6f8f7;
+      --paper: #ffffff;
+      --ink: #17202a;
+      --muted: #5d6670;
+      --line: #d9e0df;
+      --accent: #0f766e;
+      --accent-2: #b45309;
+      --soft: #edf7f5;
+      --soft-2: #fff5eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--page);
+      color: var(--ink);
+    }
+
+    body {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 42px 24px 64px;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-size: 16px;
+      line-height: 1.82;
+      box-shadow: 0 20px 60px rgba(23, 32, 42, .08);
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      padding-bottom: 18px;
+      border-bottom: 3px solid var(--accent);
+      color: var(--ink);
+      font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+      font-size: clamp(2rem, 4.6vw, 3.2rem);
+      line-height: 1.2;
+    }
+
+    h2 {
+      margin-top: 42px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--accent);
+      font-size: 1.5rem;
+      line-height: 1.35;
+    }
+
+    h3 {
+      margin-top: 30px;
+      color: var(--ink);
+      font-size: 1.18rem;
+      line-height: 1.35;
+    }
+
+    h4 {
+      margin-top: 22px;
+      font-size: 1rem;
+    }
+
+    p {
+      margin: .82rem 0;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: .08em;
+      text-underline-offset: .18em;
+    }
+
+    blockquote {
+      margin: 18px 0;
+      padding: 12px 16px;
+      border-left: 4px solid var(--accent);
+      background: var(--soft);
+      color: var(--muted);
+    }
+
+    strong {
+      color: var(--ink);
+    }
+
+    code {
+      border: 1px solid rgba(15, 118, 110, .20);
+      border-radius: 4px;
+      padding: .08rem .28rem;
+      background: var(--soft);
+      color: #134e4a;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: .92em;
+    }
+
+    pre {
+      overflow: auto;
+    }
+
+    pre code {
+      display: block;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #17202a;
+      color: #f6f8f7;
+      white-space: pre-wrap;
+    }
+
+    table {
+      width: 100%;
+      margin: 18px 0 28px;
+      border-collapse: collapse;
+      background: var(--paper);
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--soft);
+      color: #134e4a;
+      font-weight: 700;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fbfdfc;
+    }
+
+    ul,
+    ol {
+      padding-left: 1.4rem;
+    }
+
+    li {
+      margin: .3rem 0;
+    }
+
+    hr {
+      margin: 36px 0;
+      border: 0;
+      border-top: 1px solid var(--line);
+    }
+
+    nav#TOC {
+      margin: 18px 0 30px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      background: #fbfdfc;
+    }
+
+    nav#TOC ul {
+      margin: 0;
+    }
+
+    body::after {
+      content: "xiaowei-goal · broad research → Deep Research → business application";
+      display: block;
+      margin-top: 54px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .92rem;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 28px 14px 48px;
+        font-size: 15px;
+        box-shadow: none;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">AI 产品应用与转型讨论：xiaowei-goal 拆解</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#ai-产品应用与转型讨论xiaowei-goal-拆解"
+id="toc-ai-产品应用与转型讨论xiaowei-goal-拆解">AI
+产品应用与转型讨论：xiaowei-goal 拆解</a>
+<ul>
+<li><a href="#信息密度升级说明"
+id="toc-信息密度升级说明">信息密度升级说明</a></li>
+<li><a href="#一句话结论" id="toc-一句话结论">一句话结论</a></li>
+<li><a href="#阶段-1广域联网调研补充"
+id="toc-阶段-1广域联网调研补充">阶段 1：广域联网调研补充</a>
+<ul>
+<li><a href="#来源池与取舍" id="toc-来源池与取舍">来源池与取舍</a></li>
+</ul></li>
+<li><a href="#逐句-信息点级理解" id="toc-逐句-信息点级理解">逐句 /
+信息点级理解</a></li>
+<li><a href="#阶段-2deep-research-判断"
+id="toc-阶段-2deep-research-判断">阶段 2：Deep Research 判断</a>
+<ul>
+<li><a href="#deep-research-证据表" id="toc-deep-research-证据表">Deep
+Research 证据表</a></li>
+<li><a href="#已被外部资料强化的判断"
+id="toc-已被外部资料强化的判断">已被外部资料强化的判断</a></li>
+<li><a href="#需要修正的判断"
+id="toc-需要修正的判断">需要修正的判断</a></li>
+<li><a href="#关键判断分层事实-推断-假设"
+id="toc-关键判断分层事实-推断-假设">关键判断分层：事实 / 推断 /
+假设</a></li>
+<li><a href="#仍需验证的问题"
+id="toc-仍需验证的问题">仍需验证的问题</a></li>
+</ul></li>
+<li><a href="#阶段-3应用到业务" id="toc-阶段-3应用到业务">阶段
+3：应用到业务</a>
+<ul>
+<li><a href="#业务应用总表" id="toc-业务应用总表">业务应用总表</a></li>
+<li><a href="#业务落地路线图7-天-30-天-90-天"
+id="toc-业务落地路线图7-天-30-天-90-天">业务落地路线图：7 天 / 30 天 /
+90 天</a></li>
+</ul></li>
+<li><a href="#道法术器势拆解" id="toc-道法术器势拆解">道法术器势拆解</a>
+<ul>
+<li><a href="#道法术器势到项目模板的映射"
+id="toc-道法术器势到项目模板的映射">道法术器势到项目模板的映射</a></li>
+</ul></li>
+<li><a href="#风险清单与验证动作"
+id="toc-风险清单与验证动作">风险清单与验证动作</a></li>
+<li><a href="#下一步-goal" id="toc-下一步-goal">下一步
+<code>/goal</code></a></li>
+<li><a href="#资料链接" id="toc-资料链接">资料链接</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="ai-产品应用与转型讨论xiaowei-goal-拆解">AI
+产品应用与转型讨论：xiaowei-goal 拆解</h1>
+<p>资料范围：飞书智能纪要《AI产品应用与转型讨论》，会议时间 2026-05-10
+14:21-18:44。本文只发布结构化理解、外部资料补充和业务拆解，不公开原始逐字稿与私有飞书链接。</p>
+<p>处理方式：按 <code>xiaowei-goal</code>
+三阶段流程执行：先做广域联网调研，再做 Deep Research
+交叉判断，最后落到业务动作，并用「道法术器势」拆解。</p>
+<h2 id="信息密度升级说明">信息密度升级说明</h2>
+<p>上一版更像会议摘要：抓住了“AI
+快速做产品、平台验证、官网迁移、Skill/MCP、AI
+转型、合规风险”这些主线，但很多信息点停留在结论层。新版的升级目标是把纪要拆成可执行判断：</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>升级项</th>
+<th>上一版问题</th>
+<th>本版处理方式</th>
+<th>对小伟业务的价值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>信息颗粒度</td>
+<td>多数信息点只有“我的理解”和“业务含义”。</td>
+<td>改成“纪要信息点、字面意思、深层含义、业务动作、证据状态”。</td>
+<td>能直接转成 App、网站、AI agent 的任务列表，而不是停在感想。</td>
+</tr>
+<tr>
+<td>证据结构</td>
+<td>外部资料列了来源，但没有说明为什么取舍。</td>
+<td>增加“来源池与取舍”和“Deep Research 证据表”。</td>
+<td>避免把会议灵感当事实，也避免外部资料堆链接。</td>
+</tr>
+<tr>
+<td>判断分层</td>
+<td>事实、推断、假设混在一起。</td>
+<td>增加“关键判断分层：事实 / 推断 / 假设”。</td>
+<td>做决策时知道哪些可以立刻执行，哪些必须先验证。</td>
+</tr>
+<tr>
+<td>落地路径</td>
+<td>下一步偏总括。</td>
+<td>增加 7 天、30 天、90 天路线图。</td>
+<td>把“AI 产品能力”拆成短周期验证、资产化、规模化三段。</td>
+</tr>
+<tr>
+<td>风险处理</td>
+<td>合规、版权、平台依赖只被点到。</td>
+<td>增加风险清单与验证动作。</td>
+<td>让项目上线前就有检查项，减少后补成本。</td>
+</tr>
+<tr>
+<td>道法术器势</td>
+<td>原版方向正确，但动作偏抽象。</td>
+<td>每层都绑定小伟后续做 App、网站、AI agent 的动作。</td>
+<td>形成可复用的方法论，不只服务本次会议。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="一句话结论">一句话结论</h2>
+<p>这场讨论真正重要的不是“AI 能多快写代码”，而是 <strong>AI
+把产品开发、知识沉淀、组织协作和内容增长的成本曲线压低了</strong>。机会在于：用
+AI
+快速验证垂直小痛点，形成自有产品和复利资产；风险在于：只会做功能会迅速被抄，平台流量、商标、版权、合规、组织采用都会成为新的瓶颈。</p>
+<p>进一步说，这场会的主线可以压成一个业务公式：</p>
+<pre class="text"><code>垂直真实痛点 + AI 快速交付 + 内容平台验证 + 官网/订阅承接 + Skill/MCP 复用 + 合规证据链 = 可持续 AI-native 小产品</code></pre>
+<p>其中最容易被误读的是“快”。快不是为了炫技，而是为了缩短“假设到市场反馈”的距离；如果没有证据、渠道、品牌、留存、合规和复盘，三四天做出来的产品只是一次
+demo，不是业务。</p>
+<h2 id="阶段-1广域联网调研补充">阶段 1：广域联网调研补充</h2>
+<h3 id="来源池与取舍">来源池与取舍</h3>
+<p>本轮外部资料只采用公开来源，不引用会议私有链接，不公开原始逐字稿。来源取舍遵循三个原则：</p>
+<ol type="1">
+<li>优先官方或标准来源：Google、MCP、OpenAI、OWASP、NIST、网信办、国家标准平台、美国版权局。</li>
+<li>优先能校正业务动作的资料：搜索/AI 搜索如何获得流量，Agent/MCP
+如何落成系统，AI 合规/版权风险如何提前设计。</li>
+<li>不把案例传闻当事实：会议中提到的“9.9 元卖 8
+万多单”“三四天开发”“商标被抢”等作为纪要信息点处理，除非有公开可核查资料，否则标为“纪要内证据，待验证”。</li>
+</ol>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>来源</th>
+<th>URL</th>
+<th>纳入原因</th>
+<th>取舍说明</th>
+<th>对本纪要的补充意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Google SEO Starter Guide</td>
+<td><a
+href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide"
+class="uri">https://developers.google.com/search/docs/fundamentals/seo-starter-guide</a></td>
+<td>官网长期流量与基础 SEO。</td>
+<td>保留。它回答“从小红书迁到官网后，官网怎样才可能被发现”。</td>
+<td>官网不是把页面放上去就有流量，需要可抓取、清晰结构、面向用户的内容。</td>
+</tr>
+<tr>
+<td>Google AI optimization guide</td>
+<td><a
+href="https://developers.google.com/search/docs/fundamentals/ai-optimization-guide"
+class="uri">https://developers.google.com/search/docs/fundamentals/ai-optimization-guide</a></td>
+<td>AI 搜索/GEO 判断。</td>
+<td>保留。它能校正“GEO 是不是单独玄学”。</td>
+<td>Google 明确生成式搜索仍与核心搜索质量系统、RAG、query
+fan-out、非同质内容相关。</td>
+</tr>
+<tr>
+<td>Google spam policies</td>
+<td><a
+href="https://developers.google.com/search/docs/essentials/spam-policies"
+class="uri">https://developers.google.com/search/docs/essentials/spam-policies</a></td>
+<td>内容矩阵和增长风险。</td>
+<td>保留。它约束“AI 批量内容”和“第三方提及”的边界。</td>
+<td>不能把 AI
+内容规模化理解成垃圾站、寄生页面、操纵排名或低质批量生成。</td>
+</tr>
+<tr>
+<td>Model Context Protocol 官方介绍</td>
+<td><a href="https://modelcontextprotocol.io/docs/getting-started/intro"
+class="uri">https://modelcontextprotocol.io/docs/getting-started/intro</a></td>
+<td>MCP 定义与使用边界。</td>
+<td>保留。它把“Skill/MCP/AIOS”从口号拉回架构。</td>
+<td>MCP 是把 AI
+应用连接到工具、数据和工作流的开放协议，可用于组织能力封装。</td>
+</tr>
+<tr>
+<td>OpenAI Agents SDK</td>
+<td><a href="https://openai.github.io/openai-agents-python/"
+class="uri">https://openai.github.io/openai-agents-python/</a></td>
+<td>Agent 工作流架构。</td>
+<td>保留。它提供 agent、handoff、guardrails、tracing 等实现参考。</td>
+<td>“AI
+执行，人判断”应落成有工具、交接、护栏、追踪和人工复核的流程。</td>
+</tr>
+<tr>
+<td>OWASP LLM Top 10</td>
+<td><a
+href="https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+class="uri">https://owasp.org/www-project-top-10-for-large-language-model-applications/</a></td>
+<td>LLM 应用安全。</td>
+<td>保留。它直接对应中转 API、MCP、Agent、插件调用风险。</td>
+<td>AI
+产品要防提示注入、不安全输出、供应链、敏感信息泄露、过度代理等风险。</td>
+</tr>
+<tr>
+<td>NIST Generative AI Profile</td>
+<td><a
+href="https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence"
+class="uri">https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence</a></td>
+<td>生成式 AI 风险治理。</td>
+<td>保留。它适合企业 AI 转型和上线治理。</td>
+<td>企业转型不能只看效率，需要治理、测试、监控、事件处理和责任边界。</td>
+</tr>
+<tr>
+<td>网信办《生成式人工智能服务管理暂行办法》</td>
+<td><a href="https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+class="uri">https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm</a></td>
+<td>国内公众生成式 AI 服务合规。</td>
+<td>保留。它帮助区分内部工具与公众服务。</td>
+<td>做对外 AI
+应用、教育产品、内容生成服务时，要先确认服务边界和义务。</td>
+</tr>
+<tr>
+<td>网信办《人工智能生成合成内容标识办法》</td>
+<td><a href="https://www.cac.gov.cn/2025-03/14/c_1743654684782215.htm"
+class="uri">https://www.cac.gov.cn/2025-03/14/c_1743654684782215.htm</a></td>
+<td>AI 生成内容标识。</td>
+<td>保留。它对应 AI 图片、视频、文章、素材导出的产品设计。</td>
+<td>显式标识、隐式标识、用户提示、传播链路都要进入产品需求。</td>
+</tr>
+<tr>
+<td>GB 45438-2025</td>
+<td><a
+href="https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547"
+class="uri">https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547</a></td>
+<td>AI 生成合成内容标识方法国家标准。</td>
+<td>保留。官方页面显示标准状态、发布日期和实施日期。</td>
+<td>做国内可商用 AI
+内容产品时，导出、元数据、水印、日志要提前设计。</td>
+</tr>
+<tr>
+<td>美国版权局 AI 专题</td>
+<td><a href="https://www.copyright.gov/ai/"
+class="uri">https://www.copyright.gov/ai/</a></td>
+<td>AI 输出、训练材料、数字复制等版权问题。</td>
+<td>保留。它对应海外素材、SaaS、App 出海和商业图片使用。</td>
+<td>AI
+图片不能只保存结果，要保存提示词、编辑、人工选择、授权和版本证据。</td>
+</tr>
+<tr>
+<td>社交平台传闻/案例截图</td>
+<td>不公开</td>
+<td>可提供需求灵感。</td>
+<td>不作为事实来源。只作为待验证线索。</td>
+<td>“爆单案例”能提示机会，但不能替代真实
+GMV、留存、退款、复购数据。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="逐句-信息点级理解">逐句 / 信息点级理解</h2>
+<p>这里的“逐句 /
+信息点级”不是复刻逐字稿，而是把纪要中的关键表达拆成：字面上说了什么、背后真正意味着什么、应该如何行动，以及证据状态。证据状态分为三类：</p>
+<ul>
+<li><strong>外部强化</strong>：可被公开资料支持。</li>
+<li><strong>纪要内证据</strong>：来自会议摘要，尚未外部核验。</li>
+<li><strong>待验证假设</strong>：需要后续调研、数据或实验确认。</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>纪要信息点</th>
+<th>字面意思</th>
+<th>深层含义</th>
+<th>业务动作</th>
+<th>证据状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“AI 半小时就能做出产品，有些还卖了很多单。”</td>
+<td>AI 编程让原型和小功能开发极快。</td>
+<td>开发速度不再是第一瓶颈，真正瓶颈转移到需求判断、分发、审美、信任和交付。</td>
+<td>每个新 App/网站想法先做“1 个尖锐痛点 + 1 个可演示结果 + 1
+个付费入口”，不要先做完整系统。</td>
+<td>方向被 AI 编程趋势强化；具体“半小时”和销量为纪要内证据。</td>
+</tr>
+<tr>
+<td>“潮汕卧龙老师班级管理宠物产品。”</td>
+<td>一个年轻创作者做了教师班级管理相关的宠物化产品。</td>
+<td>垂直角色的细碎痛点比宏大 AI
+平台更容易变现；教育场景有情绪价值和管理效率双重需求。</td>
+<td>小伟可以建立“职业场景痛点库”：老师、教培、跨境卖家、设计师、律师助理、运营分别收集
+50 条真实抱怨。</td>
+<td>纪要内证据，需验证产品真实页面、用户评价和留存。</td>
+</tr>
+<tr>
+<td>“9.9 元卖 8 万多单。”</td>
+<td>低价产品通过平台获得大规模订单。</td>
+<td>低客单价不是问题，关键是交付边际成本低、渠道转化高、后续可升级。</td>
+<td>不直接复制价格，先测三档：9.9 元试用、29-49 元模板包、19-39
+元/月订阅，看哪档能承接复购。</td>
+<td>纪要内证据，GMV、退款、刷单、渠道成本待验证。</td>
+</tr>
+<tr>
+<td>“产品三四天开发出来。”</td>
+<td>第一版开发周期很短。</td>
+<td>这个速度适合
+MVP，不适合承诺稳定平台；上线后运维、客服、迭代才是长期成本。</td>
+<td>设定 72 小时 MVP 规则：第 1 天调研与原型，第 2 天核心流程，第 3
+天支付/留资/埋点。</td>
+<td>纪要内证据；方法论可执行但需项目验证。</td>
+</tr>
+<tr>
+<td>“没有壁垒，被抄、商标被抢。”</td>
+<td>功能容易复制，品牌资产可能被别人抢先注册。</td>
+<td>AI
+让“功能抄袭”成本下降，早期壁垒必须前置：商标、域名、账号、内容、用户数据、社群、迭代速度。</td>
+<td>新项目立项 24
+小时内检查域名、商标、社媒账号；上线当天注册品牌矩阵，保留首发时间证据。</td>
+<td>纪要内证据；品牌资产风险是强推断。</td>
+</tr>
+<tr>
+<td>“小红书能卖，但平台依赖严重。”</td>
+<td>小红书适合获得初始流量和订单，但不能作为唯一底盘。</td>
+<td>平台提供分发，不提供资产所有权；规则、限流、竞品、账号风险都会影响收入。</td>
+<td>用小红书验证需求，用官网沉淀教程、FAQ、案例、支付、邮箱、用户反馈和更新日志。</td>
+<td>平台依赖为商业常识推断；官网动作被 Google SEO/AI 搜索资料强化。</td>
+</tr>
+<tr>
+<td>“迁到官网、加支付、做月费。”</td>
+<td>从平台一次性商品迁移到独立站和订阅。</td>
+<td>商业模式从“内容平台成交”变成“自有产品经营”；核心指标变成激活、留存、复购、客服成本。</td>
+<td>先做轻量官网：首页、场景页、定价页、教程页、FAQ、更新日志、退款政策、联系入口。</td>
+<td>外部强化：Google SEO/AI 搜索资料支持官网资产；订阅转化需验证。</td>
+</tr>
+<tr>
+<td>“AIOS，AI 创造 AI、管理 AI、使用 AI。”</td>
+<td>AI 会成为组织运行系统，而非单个聊天工具。</td>
+<td>未来团队工作会拆成目标、上下文、工具、执行人、验收人、日志和复盘；AIOS
+是组织协作层。</td>
+<td>先内部实现“小伟 AI 工作台”：调研 Skill、落地页 Skill、代码检查
+Skill、内容复盘 Skill、素材证据链 Skill。</td>
+<td>架构方向被 MCP、OpenAI Agents SDK 强化；AIOS
+命名本身为纪要概念。</td>
+</tr>
+<tr>
+<td>“Skill/MCP 封装能力。”</td>
+<td>用 Skill 固化经验，用 MCP 接入工具和数据。</td>
+<td>个人能力可以变成组织可调用资产；否则 AI
+产出仍依赖某个高手的临场发挥。</td>
+<td>把高频工作拆成 10 个 Skill：需求调研、竞品拆解、页面文案、SEO
+简报、App 原型、测试清单、发布清单、客服回复、复盘、合规检查。</td>
+<td>外部强化：MCP 官方介绍支持工具/数据/工作流连接。</td>
+</tr>
+<tr>
+<td>“AI 执行，人判断。”</td>
+<td>AI 负责执行，人负责目标、判断、验收和风险。</td>
+<td>人的价值从“亲手做”转为“定义好问题、选择证据、把关结果、承担责任”。</td>
+<td>每个 agent
+任务必须有：输入边界、可用工具、禁止动作、验收标准、人工复核点、失败回退。</td>
+<td>外部强化：OpenAI Agents SDK 的 guardrails、tracing、handoff
+等概念支持。</td>
+</tr>
+<tr>
+<td>“未来核心竞争力是审美。”</td>
+<td>当代码和内容都便宜，辨别好坏更重要。</td>
+<td>审美不只是视觉，是产品取舍、页面信息层级、文案语气、交互节奏和用户信任感。</td>
+<td>建立小伟产品审美规范：页面首屏、卡片密度、按钮语气、截图风格、案例格式、颜色和字体规则。</td>
+<td>推断，需要通过转化率、留存和用户访谈验证。</td>
+</tr>
+<tr>
+<td>“企业 AI 转型要自上而下支持。”</td>
+<td>管理层不改变流程，员工很难真正用 AI。</td>
+<td>AI
+转型不是发账号和培训，而是考核、流程、权限、模板、复用机制改变。</td>
+<td>对企业客户输出 AI 转型方案时，先做 1
+个部门试点，不卖大而全平台；用时间节省、错误率、交付周期说话。</td>
+<td>外部强化：NIST 风险治理资料支持治理视角；组织效果需实证。</td>
+</tr>
+<tr>
+<td>“AI native 团队不是管出来的，是机制长出来的。”</td>
+<td>不能只靠命令要求员工使用 AI。</td>
+<td>要让 AI
+工作流成为默认生产方式，需要奖励复用、公开模板、失败复盘和内部案例库。</td>
+<td>建立内部“Skill 市场”：谁沉淀可复用
+Skill，谁获得项目优先权或奖金。</td>
+<td>纪要内判断，需小团队试点验证。</td>
+</tr>
+<tr>
+<td>“评估 Token ROI，不是只看消耗。”</td>
+<td>Token 是投入，不是单纯成本。</td>
+<td>AI 成本要绑定产出，不能只按调用量压缩；低价模型不一定更划算。</td>
+<td>做 Token ROI 表：任务类型、模型、输入输出
+token、成本、节省时间、收入贡献、错误返工。</td>
+<td>强推断；需财务和项目数据验证。</td>
+</tr>
+<tr>
+<td>“把老员工能力提炼成 Skill。”</td>
+<td>资深员工经验可以模板化。</td>
+<td>企业真正的 AI
+资产不是提示词，而是业务上下文、判断标准、案例和例外处理。</td>
+<td>访谈资深销售/客服/运营，把“怎么判断好线索、怎么处理异议、怎么复盘投放”做成
+Skill。</td>
+<td>纪要内判断；落地价值需试点验证。</td>
+</tr>
+<tr>
+<td>“中转 API 能省成本，但有风险。”</td>
+<td>API 中转可能降低成本，但有稳定性、合规和数据安全风险。</td>
+<td>成本优化不能牺牲核心数据、客户数据和服务稳定；公开售卖中转服务风险更高。</td>
+<td>低敏任务可走中转；客户数据、商业机密、付费核心流程走可信供应商；所有
+API 调用做日志和降级。</td>
+<td>外部强化：OWASP/NIST 支持供应链、敏感信息、治理风险。</td>
+</tr>
+<tr>
+<td>“卖中转站涉及备案和监管。”</td>
+<td>自用中转和面向公众提供服务不是同一性质。</td>
+<td>一旦对外售卖，可能涉及生成式 AI
+服务、数据处理、备案、公示、合同和客户隐私。</td>
+<td>不把 API
+中转作为小伟首个公开产品；若做，只做企业内部工具或受控试点，并先咨询合规。</td>
+<td>外部强化：网信办生成式 AI 服务办法；具体适用需法律核验。</td>
+</tr>
+<tr>
+<td>“AI 图片版权要证据链。”</td>
+<td>商用 AI 图片不能只保留最终图。</td>
+<td>版权争议中，人的创作贡献、编辑过程、素材授权、生成标识和版本记录都很关键。</td>
+<td>建立素材证据链模板：提示词、模型、时间、原始输出、人工修改、素材授权、导出文件、水印/标识、用途。</td>
+<td>外部强化：美国版权局 AI 专题、网信办标识办法、GB 45438-2025。</td>
+</tr>
+<tr>
+<td>“日本市场、海外 SaaS、APP 出海值得看。”</td>
+<td>海外有 SaaS/App 机会。</td>
+<td>出海不是翻译，而是搜索需求、支付习惯、合规、文化语境、客服和渠道重建。</td>
+<td>先做英文 landing page + 3 个国家关键词调研 + 20
+个竞品截图拆解，再决定开发。</td>
+<td>待验证假设，需要市场和渠道数据。</td>
+</tr>
+<tr>
+<td>“招聘 AI native 人才。”</td>
+<td>招人要看 AI 工作方式。</td>
+<td>AI native
+不是会聊天，而是会检索、拆解、搭工具、验证、复盘和沉淀资产。</td>
+<td>面试题改为现场任务：给一个模糊业务目标，要求 60
+分钟内输出来源池、判断分层和可执行 MVP。</td>
+<td>纪要内判断；招聘有效性需长期验证。</td>
+</tr>
+<tr>
+<td>“开源 OpenCrowdCoderX / 分享体系。”</td>
+<td>开源和公开分享可成为信任与分发机制。</td>
+<td>公开方法论不是泄密，而是吸引用户、伙伴、人才和项目线索；真正壁垒在执行和持续更新。</td>
+<td>对外发布“小伟 AI 产品方法论”系列：案例拆解、Skill 模板、Agent
+工作流、错误复盘。</td>
+<td>纪要内证据；增长效果需用线索数和转化验证。</td>
+</tr>
+<tr>
+<td>“医疗、律师等行业存在智能差套利。”</td>
+<td>专业行业有大量可被 AI 提效的知识工作。</td>
+<td>专业领域有责任边界，AI
+适合检索、草拟、整理、质检，不适合替代执业判断。</td>
+<td>先做“专业助手”而不是“专业替代”：文书草稿、资料索引、案例摘要、合规检查表。</td>
+<td>外部强化：NIST/OWASP 支持风险治理；具体行业需单独合规核验。</td>
+</tr>
+<tr>
+<td>“知识库很重要。”</td>
+<td>AI 产出依赖上下文质量。</td>
+<td>没有结构化知识库，agent 会重复问、重复错、无法交接；知识库是 AIOS
+的燃料。</td>
+<td>统一沉淀会议、项目、素材、案例、FAQ、竞品、合规条款；每条知识带来源、日期、可信度。</td>
+<td>外部强化：MCP/Agent
+工作流需要可靠上下文；具体工具选择需另行验证。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="阶段-2deep-research-判断">阶段 2：Deep Research 判断</h2>
+<h3 id="deep-research-证据表">Deep Research 证据表</h3>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>关键判断</th>
+<th>公开来源</th>
+<th>证据要点</th>
+<th>对小伟业务的含义</th>
+<th>证据强度</th>
+<th>仍缺什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>官网和内容资产必须做</td>
+<td>Google SEO Starter Guide；Google AI optimization guide</td>
+<td>Google 生成式 AI 搜索仍基于核心搜索质量系统、检索增强、query
+fan-out、可索引内容和高质量非同质内容。</td>
+<td>小红书验证后必须沉淀官网；官网要有结构化页面、教程、案例、FAQ、更新日志和可抓取内容。</td>
+<td>强</td>
+<td>具体项目的关键词量、页面索引、转化数据。</td>
+</tr>
+<tr>
+<td>“GEO/AEO”不能被理解成玄学增长</td>
+<td>Google AI optimization guide；Google spam policies</td>
+<td>Google 把生成式 AI
+搜索优化视为搜索体验优化的一部分，并有明确垃圾内容政策。</td>
+<td>不做低质 AI
+内容农场，不买虚假第三方提及；用真实案例、原创经验、产品数据和教程提升可引用性。</td>
+<td>强</td>
+<td>目标国家/行业的真实 SERP 和 AI Overview 展示情况。</td>
+</tr>
+<tr>
+<td>Skill/MCP 是组织能力封装方向</td>
+<td>MCP 官方介绍；OpenAI Agents SDK</td>
+<td>MCP 连接 AI 应用与外部系统、数据源、工具和工作流；Agents SDK 提供
+agent、工具、交接、护栏、追踪等结构。</td>
+<td>小伟要把重复业务动作封装成 Skill，把常用系统接成
+MCP，形成“人定义目标、agent 执行、系统留痕”的生产线。</td>
+<td>强</td>
+<td>当前团队最常用的 10 个流程和工具清单。</td>
+</tr>
+<tr>
+<td>AI 执行必须有治理</td>
+<td>OWASP LLM Top 10；NIST GenAI Profile</td>
+<td>LLM
+应用存在提示注入、敏感信息泄露、不安全输出、供应链、过度代理等风险；NIST
+强调治理、测试、监控和事件响应。</td>
+<td>每个 AI agent
+都要有权限最小化、日志、输出校验、人工复核和失败回退；MCP
+不能无脑接入生产系统。</td>
+<td>强</td>
+<td>具体产品的数据分类、权限模型、日志方案。</td>
+</tr>
+<tr>
+<td>国内公众 AI 产品要提前设计合规</td>
+<td>生成式人工智能服务管理暂行办法；AI 生成合成内容标识办法；GB
+45438-2025</td>
+<td>面向公众提供生成式 AI 服务和 AI
+生成合成内容传播，有服务边界、标识、公示等要求；GB 45438-2025
+已现行，官方页面显示 2025-09-01 实施。</td>
+<td>做 AI 图片、文章、视频、教育助手、API
+中转等公开服务时，需求文档里必须加入标识、备案/公示、用户协议、日志和人工处理机制。</td>
+<td>强</td>
+<td>具体业务是否属于“公众服务”、使用模型是否已备案、法务判断。</td>
+</tr>
+<tr>
+<td>AI 图片版权要靠过程证据</td>
+<td>美国版权局 AI 专题；网信办标识办法；GB 45438-2025</td>
+<td>美国版权局持续发布 AI
+与版权报告；国内规则关注生成合成内容标识。</td>
+<td>商用素材要保存生成过程、人工编辑、素材授权、版本记录和导出标识；不能只把最终图片丢进素材库。</td>
+<td>中强</td>
+<td>不同国家/平台对 AI 图的授权、可版权性和标识要求差异。</td>
+</tr>
+<tr>
+<td>低价爆单案例只能作为线索</td>
+<td>会议纪要</td>
+<td>“9.9 元卖 8
+万多单”提示低价垂直产品可能跑通，但缺少公开核验数据。</td>
+<td>可以学习结构：垂直痛点、低价入口、平台流量、快速交付、后续订阅；不能直接假设同样
+GMV 可复制。</td>
+<td>中</td>
+<td>真实订单、退款、复购、留存、投放成本、售后成本。</td>
+</tr>
+<tr>
+<td>海外 SaaS/App 机会需要重新验证</td>
+<td>Google AI optimization guide；版权局 AI 专题；会议纪要</td>
+<td>海外有搜索和订阅机会，但涉及本地化、版权、支付、客服和平台规则。</td>
+<td>出海先做搜索验证和落地页，不直接开发完整海外版；优先选轻合规、低敏感、工具型场景。</td>
+<td>中</td>
+<td>目标市场关键词、竞品价格、支付意愿、法规边界。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="已被外部资料强化的判断">已被外部资料强化的判断</h3>
+<ol type="1">
+<li><strong>官网和内容资产必须做。</strong> Google 的 SEO 与 AI
+搜索资料都说明，可抓取、高质量、非同质内容仍是搜索和 AI
+搜索可见性的基础。会议里“不要只依赖小红书，要迁到官网”的方向成立。</li>
+<li><strong>Skill/MCP/Agent 工作流值得建设。</strong> MCP 官方定义和
+OpenAI Agents SDK 的架构都支持这个判断：未来不是让 AI
+单点聊天，而是把工具、数据、流程接入 agent。</li>
+<li><strong>AI 产品要同步做治理。</strong>
+OWASP、NIST、网信办、国家标准、版权局资料都指向同一件事：越是对外服务、越是自动化、越需要权限、标识、版权、日志、人工复核。</li>
+<li><strong>组织转型要从机制开始。</strong> 只教工具不改变流程，无法让
+AI 成为生产系统；会议里“AI native 团队是长出来的”是组织设计问题。</li>
+<li><strong>内容增长要从“规模”转到“可被信任地引用”。</strong> AI
+可以提升生产效率，但 Google spam policies
+限制低质批量内容、操纵排名和滥用第三方站点的做法；可迁移的是真实经验、数据、案例和清晰结构。</li>
+</ol>
+<h3 id="需要修正的判断">需要修正的判断</h3>
+<ol type="1">
+<li><strong>“AI 半小时做产品”不能等同于“半小时做业务”。</strong>
+产品可以快，获客、支付、售后、合规、品牌和复购仍然慢。</li>
+<li><strong>“智能差套利”不是所有行业都能无脑做。</strong>
+医疗、法律、教育等行业存在专业责任和数据安全边界，只能做辅助、提效、文书、检索，不能越权承诺结果。</li>
+<li><strong>“GEO”不能理解成买软文堆外链。</strong> Google 明确有 spam
+policies。可迁移的是“让高质量第三方和自有内容能被搜索/AI
+系统理解”，不是垃圾内容矩阵。</li>
+<li><strong>“低价爆单”不能直接推导长期订阅成立。</strong> 9.9
+元订单可能来自好奇、冲动和平台推荐，月费订阅要靠持续使用频次和可见收益。</li>
+<li><strong>“中转 API 省钱”不能作为公开产品主线。</strong>
+省钱只是单点收益，公开售卖会带来服务稳定、数据安全、模型备案、公示和客户责任问题。</li>
+</ol>
+<h3 id="关键判断分层事实-推断-假设">关键判断分层：事实 / 推断 /
+假设</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>层级</th>
+<th>判断</th>
+<th>依据</th>
+<th>小伟应该怎么用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>事实</td>
+<td>本文资料范围来自 2026-05-10
+的会议纪要，但不公开私有链接和逐字稿。</td>
+<td>用户提供任务边界。</td>
+<td>只发布结构化理解、转述和外部公开资料链接。</td>
+</tr>
+<tr>
+<td>事实</td>
+<td>Google 官方将生成式 AI 搜索优化与基础
+SEO、核心搜索质量系统、RAG、query fan-out、非同质内容关联。</td>
+<td>Google AI optimization guide。</td>
+<td>官网内容要做原创经验、结构化页面、案例和多媒体，不做堆词。</td>
+</tr>
+<tr>
+<td>事实</td>
+<td>MCP 是连接 AI 应用与外部工具、数据源、工作流的协议。</td>
+<td>MCP 官方介绍。</td>
+<td>把常用业务系统接入 agent 前，先定义权限、字段和调用边界。</td>
+</tr>
+<tr>
+<td>事实</td>
+<td>OpenAI Agents SDK 强调 agent、工具、handoff、guardrails、tracing
+等能力。</td>
+<td>OpenAI Agents SDK。</td>
+<td>小伟的 agent 任务模板必须包含护栏、追踪和人工复核点。</td>
+</tr>
+<tr>
+<td>事实</td>
+<td>OWASP/NIST 都把生成式 AI 风险治理作为关键问题。</td>
+<td>OWASP LLM Top 10；NIST GenAI Profile。</td>
+<td>不把 AI 工作流直接接生产写权限；先做低风险只读或人工确认。</td>
+</tr>
+<tr>
+<td>事实</td>
+<td>GB 45438-2025 官方页面显示标准现行，实施日期为 2025-09-01。</td>
+<td>全国标准信息公共服务平台。</td>
+<td>国内 AI 内容产品要预留显式/隐式标识、导出提示和元数据策略。</td>
+</tr>
+<tr>
+<td>推断</td>
+<td>AI
+编程降低开发门槛后，竞争焦点会转向需求、分发、审美、信任和组织机制。</td>
+<td>会议案例 + 外部资料对 AI 搜索、agent、合规的共同指向。</td>
+<td>项目评审不能只看功能，还要看获客、留存、品牌、证据链和复用性。</td>
+</tr>
+<tr>
+<td>推断</td>
+<td>小红书适合做需求验证，但不能作为唯一经营底盘。</td>
+<td>平台依赖风险 + 官网内容资产逻辑。</td>
+<td>内容平台负责发现，官网负责承接，邮箱/社群/支付负责沉淀。</td>
+</tr>
+<tr>
+<td>推断</td>
+<td>低价产品可以作为入口，但长期价值取决于续费和升级。</td>
+<td>纪要案例缺少留存数据。</td>
+<td>设计从 9.9 元入口到订阅/模板/服务的阶梯，不只卖一次。</td>
+</tr>
+<tr>
+<td>推断</td>
+<td>Skill/MCP 会成为小伟做 App/网站/AI agent 的核心复用资产。</td>
+<td>MCP/Agents SDK + 会议中组织转型讨论。</td>
+<td>每个项目结束必须沉淀一个可复用 Skill 或检查表。</td>
+</tr>
+<tr>
+<td>假设</td>
+<td>教师班级管理宠物产品真实留存好。</td>
+<td>会议纪要提到爆单，但没有公开留存数据。</td>
+<td>需要找产品页、评价、退款、复购、社群活跃和竞品复刻情况。</td>
+</tr>
+<tr>
+<td>假设</td>
+<td>老师愿意从一次性 9.9 元迁移到月费。</td>
+<td>商业模式推断。</td>
+<td>用定价页 A/B、候补名单、访谈和试用转订阅验证。</td>
+</tr>
+<tr>
+<td>假设</td>
+<td>海外 SaaS/App 是小伟下一阶段高胜率方向。</td>
+<td>会议判断 + 海外搜索/订阅机会。</td>
+<td>先验证关键词、竞品、支付、合规和客服，不直接投入完整开发。</td>
+</tr>
+<tr>
+<td>假设</td>
+<td>AI-native 招聘能显著提升团队产出。</td>
+<td>组织方法论判断。</td>
+<td>先用 2-3 个候选人的现场任务结果与入职后产出对比。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="仍需验证的问题">仍需验证的问题</h3>
+<ol type="1">
+<li>教师班级管理宠物产品的真实留存、复购、退款、客诉、活跃数据。</li>
+<li>国内公开 AI
+教育产品的备案、内容标识、未成年人保护、数据合规边界。</li>
+<li>从一次性 9.9 元商品转月费订阅后，老师是否愿意持续付费。</li>
+<li>小伟自己的
+App/网站项目中，哪个垂直人群同时具备“高频痛点、低交付成本、可内容获客、可订阅”的组合。</li>
+<li>中转 API 或多模型路由在不同任务上的真实 Token
+ROI，而不是只看单价。</li>
+</ol>
+<h2 id="阶段-3应用到业务">阶段 3：应用到业务</h2>
+<h3 id="业务应用总表">业务应用总表</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>业务模块</th>
+<th>应用动作</th>
+<th>产出物</th>
+<th>验证指标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求验证</td>
+<td>每个产品想法先从小红书、抖音、B 站、知乎、Reddit、YouTube、Google
+搜索中抓 50-100 条真实抱怨。</td>
+<td><code>research.md</code>：痛点原话转述、场景、现有替代方案、付费证据、反对理由。</td>
+<td>是否出现高频痛点、现有替代方案、明确付费动作。</td>
+</tr>
+<tr>
+<td>MVP 开发</td>
+<td>只做一个核心流程：用户进来 3 分钟内能得到一个有感知的结果。</td>
+<td>可演示 App/网页、支付/留资入口、基础埋点、客服入口。</td>
+<td>首访完成率、购买/留资率、用户复述痛点是否一致。</td>
+</tr>
+<tr>
+<td>官网资产</td>
+<td>上线独立域名、清晰页面结构、FAQ、案例、教程、更新日志。</td>
+<td>首页、场景页、教程页、案例页、FAQ、更新日志、隐私/服务条款。</td>
+<td>索引状态、搜索曝光、自然访问、AI 搜索引用迹象。</td>
+</tr>
+<tr>
+<td>支付与订阅</td>
+<td>先做激活码/手动交付验证，再做自动支付和订阅。</td>
+<td>定价页、订单记录、退款规则、订阅权益、客服 SOP。</td>
+<td>首购转化、续费率、退款率、客服成本。</td>
+</tr>
+<tr>
+<td>AIOS 内部化</td>
+<td>把调研、选题、代码、测试、内容、投放、复盘拆成 Skill。</td>
+<td>Skill 库、MCP 连接清单、任务模板、复盘模板。</td>
+<td>每周复用次数、节省时间、产出质量、失败案例。</td>
+</tr>
+<tr>
+<td>合规底座</td>
+<td>标识 AI 生成内容、保存版权证据链、区分内部工具和公众服务。</td>
+<td>风险登记表、版权证据链模板、AI 标识策略、人工复核流程。</td>
+<td>是否有提示、日志、授权记录、模型备案说明。</td>
+</tr>
+<tr>
+<td>招聘与协作</td>
+<td>用现场任务筛选 AI-native 人才。</td>
+<td>面试任务包、评分表、样例答案、入职 30 天产出指标。</td>
+<td>候选人检索质量、判断分层、交付速度、复盘能力。</td>
+</tr>
+<tr>
+<td>出海验证</td>
+<td>先用英文落地页和关键词调研验证，不直接重做产品。</td>
+<td>英文 landing page、关键词表、竞品表、价格表、合规初筛。</td>
+<td>自然访问、邮件订阅、试用申请、首批访谈。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="业务落地路线图7-天-30-天-90-天">业务落地路线图：7 天 / 30 天 /
+90 天</h3>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>时间</th>
+<th>目标</th>
+<th>动作</th>
+<th>交付物</th>
+<th>停止 / 继续标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7 天</td>
+<td>选出一个最小可验证产品方向。</td>
+<td>从会议提到的方向里选 3 个候选：教师班级管理、AI
+图片证据链、海外工具型 SaaS；每个方向收集 30-50
+条公开用户反馈；做竞品和价格初筛；检查商标/域名/账号。</td>
+<td>3 份轻量研究卡、1 个优先方向、1 页 MVP 范围、1 个域名/品牌候选、1
+个风险登记表。</td>
+<td>如果没有明确痛点、付费证据或可触达渠道，暂停该方向；如果三项同时成立，进入
+30 天。</td>
+</tr>
+<tr>
+<td>30 天</td>
+<td>跑通一个从流量到付费/留资的小闭环。</td>
+<td>做可用 MVP；上线官网首版；发布 10-20
+条平台内容；配置支付/候补名单/客服入口；埋点首访、完成、购买、退款、咨询；沉淀
+3 个 Skill。</td>
+<td>MVP、官网、定价页、内容日历、用户反馈表、Token ROI 表、3 个
+Skill。</td>
+<td>继续标准：有真实用户完成核心流程，至少出现付费/强留资/明确试用请求；停止标准：用户不能复述价值或客服解释成本过高。</td>
+</tr>
+<tr>
+<td>90 天</td>
+<td>把单点产品变成可复用业务系统。</td>
+<td>优化留存和订阅；补齐合规与版权证据链；建立知识库和 MCP
+连接；形成内容 SEO 体系；尝试英文落地页或第二垂直场景；建立招聘/外包
+AI-native 任务包。</td>
+<td>订阅版本、案例库、教程库、合规模板、MCP 工具清单、SEO
+页面集、复盘报告、下一阶段 <code>/goal</code>。</td>
+<td>继续标准：留存、续费或线索成本出现可控趋势；停止标准：没有自然渠道、没有复购、合规成本高于业务价值。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="道法术器势拆解">道法术器势拆解</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>层级</th>
+<th>拆解</th>
+<th>对小伟 App/网站/AI agent 的具体动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>道</td>
+<td>AI
+的本质变化是把“生产成本”压低，把竞争焦点转到需求、分发、审美、信任、组织机制。</td>
+<td>每个项目立项时先回答 5
+个问题：谁痛、为什么现在痛、现有方案哪里差、为什么用户信我、什么资产会越做越厚。</td>
+</tr>
+<tr>
+<td>法</td>
+<td>用三阶段闭环做业务：广域调研找机会，Deep Research
+判断真假，业务应用形成产品/内容/增长动作。</td>
+<td>为每个新项目创建 4 个文件：<code>research.md</code>
+来源池、<code>evidence.md</code> 证据表、<code>mvp.md</code>
+范围与指标、<code>risk.md</code> 合规/版权/平台风险。</td>
+</tr>
+<tr>
+<td>术</td>
+<td>小产品快速上线；平台内容验证；官网承接；低价入口；月费订阅；Skill/MCP
+封装；人工复核；内容矩阵。</td>
+<td>14 天验证法：3 天调研，3 天 MVP，2 天官网和支付，5 天内容发布，1
+天复盘；每晚检查转化、反馈和阻塞。</td>
+</tr>
+<tr>
+<td>器</td>
+<td>Claude/Codex/Gemini、MCP、知识库、官网、支付、分析工具、版权记录、AI
+内容标识、截图/录屏证据。</td>
+<td>建立小伟工具栈：代码 agent、研究 agent、SEO
+检查、素材证据链表、Token ROI 表、Search Console、用户反馈表、MCP
+只读连接。</td>
+</tr>
+<tr>
+<td>势</td>
+<td>AI 搜索、AI 编程、教育数字化、内容平台电商、企业 AI
+转型、版权治理、内容标识监管正在同时增强。</td>
+<td>顺势选择“垂直场景 + 自有官网 + 可订阅 + 可合规 + 可复用
+Skill”的方向；避开纯搬运、纯中转、纯平台套利。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="道法术器势到项目模板的映射">道法术器势到项目模板的映射</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>模板</th>
+<th>解决的问题</th>
+<th>必填字段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>机会卡</td>
+<td>防止凭感觉选题。</td>
+<td>用户群、场景、痛点原话转述、现有替代方案、付费证据、渠道、风险。</td>
+</tr>
+<tr>
+<td>MVP 卡</td>
+<td>防止第一版做大。</td>
+<td>核心结果、非目标、首屏承诺、3
+分钟路径、付费/留资方式、失败回退。</td>
+</tr>
+<tr>
+<td>证据卡</td>
+<td>防止把传闻当事实。</td>
+<td>来源
+URL、来源类型、日期、事实、推断、假设、证据强度、下一步验证。</td>
+</tr>
+<tr>
+<td>Skill 卡</td>
+<td>防止经验散落。</td>
+<td>触发条件、输入、步骤、输出、验收、禁区、示例、复盘。</td>
+</tr>
+<tr>
+<td>风险卡</td>
+<td>防止上线后补合规。</td>
+<td>数据类型、AI
+内容标识、版权证据、平台依赖、模型/API、人工复核、日志。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="风险清单与验证动作">风险清单与验证动作</h2>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>风险</th>
+<th>具体表现</th>
+<th>触发场景</th>
+<th>验证动作</th>
+<th>缓解动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>平台依赖</td>
+<td>小红书/抖音带来订单，但账号限流、规则变化、竞品模仿会影响收入。</td>
+<td>产品只在平台成交，没有官网和用户联系方式。</td>
+<td>检查订单中有多少用户进入官网、留邮箱、加社群、复购。</td>
+<td>平台做发现，官网做承接；每条内容都引导到教程、案例、FAQ
+或试用。</td>
+</tr>
+<tr>
+<td>功能被抄</td>
+<td>AI 降低开发成本，竞品能快速复制功能。</td>
+<td>只做单一工具，没有品牌、数据、内容、社群。</td>
+<td>搜索同类产品、监控竞品更新、检查用户是否记得品牌。</td>
+<td>前置商标/域名/账号；积累案例、用户数据、教程和迭代节奏。</td>
+</tr>
+<tr>
+<td>商标和品牌资产</td>
+<td>名字被抢注，社媒账号被占。</td>
+<td>产品验证后才想起注册。</td>
+<td>上线前查商标、域名、App 名、社媒名。</td>
+<td>立项 24 小时内完成品牌清单和备选名。</td>
+</tr>
+<tr>
+<td>低价无法订阅</td>
+<td>9.9 元能成交，但用户不愿持续付费。</td>
+<td>一次性模板、娱乐化产品、低使用频次。</td>
+<td>A/B 测试月费权益；访谈付费用户；观察 7/30 日使用。</td>
+<td>用低价做入口，用持续数据、自动化、团队协作、素材库做订阅价值。</td>
+</tr>
+<tr>
+<td>中转 API 风险</td>
+<td>便宜但不稳定、不可控、可能泄露数据。</td>
+<td>用第三方中转处理客户数据或核心业务。</td>
+<td>记录失败率、延迟、数据类型、供应商条款。</td>
+<td>低敏任务可用；核心数据走可信 API；设置降级、脱敏和日志。</td>
+</tr>
+<tr>
+<td>Agent 过度代理</td>
+<td>AI 自动执行写入、删除、发帖、付款等高风险动作。</td>
+<td>MCP/工具权限过大，没有人工复核。</td>
+<td>列出每个 agent 可调用工具和权限。</td>
+<td>默认只读；写操作必须二次确认；关键动作留日志和回滚路径。</td>
+</tr>
+<tr>
+<td>提示注入和不安全输出</td>
+<td>用户或网页内容诱导 agent 泄密、越权、执行错误动作。</td>
+<td>Agent 读取网页、邮件、文档或用户输入后调用工具。</td>
+<td>用 OWASP LLM Top 10 做安全检查；设计恶意输入测试。</td>
+<td>输入隔离、工具调用白名单、输出校验、人工复核。</td>
+</tr>
+<tr>
+<td>AI 内容标识合规</td>
+<td>AI 图片/视频/文章未标识或元数据缺失。</td>
+<td>对外发布 AI 生成内容或允许用户生成并下载。</td>
+<td>对照网信办标识办法和 GB 45438-2025 检查显式/隐式标识。</td>
+<td>产品内加生成提示、导出水印/元数据、用户协议和日志。</td>
+</tr>
+<tr>
+<td>版权证据不足</td>
+<td>商业图片、海报、视频无法证明人的创作和授权链路。</td>
+<td>用 AI 生成素材做广告、课程、商品图、客户交付。</td>
+<td>抽查 10 个素材是否有提示词、版本、人工编辑、授权来源。</td>
+<td>建立素材证据链表；重要素材保留 PSD/源文件/编辑记录。</td>
+</tr>
+<tr>
+<td>医疗/法律/教育越界</td>
+<td>AI 输出被误当专业结论。</td>
+<td>专业行业助手、教育/未成年人场景。</td>
+<td>检查文案是否承诺结果；检查是否有专业人员复核。</td>
+<td>定位为辅助工具；加入免责声明、人工审核、数据最小化。</td>
+</tr>
+<tr>
+<td>内容增长被判低质</td>
+<td>AI 批量生成同质页面、堆关键词、操纵排名。</td>
+<td>SEO 内容矩阵、程序化页面。</td>
+<td>对照 Google spam policies 检查页面价值和原创经验。</td>
+<td>每页加入真实案例、截图、数据、步骤、作者经验和更新记录。</td>
+</tr>
+<tr>
+<td>Token 成本失控</td>
+<td>模型调用多但没有对应收益。</td>
+<td>多 agent 并行、长上下文、反复生成。</td>
+<td>建立 Token ROI 表，按任务记录成本和产出。</td>
+<td>任务分级用模型；缓存知识库；长文档先摘要；低价值任务限额。</td>
+</tr>
+<tr>
+<td>知识库污染</td>
+<td>旧资料、错误结论、无来源内容被反复引用。</td>
+<td>多项目共用知识库。</td>
+<td>每条知识检查来源、日期、可信度、适用范围。</td>
+<td>知识卡必须有来源和失效日期；复盘后更新。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="下一步-goal">下一步 <code>/goal</code></h2>
+<pre class="text"><code>/goal 围绕“把 AI 快速产品能力应用到小伟自己的 App/网站业务”执行三阶段研究工作流：先广域联网调研 20 个候选来源，再进行 Deep Research，最后把有效资料应用到一个可上线的 MVP。
+阶段 1 - 广域调研：覆盖小红书/抖音/知乎/Google/Reddit/YouTube 的用户抱怨、直接竞品、相邻产品、官方 SEO/应用商店资料、合规资料；记录标题、URL、来源类型、检索日期、价值判断和证据强度。
+阶段 2 - Deep Research：筛选 8 个高价值来源深读，提取需求强度、付费证据、获客路径、产品结构、风险和证据强度；把事实、推断、假设分开写。
+阶段 3 - 业务应用：输出 MVP 范围、官网页面结构、首批内容选题、支付方案、AI 工作流、Skill/MCP 封装清单、合规清单和 14 天验证计划。
+验证方式：每个关键判断必须有来源；每个业务动作必须对应指标；每个高风险动作必须有人工复核和失败回退。
+限制：不复制竞品品牌、文案、图片、代码和课程；不使用用户隐私数据；公众 AI 服务必须考虑备案、标识、版权和人工复核。</code></pre>
+<h2 id="资料链接">资料链接</h2>
+<ul>
+<li><a
+href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide">Google
+Search Central: SEO Starter Guide</a></li>
+<li><a
+href="https://developers.google.com/search/docs/fundamentals/ai-optimization-guide">Google
+Search Central: Optimizing for generative AI features</a></li>
+<li><a
+href="https://developers.google.com/search/docs/essentials/spam-policies">Google
+Search Central: Spam Policies for Google Web Search</a></li>
+<li><a
+href="https://modelcontextprotocol.io/docs/getting-started/intro">Model
+Context Protocol 官方介绍</a></li>
+<li><a href="https://openai.github.io/openai-agents-python/">OpenAI
+Agents SDK</a></li>
+<li><a
+href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">OWASP
+Top 10 for LLM Applications</a></li>
+<li><a
+href="https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence">NIST
+AI RMF Generative AI Profile</a></li>
+<li><a
+href="https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm">生成式人工智能服务管理暂行办法</a></li>
+<li><a
+href="https://www.cac.gov.cn/2025-03/14/c_1743654684782215.htm">人工智能生成合成内容标识办法</a></li>
+<li><a
+href="https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=F32EA2A561F1886CD8D606513512D547">GB
+45438-2025 网络安全技术 人工智能生成合成内容标识方法</a></li>
+<li><a href="https://www.copyright.gov/ai/">美国版权局：Copyright and
+Artificial Intelligence</a></li>
+</ul>
+</body>
+</html>

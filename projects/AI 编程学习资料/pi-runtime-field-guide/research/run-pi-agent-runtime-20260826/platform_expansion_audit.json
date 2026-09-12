@@ -1,0 +1,18 @@
+{
+  "schema": "pi-platform-expansion-audit/v1",
+  "run_id": "pi-agent-runtime-20260826",
+  "verified_at": "2026-08-26",
+  "baseline_route_count": 36,
+  "baseline_platforms_with_observed_candidates": 21,
+  "supplemental_original_pages_read": 12,
+  "supplemental_platforms_already_in_baseline": [
+    "product_hunt"
+  ],
+  "new_route_count": 11,
+  "final_route_count": 47,
+  "final_distinct_platforms_with_original_page_content": 33,
+  "minimum_required_by_user": 30,
+  "passes_minimum": true,
+  "ranking_policy": "Top 50 remains frozen. Supplemental sources are not inserted without rebuilding the full rank-input manifest and rerunning independent curation.",
+  "evidence_file": "platform_expansion_sources.tsv"
+}

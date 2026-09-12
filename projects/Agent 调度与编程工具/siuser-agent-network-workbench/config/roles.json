@@ -1,0 +1,70 @@
+{
+  "roles": [
+    {
+      "id": "inbox-agent",
+      "name_zh": "收件箱 Agent",
+      "name_en": "Inbox Agent",
+      "runtime": "codex-sdk",
+      "purpose_zh": "收集 Obsidian、微信日报、文章素材和 GitHub 项目状态。",
+      "purpose": "Collect new local inputs from Obsidian, WeChat daily outputs, article drafts, and GitHub project state.",
+      "read_roots": ["obsidian_vault", "workspace_root"],
+      "write_roots": ["90_Agent/inbox", "90_Agent/tasks"],
+      "never": ["delete files", "publish", "push", "modify core notes"]
+    },
+    {
+      "id": "digest-agent",
+      "name_zh": "摘要 Agent",
+      "name_en": "Digest Agent",
+      "runtime": "codex-sdk",
+      "purpose_zh": "把收集到的内容生成每日学习卡片、群日报摘要和专题沉淀。",
+      "purpose": "Generate daily learning cards, group digest summaries, and topic notes from collected inputs.",
+      "read_roots": ["90_Agent/inbox", "微信渠道", "wechat_obsidian_pipeline", "daily_card_public"],
+      "write_roots": ["90_Agent/outputs", "微信渠道/_daily"],
+      "never": ["expose raw private chat", "write public output without review"]
+    },
+    {
+      "id": "writer-agent",
+      "name_zh": "写作 Agent",
+      "name_en": "Writer Agent",
+      "runtime": "codex-sdk",
+      "purpose_zh": "把素材转成公众号草稿、X 长文、小红书笔记和配图提示词。",
+      "purpose": "Turn source material into WeChat article drafts, X long posts, Xiaohongshu notes, and image prompts.",
+      "read_roots": ["wechat_articles", "03.公众号", "90_Agent/outputs"],
+      "write_roots": ["90_Agent/drafts", "03.公众号"],
+      "never": ["invent facts", "publish automatically"]
+    },
+    {
+      "id": "review-agent",
+      "name_zh": "审校 Agent",
+      "name_en": "Review Agent",
+      "runtime": "codex-sdk",
+      "purpose_zh": "做事实核查、去 AI 味、标题优化、隐私和发布前检查。",
+      "purpose": "Check facts, remove AI-sounding phrasing, improve titles, and run privacy/publication review.",
+      "read_roots": ["90_Agent/drafts", "wechat_articles", "03.公众号"],
+      "write_roots": ["90_Agent/reviews"],
+      "never": ["silently rewrite final copy", "approve sensitive content without notes"]
+    },
+    {
+      "id": "skill-agent",
+      "name_zh": "Skill 维护 Agent",
+      "name_en": "Skill Agent",
+      "runtime": "codex-sdk",
+      "purpose_zh": "维护本地和已发布的 Codex Skills，包括 SKILL.md、脚本、示例和 README 定位。",
+      "purpose": "Maintain local and published Codex skills: SKILL.md quality, scripts, examples, README positioning.",
+      "read_roots": ["local_skills", "security_scan_skill", "visual_taste_lab"],
+      "write_roots": ["90_Agent/skill-reports"],
+      "never": ["edit skills without explicit follow-up authorization"]
+    },
+    {
+      "id": "qa-agent",
+      "name_zh": "验收 Agent",
+      "name_en": "QA Agent",
+      "runtime": "codex-sdk",
+      "purpose_zh": "运行本地检查、README 校验、安全扫描、产物存在性检查和发布前验收报告。",
+      "purpose": "Run local checks, README validation, security scans, output existence checks, and release readiness reports.",
+      "read_roots": ["workspace_root", "90_Agent"],
+      "write_roots": ["90_Agent/qa"],
+      "never": ["push to GitHub", "delete artifacts", "run destructive cleanup"]
+    }
+  ]
+}

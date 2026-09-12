@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "bugfire-season-01",
+  "name": "BUGFIRE · 补丁兽",
+  "brandSubtitle": "PATCH DRAGON · SEASON 01",
+  "tagline": "每一次 Build，都让你的 Vibe Coding 进化。",
+  "projectPrefix": "载入项目 · ",
+  "projectLabel": "▸  选择构建项目",
+  "statusText": "BUGFIRE ONLINE",
+  "quote": "BUILD · BURN BUGS · LEVEL UP",
+  "image": "portal-hero.png",
+  "colors": {
+    "background": "#050704",
+    "panel": "#0A0E09",
+    "panelAlt": "#11180E",
+    "accent": "#83FF45",
+    "accentAlt": "#C1FF72",
+    "secondary": "#FF7A1A",
+    "highlight": "#FF3D0A",
+    "text": "#F4EFD8",
+    "muted": "#9AA58D",
+    "line": "rgba(131, 255, 69, .26)"
+  },
+  "pet": {
+    "id": "bugfire-patch-dragon",
+    "name": "补丁兽",
+    "season": "S01 · BUILD TO EVOLVE",
+    "demoReward": 35,
+    "levels": [
+      {
+        "level": 1,
+        "minXp": 0,
+        "stage": "会描述",
+        "skill": "灵感火星"
+      },
+      {
+        "level": 2,
+        "minXp": 100,
+        "stage": "会搭建",
+        "skill": "结构嗅探"
+      },
+      {
+        "level": 3,
+        "minXp": 240,
+        "stage": "会除虫",
+        "skill": "BUGFIRE"
+      },
+      {
+        "level": 4,
+        "minXp": 450,
+        "stage": "会验收",
+        "skill": "测试结界"
+      },
+      {
+        "level": 5,
+        "minXp": 750,
+        "stage": "会交付",
+        "skill": "发布跃迁"
+      }
+    ]
+  },
+  "promoTitle": "BUGFIRE LAB",
+  "promoSub": "本地成长演示 · 非官方认证",
+  "promoUrl": ""
+}

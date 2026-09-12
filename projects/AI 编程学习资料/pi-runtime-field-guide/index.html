@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#d6ff43">
+  <meta name="description" content="Pi Agent Runtime Field Guide：从 Agent Loop、工具管道、上下文压缩、会话树到 AgentHarness，并与 DeepSeek Harness 做源码级对照。">
+  <meta property="og:title" content="Pi Runtime Field Guide">
+  <meta property="og:description" content="14 章源码学习路线、Pi vs DeepSeek Harness、47 条平台路线、33 个原页平台与 Top 50。">
+  <meta property="og:image" content="./assets/og.svg">
+  <title>Pi Runtime Field Guide — 从 Loop 到 Harness</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+    <a class="wordmark" href="#top" aria-label="返回顶部">
+      <span class="wordmark-mark">π</span>
+      <span>RUNTIME<br>FIELD GUIDE</span>
+    </a>
+    <nav aria-label="主导航">
+      <a href="#curriculum">课程</a>
+      <a href="#compare">对照</a>
+      <a href="#top50">Top 50</a>
+      <a href="#method">方法</a>
+    </nav>
+    <a class="header-cta" href="https://github.com/earendil-works/pi" target="_blank" rel="noreferrer">READ SOURCE ↗</a>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-kicker">THE SOURCE IS THE TEXTBOOK · 2026.08.26</div>
+      <div class="hero-grid">
+        <div>
+          <h1><span>PI</span><br>不是一条链。<br><em>它是一套运行时。</em></h1>
+          <p class="hero-intro">从双层 Agent Loop、工具管道与流式错误，到上下文压缩、会话树和当前的 durable AgentHarness。14 章，带着问题读源码，再用同一把尺子解剖 DeepSeek Harness。</p>
+        </div>
+        <aside class="hero-note">
+          <span class="note-index">01</span>
+          <p>旧中文教程停在 <strong>Pi v0.80.2</strong>。当前稳定版是 <strong>v0.84.3</strong>，核心层已经多出 AgentHarness、durable entry、register、lane 与 replay safety。</p>
+          <a href="#version-diff">查看版本差分 ↓</a>
+        </aside>
+      </div>
+      <div class="hero-stats" aria-label="研究统计">
+        <div><strong>14</strong><span>源码章节</span></div>
+        <div><strong>50</strong><span>主审资料</span></div>
+        <div><strong>33</strong><span>原页平台</span></div>
+        <div><strong>2×</strong><span>Harness 对照</span></div>
+      </div>
+      <div class="scroll-cue" aria-hidden="true"><span></span>SCROLL TO ENTER THE LOOP</div>
+    </section>
+
+    <section class="manifesto band-dark reveal">
+      <div class="section-label">00 / THE THESIS</div>
+      <div class="manifesto-copy">
+        <p>Agent 的难点从来不是“让模型再调用一次 API”。</p>
+        <h2>真正的系统设计，发生在<br><span>模型想继续</span>、<span>工具会失败</span>、<span>上下文会溢出</span>、<span>进程会崩</span>之后。</h2>
+      </div>
+      <div class="loop-stage" aria-label="Pi 双层循环示意图">
+        <div class="loop-orbit orbit-outer"><span>FOLLOW-UP QUEUE</span></div>
+        <div class="loop-orbit orbit-inner"><span>STEERING + TOOL CALLS</span></div>
+        <div class="loop-core">MODEL<br><b>TURN</b></div>
+        <div class="loop-node n1">stream</div><div class="loop-node n2">prepare</div>
+        <div class="loop-node n3">execute</div><div class="loop-node n4">result</div>
+      </div>
+      <div class="manifesto-foot">
+        <p><b>Pi 的答案：</b>把循环、错误、上下文与历史做成明确数据结构，而不是藏在一个“run()”黑盒里。</p>
+        <p><b>本指南的答案：</b>每章先留三个问题；源码结论链接固定 commit，版本变化单独记账。</p>
+      </div>
+    </section>
+
+    <section class="insights reveal" id="insights">
+      <div class="section-heading">
+        <div class="section-label">01 / FIVE FINDINGS</div>
+        <h2>先建立五个<br>不会过期的判断</h2>
+      </div>
+      <div class="insight-list">
+        <article><span>01</span><h3>“停止”不是一个布尔值</h3><p>模型 stopReason、tool terminate、shouldStopAfterTurn、steering 与 follow-up 队列共同决定一轮是否真的结束。</p></article>
+        <article><span>02</span><h3>工具失败 ≠ 供应商失败</h3><p>网络与限流可透明退避；带副作用的工具不能无脑重试。幂等键、重放策略与副作用分类必须在模型之外。</p></article>
+        <article><span>03</span><h3>压缩是上下文重建</h3><p>Pi 保留 recent tail、摘要旧内容，并守住 tool call/result 边界。它不是粗暴截断消息数组。</p></article>
+        <article><span>04</span><h3>树让回退自然发生</h3><p>Pi 在单一 JSONL 内用 parentId 构成 entry tree；DSH 则让单 session 保持线性、跨 session fork 成谱系。</p></article>
+        <article><span>05</span><h3>安全边界不能靠提示词</h3><p>Pi 官方明确没有内建权限系统。Hook 负责可拦截，sandbox、policy、approval、secret broker 与审计仍要外置。</p></article>
+      </div>
+    </section>
+
+    <section class="version-diff reveal" id="version-diff">
+      <div class="section-label">02 / VERSION DEBT</div>
+      <div class="diff-grid">
+        <div class="diff-card old">
+          <span>TEACHING BASELINE</span><strong>v0.80.2</strong>
+          <h3>旧教程讲得好的</h3>
+          <ul><li>pi-ai 与低层 Agent Loop</li><li>工具管道、消息与事件</li><li>coding-agent 压缩与会话树</li></ul>
+        </div>
+        <div class="diff-arrow" aria-hidden="true">→<small>DO NOT SILENTLY UPGRADE THE CLAIM</small></div>
+        <div class="diff-card current">
+          <span>CURRENT STABLE</span><strong>v0.84.3</strong>
+          <h3>必须新增的进阶轨</h3>
+          <ul><li>durable AgentHarness</li><li>entry / register / usage ledger</li><li>原子事务与 tool replay safety</li></ul>
+        </div>
+      </div>
+      <p class="diff-note">本指南不把旧教程判为“错”，而是把每条结论标成：<b>对 v0.80.2 成立</b>、<b>在 v0.84.3 仍成立</b>、或 <b>当前新增</b>。</p>
+    </section>
+
+    <section class="curriculum reveal" id="curriculum">
+      <div class="section-heading sticky-heading">
+        <div class="section-label">03 / CURRICULUM</div>
+        <h2>14 章源码<br>学习路线</h2>
+        <p>每章先读三个问题，再看概念、源码与实验。不要用“看过”冒充“能解释、能复现、能迁移”。</p>
+        <div class="progress-shell" aria-label="章节进度"><span id="chapter-progress"></span></div>
+        <small id="progress-copy">0 / 14 已标记完成</small>
+      </div>
+      <div class="chapter-list" id="chapter-list" aria-live="polite"></div>
+    </section>
+
+    <section class="compare band-ink reveal" id="compare">
+      <div class="section-heading">
+        <div class="section-label">04 / PI × DEEPSEEK HARNESS</div>
+        <h2>不是模型对模型，<br>是控制面<span>对控制面</span></h2>
+        <p>DSH 的通用多供应商 adapter 直接复用 <code>@earendil-works/pi-ai</code>。两者既竞争，也能组合。</p>
+      </div>
+      <div class="compare-verdict">
+        <div><span>CHOOSE PI WHEN</span><h3>你要更短的源码路径、可读的 primitives、快速嵌入与成熟一些的稳定版。</h3></div>
+        <div><span>CHOOSE DSH WHEN</span><h3>你要替换 loop、storage、sandbox、policy、scheduler、UI，并接受 developer preview 的 API churn。</h3></div>
+      </div>
+      <div class="comparison-table-wrap">
+        <table class="comparison-table">
+          <thead><tr><th>维度</th><th>Pi</th><th>DeepSeek Harness</th><th>判断</th></tr></thead>
+          <tbody id="comparison-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="commercial reveal" id="commercial">
+      <div class="section-heading"><div class="section-label">05 / COMMERCIAL MAP</div><h2>商业价值不在<br>再写一遍 Loop</h2></div>
+      <div class="commercial-grid">
+        <article class="accent-card"><span>A</span><h3>版本差分学院</h3><p>免费 primitives；付费 lab、版本 diff、测试题、升级提醒与架构评审。</p><small>内容产品 · 低资本</small></article>
+        <article><span>B</span><h3>安全治理套件</h3><p>Permission、approval、sandbox、secret broker、audit、tool idempotency。</p><small>开发者工具 · 企业支持</small></article>
+        <article><span>C</span><h3>Vertical starter kits</h3><p>把领域工具、流程、验收标准和维护打包；不卖换皮 CLI，卖可审计工作流。</p><small>行业方案 · 服务收入</small></article>
+        <article><span>D</span><h3>跨 Harness 控制面</h3><p>统一 telemetry、model routing、evaluation 与 executor；Pi/DSH/Codex 均是可替换执行器。</p><small>平台层 · 高复杂度</small></article>
+      </div>
+      <div class="risk-strip"><b>商业前提：</b>MIT 允许商业使用但要保留许可；改编 dg-ai-notes / pi-agent-guide 的 CC-BY-SA 文档需署名并同方式共享。官方商标与合作关系另行处理。</div>
+    </section>
+
+    <section class="top50 reveal" id="top50">
+      <div class="section-heading">
+        <div class="section-label">06 / CURATED LIBRARY</div>
+        <h2>Pi 学习资料<br>Top 50</h2>
+        <p>176 条候选 → 主审回源 → 证据卡 → 去重 → deterministic-v2。没有字幕或只有摘要的材料不会被拿来支撑源码事实。</p>
+      </div>
+      <div class="library-toolbar">
+        <label class="search-box"><span>SEARCH</span><input id="source-search" type="search" placeholder="loop / 会话树 / 商业化…"></label>
+        <div class="filter-group" id="source-filters" aria-label="资料分类筛选"></div>
+        <div class="result-count" id="result-count">LOADING…</div>
+      </div>
+      <div class="source-grid" id="source-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="coverage band-paper reveal" id="method">
+      <div class="section-heading">
+        <div class="section-label">07 / RESEARCH LEDGER</div>
+        <h2>47 条平台路线，<br>33 个读到原页</h2>
+        <p>“覆盖”不是每个平台硬凑一条。Top 50 也不按平台分配名额：33 个平台完成原页回读，其他路线保留 partial / blocked 终态；验证码、登录、桥接失败会原样写进账本。</p>
+      </div>
+      <div class="coverage-key"><span class="complete">complete</span><span class="partial">partial</span><span class="blocked">blocked</span></div>
+      <div class="coverage-grid" id="coverage-grid"></div>
+      <div class="expansion-evidence">
+        <div><span>12 / ORIGINAL-PAGE READBACK</span><h3>补充平台不是用来凑 Top 50，而是补足生态、实践、分发与商业化观察。</h3></div>
+        <div class="expansion-source-grid" id="expansion-source-grid"></div>
+      </div>
+      <div class="method-grid">
+        <article><span>01</span><h3>范围冻结</h3><p>主题仅指 earendil-works/pi；排除 Raspberry Pi、Pi 币、圆周率与 policy iteration。</p></article>
+        <article><span>02</span><h3>证据分层</h3><p>官方源码/文档最高；实践文章用于经验；搜索摘要只做发现，不进入事实证据。</p></article>
+        <article><span>03</span><h3>独立策展</h3><p>候选发现与最终主审分离；每条入选资料绑定 source outcome 与 evidence card。</p></article>
+        <article><span>04</span><h3>可重放交付</h3><p>query、source、coverage、ranking、rejected 与 package validation 一并保留在仓库。</p></article>
+      </div>
+    </section>
+
+    <section class="closing band-acid reveal">
+      <div class="section-label">08 / START HERE</div>
+      <h2>今天不要“学完 Pi”。<br>只做第一个可证伪的实验。</h2>
+      <ol><li>画出 steering 与 follow-up 的两个队列。</li><li>让一个工具抛错，观察错误怎样回到模型。</li><li>把一段会话分叉，手写 active path。</li></ol>
+      <a class="big-link" href="#curriculum">进入第 1 章 <span>↗</span></a>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-brand">π / RUNTIME FIELD GUIDE</div>
+    <div><p>原创研究与界面：2026-08-26 冻结。</p><p>Pi / DeepSeek Harness 源码均为 MIT；第三方教程依各自许可。</p></div>
+    <div><a href="./research/run-pi-agent-runtime-20260826/ranking-output/report.md">研究报告</a><a href="./research/run-pi-agent-runtime-20260826/ranking-output/package_validation.json">验证结果</a><a href="https://github.com/earendil-works/pi">Pi Source</a></div>
+  </footer>
+</body>
+</html>

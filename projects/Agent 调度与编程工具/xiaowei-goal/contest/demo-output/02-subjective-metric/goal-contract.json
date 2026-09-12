@@ -1,0 +1,323 @@
+{
+  "compiler": {
+    "kind": "deterministic-cli",
+    "name": "Goal Compiler | 需求编译器",
+    "version": "0.13.0"
+  },
+  "contract_id": "goal-4736a5b9cdb4",
+  "default_assumptions": [
+    "当前没有已验证的目标用户、高频问题或付费意愿证据。",
+    "首轮不做后端、登录、支付、数据采集或生产部署。",
+    "首个页面只表达待验证假设，不把演示文案当作市场事实。"
+  ],
+  "evidence_bundle": {
+    "claims": [],
+    "sources": []
+  },
+  "execution_workspace": {
+    "root": "/private/tmp/xiaowei-goal-demo-execution-workspace",
+    "root_sha256": "bb5384515a9c014ceadc8f5ff9bf0025e0fe327c9da4cacb46ab01b2dcc36c57"
+  },
+  "first_step": {
+    "acceptance": {
+      "forbidden_terms": [
+        "REGRESSION_FIXTURE"
+      ],
+      "required_terms": [
+        "假设待验证",
+        "data-primary-cta=\"true\""
+      ],
+      "task_type": "website"
+    },
+    "action": "write_static_hypothesis_page",
+    "artifact_kind": "html",
+    "content_sha256": "96dd1c896ef632b4a875ba9bcf470700e1103059ffa52c5167c6672239da425d",
+    "content_source": "website-first-output.html",
+    "content_template": "<!doctype html>\n<html lang=\"zh-CN\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>IdeaSignal · 待验证假设页</title>\n  <style>\n    body { margin: 0; background: #f3f0e8; color: #111827; font-family: system-ui, sans-serif; }\n    main { width: min(760px, calc(100% - 40px)); margin: 12vh auto; }\n    .label { display: inline-block; padding: 8px 12px; border: 2px solid #111827; background: #d9ff57; font-weight: 800; }\n    h1 { font-size: clamp(44px, 8vw, 82px); line-height: .95; letter-spacing: -.055em; margin: 28px 0; }\n    p { max-width: 620px; font-size: 20px; line-height: 1.6; }\n    button { margin-top: 24px; padding: 16px 22px; border: 0; border-radius: 10px; background: #7557ff; color: white; font-size: 18px; font-weight: 800; }\n    footer { margin-top: 54px; color: #667085; }\n  </style>\n</head>\n<body>\n  <main>\n    <span class=\"label\">假设待验证 · NOT A MARKET CLAIM</span>\n    <h1>把模糊的 AI 点子，变成可被反驳的第一步。</h1>\n    <p>IdeaSignal 是一个待验证的价值承诺：它不声称需求已存在，只用一个可检查页面来获取下一个学习信号。</p>\n    <button type=\"button\" data-primary-cta=\"true\">查看验证计划</button>\n    <footer>Contract: {{CONTRACT_ID}} · 本页不发送数据，不连接外部服务。</footer>\n  </main>\n</body>\n</html>\n",
+    "media_type": "text/html",
+    "metric_id": "first-validation-page",
+    "output_directory": "first-output",
+    "primary_artifact": "first-output/index.html",
+    "purpose": "把已批准的最小网站假设写入一个无外部副作用的本地 HTML 页面。",
+    "report_path": "first-output/execution-report.json",
+    "validators": [
+      "nonempty",
+      "html_single_h1",
+      "html_primary_cta",
+      "assumption_label",
+      "no_external_urls",
+      "no_unresolved_template"
+    ]
+  },
+  "goal_plan": {
+    "boundary": "Agent/Skill 负责语义编译与默认假设；真人编辑指标并批准；CLI 只做确定性验证与白名单执行。",
+    "business_priority": "业务价值待验证，证据强度低，执行成本低，分发潜力与变现路径不明，风险中等；建议先做最小证据与页面验证。",
+    "choice_rationale": "用一个可检查的页面换取学习，同时避免在无证据时扩大开发。",
+    "deliverables": "语义 JSON、router/gate JSON、待审批 Goal Contract、失败日志和待执行 HTML 模板。",
+    "domain_pack": "AI 工具站包",
+    "domain_pack_application": "把页面中的价值承诺明确标成待验证假设，不写未经支持的市场结论。",
+    "feedback_adjustment": "把“越快越好”改写为可验收的最小产物，不自行伪造时长成果。",
+    "limits": "不把 Agent Reach 描述成无限制全网访问；不使用私域、付费、登录资源或未授权外部操作。",
+    "outcome": "编译并验证一个待人工批准的 AI 网站最小假设页合同。",
+    "output_length_reason": "需要保留路由、证据门禁、反证和执行边界，选择标准版。",
+    "pause_conditions": "缺来源、缺人工签署、payload 与保存的审批记录不一致、需要登录/付费/对外变更或任一检查失败时暂停。",
+    "preference_application": "默认中文、先给结论、对高影响执行保留人工批准。",
+    "progress_rules": "先产出语义合同和证据缺口；证据未齐或人工未批准时立即停在门禁。",
+    "quality_gate": "研究声明至少 2 个独立来源；记录来源强弱、工具/渠道和访问限制；过期、营销或不可访问证据降级；保留矛盾；低置信度只能写为假设。",
+    "research_stages": {
+      "stage_1": "检索 15-25 个候选来源，覆盖与一个候选用户问题直接相关的公开记录，并记录工具/渠道、检索日期、来源类型与访问限制。",
+      "stage_2": "对需求声明进行至少两个独立来源的交叉核对，显式保留矛盾与低置信度。",
+      "stage_3": "仅把通过来源门禁的假设写入页面草案，等待真人编辑指标并批准。"
+    },
+    "stop_criteria": "产物通过行为检查并留下可复核报告，或终止阈值被触发。",
+    "task_pack": "网站/落地页改版包",
+    "task_pack_application": "仅使用单页承诺、主 CTA 和本地 HTML 检查，不扩展到完整站点。",
+    "tool_stack": "广域来源优先 Agent Reach，先运行 agent-reach doctor 或确认渠道可用，不可用时回退公开网页阅读器；公开页面结构化抽取可用 Scrapling；动态页验证仅在授权后使用 browser-use；Claude for Chrome 仅作为用户授权的 Chrome 协作选项；CLI 只做确定性门禁与白名单文件写入。",
+    "verification": "先检查来源证据包，再核对人工审批记录与当前 payload 的无密钥 SHA-256 一致性，最后运行 HTML 结构检查并保存日志。"
+  },
+  "human_review": {
+    "approved_payload_sha256": null,
+    "changed_fields": [],
+    "decision": "pending",
+    "reason": "",
+    "reviewer": null,
+    "sign_off": "PENDING HUMAN SIGN-OFF"
+  },
+  "request": {
+    "raw": "给我做个 AI 网站，越快越好",
+    "request_sha256": "ebae887fce7e624e842024e09db9503f72598b69623db7d49e717f376fa19712"
+  },
+  "schema_version": "1.2",
+  "semantic_compilation": {
+    "liveAiClaimed": false,
+    "live_ai_claimed": false,
+    "mode": "deterministic_demo_fixture",
+    "notice": "这是可复现的录制演示 fixture，不是本次实时 AI 生成证明。",
+    "producer": "Goal Compiler recorded reference fixture",
+    "semantic_input_sha256": "4a814db95d6a82a61cb4173d9e6d804456d3e72e20666e2c605aa7d230f3b061",
+    "semantic_schema_version": "1.0"
+  },
+  "semantic_input_snapshot": {
+    "default_assumptions": [
+      "当前没有已验证的目标用户、高频问题或付费意愿证据。",
+      "首轮不做后端、登录、支付、数据采集或生产部署。",
+      "首个页面只表达待验证假设，不把演示文案当作市场事实。"
+    ],
+    "first_step": {
+      "acceptance": {
+        "forbidden_terms": [
+          "REGRESSION_FIXTURE"
+        ],
+        "required_terms": [
+          "假设待验证",
+          "data-primary-cta=\"true\""
+        ],
+        "task_type": "website"
+      },
+      "action": "write_static_hypothesis_page",
+      "artifact_kind": "html",
+      "content_sha256": "96dd1c896ef632b4a875ba9bcf470700e1103059ffa52c5167c6672239da425d",
+      "content_source": "website-first-output.html",
+      "content_template": "<!doctype html>\n<html lang=\"zh-CN\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>IdeaSignal · 待验证假设页</title>\n  <style>\n    body { margin: 0; background: #f3f0e8; color: #111827; font-family: system-ui, sans-serif; }\n    main { width: min(760px, calc(100% - 40px)); margin: 12vh auto; }\n    .label { display: inline-block; padding: 8px 12px; border: 2px solid #111827; background: #d9ff57; font-weight: 800; }\n    h1 { font-size: clamp(44px, 8vw, 82px); line-height: .95; letter-spacing: -.055em; margin: 28px 0; }\n    p { max-width: 620px; font-size: 20px; line-height: 1.6; }\n    button { margin-top: 24px; padding: 16px 22px; border: 0; border-radius: 10px; background: #7557ff; color: white; font-size: 18px; font-weight: 800; }\n    footer { margin-top: 54px; color: #667085; }\n  </style>\n</head>\n<body>\n  <main>\n    <span class=\"label\">假设待验证 · NOT A MARKET CLAIM</span>\n    <h1>把模糊的 AI 点子，变成可被反驳的第一步。</h1>\n    <p>IdeaSignal 是一个待验证的价值承诺：它不声称需求已存在，只用一个可检查页面来获取下一个学习信号。</p>\n    <button type=\"button\" data-primary-cta=\"true\">查看验证计划</button>\n    <footer>Contract: {{CONTRACT_ID}} · 本页不发送数据，不连接外部服务。</footer>\n  </main>\n</body>\n</html>\n",
+      "media_type": "text/html",
+      "metric_id": "first-validation-page",
+      "output_directory": "first-output",
+      "primary_artifact": "first-output/index.html",
+      "purpose": "把已批准的最小网站假设写入一个无外部副作用的本地 HTML 页面。",
+      "report_path": "first-output/execution-report.json",
+      "validators": [
+        "nonempty",
+        "html_single_h1",
+        "html_primary_cta",
+        "assumption_label",
+        "no_external_urls",
+        "no_unresolved_template"
+      ]
+    },
+    "goal_plan": {
+      "boundary": "Agent/Skill 负责语义编译与默认假设；真人编辑指标并批准；CLI 只做确定性验证与白名单执行。",
+      "business_priority": "业务价值待验证，证据强度低，执行成本低，分发潜力与变现路径不明，风险中等；建议先做最小证据与页面验证。",
+      "choice_rationale": "用一个可检查的页面换取学习，同时避免在无证据时扩大开发。",
+      "deliverables": "语义 JSON、router/gate JSON、待审批 Goal Contract、失败日志和待执行 HTML 模板。",
+      "domain_pack": "AI 工具站包",
+      "domain_pack_application": "把页面中的价值承诺明确标成待验证假设，不写未经支持的市场结论。",
+      "feedback_adjustment": "把“越快越好”改写为可验收的最小产物，不自行伪造时长成果。",
+      "limits": "不把 Agent Reach 描述成无限制全网访问；不使用私域、付费、登录资源或未授权外部操作。",
+      "outcome": "编译并验证一个待人工批准的 AI 网站最小假设页合同。",
+      "output_length_reason": "需要保留路由、证据门禁、反证和执行边界，选择标准版。",
+      "pause_conditions": "缺来源、缺人工签署、payload 与保存的审批记录不一致、需要登录/付费/对外变更或任一检查失败时暂停。",
+      "preference_application": "默认中文、先给结论、对高影响执行保留人工批准。",
+      "progress_rules": "先产出语义合同和证据缺口；证据未齐或人工未批准时立即停在门禁。",
+      "quality_gate": "研究声明至少 2 个独立来源；记录来源强弱、工具/渠道和访问限制；过期、营销或不可访问证据降级；保留矛盾；低置信度只能写为假设。",
+      "research_stages": {
+        "stage_1": "检索 15-25 个候选来源，覆盖与一个候选用户问题直接相关的公开记录，并记录工具/渠道、检索日期、来源类型与访问限制。",
+        "stage_2": "对需求声明进行至少两个独立来源的交叉核对，显式保留矛盾与低置信度。",
+        "stage_3": "仅把通过来源门禁的假设写入页面草案，等待真人编辑指标并批准。"
+      },
+      "stop_criteria": "产物通过行为检查并留下可复核报告，或终止阈值被触发。",
+      "task_pack": "网站/落地页改版包",
+      "task_pack_application": "仅使用单页承诺、主 CTA 和本地 HTML 检查，不扩展到完整站点。",
+      "tool_stack": "广域来源优先 Agent Reach，先运行 agent-reach doctor 或确认渠道可用，不可用时回退公开网页阅读器；公开页面结构化抽取可用 Scrapling；动态页验证仅在授权后使用 browser-use；Claude for Chrome 仅作为用户授权的 Chrome 协作选项；CLI 只做确定性门禁与白名单文件写入。",
+      "verification": "先检查来源证据包，再核对人工审批记录与当前 payload 的无密钥 SHA-256 一致性，最后运行 HTML 结构检查并保存日志。"
+    },
+    "provenance": {
+      "liveAiClaimed": false,
+      "live_ai_claimed": false,
+      "mode": "deterministic_demo_fixture",
+      "notice": "这是可复现的录制演示 fixture，不是本次实时 AI 生成证明。",
+      "producer": "Goal Compiler recorded reference fixture"
+    },
+    "request": "给我做个 AI 网站，越快越好",
+    "semantic_schema_version": "1.0",
+    "smart_router": {
+      "ask_questions_first": false,
+      "external_information_need": "标准",
+      "maturity": "模糊想法",
+      "output_length": "标准版",
+      "risk_level": "中",
+      "routing_reason": "请求指向网站，但用户、问题与付费意愿都未验证，先形成有证据门禁的最小页面假设。",
+      "task_type": "website"
+    },
+    "strategy_gate": {
+      "disconfirming_evidence": [
+        {
+          "response": "停止增加功能，重写用户和问题假设。",
+          "signal": "5 名目标用户中少于 2 名能复述页面所解决的问题。",
+          "threshold": {
+            "max_comprehension_count": 1,
+            "sample_size": 5
+          }
+        }
+      ],
+      "kill_criteria": [
+        {
+          "action": "pause_full_build",
+          "condition": "连续 2 轮调整人群与承诺后，5 次测试仍然没有 CTA 意图。",
+          "threshold": {
+            "max_cta_intent_count": 0,
+            "max_rounds": 2,
+            "sample_size_per_round": 5
+          }
+        }
+      ],
+      "problem_reframe": "不是立即开发完整 AI 网站，而是先验证一个具体人群、一个问题和一个可点击承诺是否值得继续。",
+      "smallest_bet": "在取得最低来源证据与人工批准后，仅写入一个本地静态假设页，并用确定性 HTML 检查验收。",
+      "success_metrics": [
+        {
+          "evidence_path": "first-output/execution-report.json",
+          "id": "first-validation-page",
+          "measurement": {
+            "method": "主观感受",
+            "target": {}
+          },
+          "statement": "看起来足够好看"
+        }
+      ]
+    },
+    "tool_evidence_gate": {
+      "authorization_required_for": [
+        "登录、Cookie、Token、付费数据、表单提交或生产变更"
+      ],
+      "blocked_claims": [
+        "未经来源支持的用户需求、市场规模或付费意愿"
+      ],
+      "evidence_requirements": [
+        {
+          "claim_type": "用户痛点或需求",
+          "minimum_independent_sources": 2,
+          "record_fields": [
+            "title",
+            "url",
+            "source_type",
+            "tool_channel",
+            "access_limit"
+          ]
+        }
+      ],
+      "permitted_tools": [
+        "Agent Reach（仅在 agent-reach doctor 确认渠道可用后）",
+        "公开网页阅读器",
+        "Scrapling（公开页面结构化抽取）",
+        "browser-use（仅在需要动态页验证且得到授权时）",
+        "Claude for Chrome（仅作为用户授权的 Chrome 协作选项）",
+        "本地文件与标准库脚本"
+      ],
+      "research_required": true
+    }
+  },
+  "smart_router": {
+    "ask_questions_first": false,
+    "external_information_need": "标准",
+    "maturity": "模糊想法",
+    "output_length": "标准版",
+    "risk_level": "中",
+    "routing_reason": "请求指向网站，但用户、问题与付费意愿都未验证，先形成有证据门禁的最小页面假设。",
+    "task_type": "website"
+  },
+  "strategy_gate": {
+    "disconfirming_evidence": [
+      {
+        "response": "停止增加功能，重写用户和问题假设。",
+        "signal": "5 名目标用户中少于 2 名能复述页面所解决的问题。",
+        "threshold": {
+          "max_comprehension_count": 1,
+          "sample_size": 5
+        }
+      }
+    ],
+    "kill_criteria": [
+      {
+        "action": "pause_full_build",
+        "condition": "连续 2 轮调整人群与承诺后，5 次测试仍然没有 CTA 意图。",
+        "threshold": {
+          "max_cta_intent_count": 0,
+          "max_rounds": 2,
+          "sample_size_per_round": 5
+        }
+      }
+    ],
+    "problem_reframe": "不是立即开发完整 AI 网站，而是先验证一个具体人群、一个问题和一个可点击承诺是否值得继续。",
+    "smallest_bet": "在取得最低来源证据与人工批准后，仅写入一个本地静态假设页，并用确定性 HTML 检查验收。",
+    "success_metrics": [
+      {
+        "evidence_path": "first-output/execution-report.json",
+        "id": "first-validation-page",
+        "measurement": {
+          "method": "主观感受",
+          "target": {}
+        },
+        "statement": "看起来足够好看"
+      }
+    ]
+  },
+  "tool_evidence_gate": {
+    "authorization_required_for": [
+      "登录、Cookie、Token、付费数据、表单提交或生产变更"
+    ],
+    "blocked_claims": [
+      "未经来源支持的用户需求、市场规模或付费意愿"
+    ],
+    "evidence_requirements": [
+      {
+        "claim_type": "用户痛点或需求",
+        "minimum_independent_sources": 2,
+        "record_fields": [
+          "title",
+          "url",
+          "source_type",
+          "tool_channel",
+          "access_limit"
+        ]
+      }
+    ],
+    "permitted_tools": [
+      "Agent Reach（仅在 agent-reach doctor 确认渠道可用后）",
+      "公开网页阅读器",
+      "Scrapling（公开页面结构化抽取）",
+      "browser-use（仅在需要动态页验证且得到授权时）",
+      "Claude for Chrome（仅作为用户授权的 Chrome 协作选项）",
+      "本地文件与标准库脚本"
+    ],
+    "research_required": true
+  }
+}

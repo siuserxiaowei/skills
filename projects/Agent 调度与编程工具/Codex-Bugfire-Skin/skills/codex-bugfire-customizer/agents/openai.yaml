@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex BUGFIRE 定制器"
+  short_description: "用背景和宠物素材生成可验证的 Codex 成长桌宠"
+  default_prompt: "Use $codex-bugfire-customizer to turn my uploaded background and pet art into a validated Codex BUGFIRE companion pack."

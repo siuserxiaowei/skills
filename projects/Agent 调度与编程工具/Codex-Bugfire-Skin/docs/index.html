@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BUGFIRE 补丁兽｜可定制的 Codex Desktop 像素桌宠</title>
+  <meta name="description" content="BUGFIRE 是一套运行在 macOS Codex Desktop 内的可定制像素桌宠系统：AI 角色导演提案、人工否决与替换、确定性校验、六种状态、模拟 Build、本地 XP 与一键恢复。">
+  <meta name="keywords" content="Codex Desktop, Codex 宠物, Codex 桌宠, Codex skin, macOS desktop pet, Vibe Coding, BUGFIRE, AI coding companion">
+  <meta name="author" content="siuserxiaowei">
+  <meta name="theme-color" content="#050704">
+  <link rel="canonical" href="https://siuserxiaowei.github.io/Codex-Bugfire-Skin/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:site_name" content="BUGFIRE 补丁兽">
+  <meta property="og:title" content="BUGFIRE 补丁兽｜把 Codex 变成会成长的像素伙伴">
+  <meta property="og:description" content="原创 brief → AI 角色导演 → 人工否决/替换 → deterministic validator → 六状态 Codex 桌宠。">
+  <meta property="og:url" content="https://siuserxiaowei.github.io/Codex-Bugfire-Skin/">
+  <meta property="og:image" content="https://siuserxiaowei.github.io/Codex-Bugfire-Skin/images/bugfire-social-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="BUGFIRE 补丁兽｜可定制 Codex Desktop 桌宠">
+  <meta name="twitter:description" content="两张图起步，生成一套六状态、本地成长的 Codex 像素伙伴。">
+  <meta name="twitter:image" content="https://siuserxiaowei.github.io/Codex-Bugfire-Skin/images/bugfire-social-card.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "BUGFIRE 补丁兽",
+    "alternateName": "Codex Bugfire Skin",
+    "description": "A customizable local pixel companion and growth system for Codex Desktop on macOS.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "macOS",
+    "softwareVersion": "1.3.0-bugfire.1",
+    "isAccessibleForFree": true,
+    "license": "https://opensource.org/license/mit",
+    "codeRepository": "https://github.com/siuserxiaowei/Codex-Bugfire-Skin",
+    "downloadUrl": "https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/latest",
+    "image": "https://siuserxiaowei.github.io/Codex-Bugfire-Skin/images/bugfire-social-card.png",
+    "author": { "@type": "Person", "name": "siuserxiaowei", "url": "https://github.com/siuserxiaowei" }
+  }
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #050704;
+      --panel: #0a0e09;
+      --panel-2: #11180e;
+      --acid: #83ff45;
+      --acid-soft: #c1ff72;
+      --ember: #ff7a1a;
+      --fire: #ff3d0a;
+      --paper: #f4efd8;
+      --muted: #9aa58d;
+      --line: rgba(131, 255, 69, .24);
+      --mono: "SFMono-Regular", "Cascadia Mono", "Liberation Mono", Menlo, monospace;
+      --display: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--paper);
+      background:
+        radial-gradient(circle at 78% 5%, rgba(255, 61, 10, .12), transparent 25rem),
+        radial-gradient(circle at 10% 50%, rgba(131, 255, 69, .07), transparent 30rem),
+        var(--ink);
+      font-family: var(--mono);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+      opacity: .2;
+      background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,.025) 3px 4px);
+      mix-blend-mode: screen;
+    }
+
+    a { color: inherit; }
+    button { font: inherit; }
+    img { max-width: 100%; }
+    .shell { width: min(1180px, calc(100% - 36px)); margin-inline: auto; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 15;
+      border-bottom: 1px solid var(--line);
+      background: rgba(5, 7, 4, .82);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar-inner { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 900; color: var(--acid); letter-spacing: .04em; }
+    .brand-mark { width: 24px; aspect-ratio: 1; border: 2px solid var(--acid); border-radius: 50%; box-shadow: 0 0 18px var(--acid); position: relative; }
+    .brand-mark::after { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: var(--acid); }
+    .status { color: var(--muted); font-size: 11px; letter-spacing: .18em; }
+    .status::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--acid); box-shadow: 0 0 12px var(--acid); }
+
+    .hero { padding: 82px 0 42px; position: relative; }
+    .hero::after { content: "S01"; position: absolute; top: 16px; right: -1vw; color: transparent; -webkit-text-stroke: 1px rgba(131,255,69,.12); font: 300px/.8 var(--display); pointer-events: none; }
+    .eyebrow { color: var(--ember); text-transform: uppercase; letter-spacing: .25em; font-size: 12px; }
+    h1 { position: relative; z-index: 1; max-width: 900px; margin: 17px 0 22px; font: clamp(58px, 10.5vw, 142px)/.82 var(--display); text-transform: uppercase; letter-spacing: -.035em; }
+    h1 .outline { display: block; color: transparent; -webkit-text-stroke: 1.5px var(--acid); text-shadow: 0 0 28px rgba(131,255,69,.16); }
+    .lede { max-width: 720px; margin: 0; color: var(--muted); font-size: clamp(15px, 2vw, 19px); line-height: 1.8; }
+    .lede strong { color: var(--paper); }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+    .cta { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; border: 1px solid var(--acid); text-decoration: none; text-transform: uppercase; font-weight: 900; font-size: 13px; letter-spacing: .04em; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+    .cta:hover, .cta:focus-visible { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(131,255,69,.16); }
+    .cta.primary { color: #071003; background: var(--acid); }
+    .cta.secondary { color: var(--acid); background: rgba(10,14,9,.75); }
+    .micro-proof { display: flex; flex-wrap: wrap; gap: 9px 22px; margin-top: 24px; padding: 0; list-style: none; color: var(--muted); font-size: 11px; }
+    .micro-proof li::before { content: "✓"; margin-right: 7px; color: var(--acid); }
+
+    .demo-section { padding: 42px 0 96px; }
+    .section-head { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 20px; margin-bottom: 18px; }
+    .section-kicker { margin: 0 0 7px; color: var(--acid); font-size: 11px; letter-spacing: .2em; }
+    h2 { margin: 0; font: clamp(34px, 5vw, 64px)/1 var(--display); letter-spacing: -.02em; }
+    .demo-tabs { display: flex; flex-wrap: wrap; justify-content: end; gap: 7px; }
+    .demo-tabs button { padding: 10px 13px; border: 1px solid var(--line); color: var(--muted); background: var(--panel); cursor: pointer; }
+    .demo-tabs button[aria-selected="true"] { color: var(--ink); border-color: var(--acid); background: var(--acid); }
+
+    .demo-frame { position: relative; padding: 12px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(135deg, rgba(131,255,69,.08), transparent 35%), #080b07; box-shadow: 0 45px 100px rgba(0,0,0,.55); }
+    .demo-frame::before { content: "LIVE DEFAULT // SCREEN 01"; position: absolute; top: -25px; right: 0; color: var(--muted); font-size: 10px; letter-spacing: .14em; }
+    .demo-window { overflow: hidden; border-radius: 11px; border: 1px solid rgba(244,239,216,.12); background: #010201; }
+    .window-bar { height: 34px; display: flex; align-items: center; gap: 7px; padding-inline: 13px; border-bottom: 1px solid rgba(244,239,216,.1); background: #0b0e0a; }
+    .window-bar i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); opacity: .4; }
+    .window-bar i:nth-child(1) { background: var(--fire); }
+    .window-bar i:nth-child(2) { background: var(--ember); }
+    .window-bar i:nth-child(3) { background: var(--acid); }
+    #demo-stage { display: block; width: 100%; aspect-ratio: 1600/1141; object-fit: cover; object-position: center; background: #010201; transition: opacity .16s ease; }
+    #demo-stage.is-changing { opacity: .35; }
+    .demo-note { display: flex; justify-content: space-between; gap: 18px; margin-top: 13px; color: var(--muted); font-size: 11px; }
+    .demo-note strong { color: var(--acid); }
+
+    .director { padding: 90px 0; border-top: 1px solid var(--line); background: radial-gradient(circle at 80% 20%, rgba(53,217,209,.08), transparent 34rem); }
+    .director-lede { max-width: 880px; margin: 18px 0 0; color: var(--muted); font-size: 15px; line-height: 1.8; }
+    .director-lede strong { color: var(--paper); }
+    .director-flow { margin: 28px 0 0; padding: 18px 20px; border-left: 4px solid #35d9d1; color: #8ffcf3; background: var(--panel); font-size: 13px; line-height: 1.7; }
+    .director-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 28px; }
+    .director-shot { margin: 0; padding: 8px; border: 1px solid var(--line); background: var(--panel); }
+    .director-shot img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+    .director-shot figcaption { padding: 12px 7px 6px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .director-shot strong { color: var(--acid-soft); }
+    .disclosure { margin-top: 18px; color: var(--muted); font-size: 10px; line-height: 1.7; }
+
+    .system { padding: 86px 0; border-block: 1px solid var(--line); background: linear-gradient(180deg, rgba(131,255,69,.035), transparent); }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; }
+    .card { min-height: 220px; position: relative; overflow: hidden; padding: 24px; border: 1px solid var(--line); background: rgba(10,14,9,.76); }
+    .card::after { content: attr(data-index); position: absolute; right: -8px; bottom: -28px; color: rgba(131,255,69,.07); font: 120px/1 var(--display); }
+    .card .label { color: var(--ember); font-size: 10px; letter-spacing: .17em; }
+    .card h3 { margin: 30px 0 12px; color: var(--acid-soft); font-size: 19px; }
+    .card p { margin: 0; color: var(--muted); line-height: 1.7; font-size: 13px; }
+
+    .recipe { padding: 96px 0; display: grid; grid-template-columns: .8fr 1.2fr; gap: 70px; align-items: center; }
+    .upload-list { display: grid; gap: 10px; }
+    .upload { display: grid; grid-template-columns: 54px 1fr auto; gap: 15px; align-items: center; padding: 15px; border: 1px solid var(--line); background: var(--panel); }
+    .upload b { display: grid; place-items: center; width: 54px; height: 54px; color: var(--ink); background: var(--acid); font: 28px var(--display); }
+    .upload strong { display: block; font-size: 13px; }
+    .upload small { color: var(--muted); }
+    .upload em { color: var(--ember); font-size: 10px; font-style: normal; }
+
+    .final { padding: 72px 0 90px; text-align: center; border-top: 1px solid var(--line); }
+    .final h2 { max-width: 760px; margin: 0 auto; }
+    .final .actions { justify-content: center; }
+    footer { padding: 24px 0 40px; color: var(--muted); font-size: 10px; border-top: 1px solid rgba(131,255,69,.1); }
+    footer .shell { display: flex; justify-content: space-between; gap: 20px; }
+
+    @media (max-width: 760px) {
+      .hero { padding-top: 58px; }
+      h1 { font-size: clamp(54px, 20vw, 92px); }
+      .section-head { grid-template-columns: 1fr; }
+      .demo-tabs { justify-content: start; }
+      .grid { grid-template-columns: 1fr; }
+      .director-grid { grid-template-columns: 1fr; }
+      .recipe { grid-template-columns: 1fr; gap: 34px; }
+      .demo-note, footer .shell { flex-direction: column; }
+      .status { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="#top" aria-label="BUGFIRE 首页"><span class="brand-mark" aria-hidden="true"></span>BUGFIRE · 补丁兽</a>
+      <span class="status">AI-DIRECTED · HUMAN-GATED · LOCAL</span>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <p class="eyebrow">Patch Dragon · Codex Desktop · Season 01</p>
+      <h1>Build. Burn bugs.<span class="outline">Level up.</span></h1>
+      <p class="lede"><strong>把 Codex 变成一只会陪你 Build、喷火除 Bug、一起升级的像素伙伴。</strong>默认包开箱即玩；上传一张背景和一张宠物图，就能用同一套系统做自己的版本。</p>
+      <div class="actions">
+        <a class="cta primary" href="https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/latest">↓ 下载 macOS 版</a>
+        <a class="cta secondary" href="#default-demo">先看默认效果</a>
+        <a class="cta secondary" href="https://github.com/siuserxiaowei/Codex-Bugfire-Skin">☆ GitHub</a>
+      </div>
+      <ul class="micro-proof" aria-label="项目关键事实">
+        <li>108 项自动化测试</li><li>不修改官方 app.asar</li><li>AI 草案不能直出安装包</li><li>MIT 开源</li>
+      </ul>
+    </section>
+
+    <section class="demo-section shell" id="default-demo">
+      <div class="section-head">
+        <div><p class="section-kicker">DEFAULT EXPERIENCE // 实机截图</p><h2>先看看，它现在长这样。</h2></div>
+        <div class="demo-tabs" role="tablist" aria-label="默认效果截图">
+          <button type="button" role="tab" aria-selected="true" data-shot="home" data-src="images/bugfire-home.png" data-note="首页右下角常驻 72 px 浮巢，不挡原生输入区。">01 首页</button>
+          <button type="button" role="tab" aria-selected="false" data-shot="cabin" data-src="images/bugfire-pet-cabin.png" data-note="点击展开宠物舱，查看 XP、技能与模拟 Build。">02 宠物舱</button>
+          <button type="button" role="tab" aria-selected="false" data-shot="level" data-src="images/bugfire-level-up.png" data-note="修复成功后喷火升级，生成 4:5 成长纪念卡。">03 升级卡</button>
+        </div>
+      </div>
+      <div class="demo-frame">
+        <div class="demo-window">
+          <div class="window-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+          <img id="demo-stage" src="images/bugfire-home.png" alt="BUGFIRE 补丁兽在 Codex Desktop 首页右下角的默认效果" width="1600" height="1141">
+        </div>
+      </div>
+      <div class="demo-note"><span id="demo-note"><strong>01 / HOME</strong> · 首页右下角常驻 72 px 浮巢，不挡原生输入区。</span><span>截图已遮盖私人项目与任务内容</span></div>
+    </section>
+
+    <section class="director" id="director">
+      <div class="shell">
+        <p class="section-kicker">CHARACTER DIRECTOR // VIBELAB</p>
+        <h2>AI 提案，人工否决，校验器裁决。</h2>
+        <p class="director-lede"><strong>新增 Character Director 不把一句 prompt 伪装成成品。</strong>它把原创角色 brief 编译成结构化 creative decisions；操作员必须拒绝并替换一项选择，之后仍由原有 pack validator 检查字段、路径、图片与权利声明。</p>
+        <div class="director-flow">ORIGINAL BRIEF → RECORDED / LIVE AI DRAFT → HUMAN REJECTION + REPLACEMENT → DETERMINISTIC VALIDATOR → BUILD / PREVIEW → OPTIONAL LIVE VERIFY / RESTORE</div>
+        <div class="director-grid">
+          <figure class="director-shot"><img src="images/bugfire-director-ai-draft.png" alt="AI 角色导演草案，明确标注为 SHA-256 校验的 recorded fixture" width="1920" height="1080"><figcaption><strong>01 · AI DRAFT</strong><br>Codex agent session；精确 model ID 不作独立可验证声明。</figcaption></figure>
+          <figure class="director-shot"><img src="images/bugfire-director-human-rejection.png" alt="操作员否决告警橙主色并替换为电路青" width="1920" height="1080"><figcaption><strong>02 · REJECT / REPLACE</strong><br>主色从 #ff7a1a 变为 #35d9d1；未改动的 replacement 会被拒绝。</figcaption></figure>
+          <figure class="director-shot"><img src="images/bugfire-director-pack-preview.png" alt="通过 deterministic validator 后生成的 Patchling Zero 离线预览" width="1920" height="1080"><figcaption><strong>03 · VALIDATE / PREVIEW</strong><br>真实本地 pack 产物；六态预览不修改 Codex。</figcaption></figure>
+        </div>
+        <div class="actions"><a class="cta primary" href="https://github.com/siuserxiaowei/Codex-Bugfire-Skin/tree/main/contest/bugfire">查看一键复现与证据 →</a><a class="cta secondary" href="https://github.com/siuserxiaowei/Codex-Bugfire-Skin/blob/main/PROVENANCE.md">原创与归属边界</a></div>
+        <p class="disclosure">离线 fixture 是该仓库 Codex agent session 的真实 AI 产出并由 SHA-256 锁定；重放不冒充 live API，checksum 不独立证明 model identity。review JSON 是可复现演示输入，公开声称“人工否决”前需由录制操作员现场确认。旧 75 秒 V2 仅作既有桌宠工程证据。</p>
+      </div>
+    </section>
+
+    <section class="system">
+      <div class="shell">
+        <p class="section-kicker">WHY BUGFIRE // 不只是一张皮肤</p>
+        <h2>一套完整的本地成长系统。</h2>
+        <div class="grid">
+          <article class="card" data-index="01"><span class="label">SIX STATES</span><h3>六状态动作反馈</h3><p>待机、构建、发现 Bug、修复喷火、成功与升级。没上传的状态自动复用 idle 图。</p></article>
+          <article class="card" data-index="02"><span class="label">LOCAL PROGRESS</span><h3>XP、任务与成长卡</h3><p>失败不加 XP，修复成功只结算一次。所有进度仅存在你的 Mac，不上传源码或任务内容。</p></article>
+          <article class="card" data-index="03"><span class="label">PORTABLE SKILL</span><h3>两张图做自己的版本</h3><p>Bugfire Pack + Codex Skill 自动校验、编译、预览和打包，不需要手改注入器。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="recipe shell">
+      <div>
+        <p class="section-kicker">CUSTOMIZE // 最小上传清单</p>
+        <h2>你的角色，也能接入同一套系统。</h2>
+        <p class="lede">只需两张图起步。想让每个动作更生动，再补五张状态图；颜色、名字、台词和本地任务都可以单独配置。</p>
+        <div class="actions"><a class="cta primary" href="https://github.com/siuserxiaowei/Codex-Bugfire-Skin/blob/main/skills/codex-bugfire-customizer/SKILL.md">打开定制 Skill →</a></div>
+      </div>
+      <div class="upload-list">
+        <div class="upload"><b>BG</b><span><strong>工作台背景图</strong><small>横向 PNG / JPEG / WebP</small></span><em>必需</em></div>
+        <div class="upload"><b>01</b><span><strong>宠物 idle 图</strong><small>透明 PNG 最佳；缺失状态会复用它</small></span><em>必需</em></div>
+        <div class="upload"><b>+5</b><span><strong>五张动作图</strong><small>building / bug / fire / success / level-up</small></span><em>可选</em></div>
+      </div>
+    </section>
+
+    <section class="final">
+      <div class="shell">
+        <p class="section-kicker">SHIP YOUR COMPANION</p>
+        <h2>下载默认包，或者做一只属于你的补丁兽。</h2>
+        <div class="actions">
+          <a class="cta primary" href="https://github.com/siuserxiaowei/Codex-Bugfire-Skin/releases/latest">下载最新版</a>
+          <a class="cta secondary" href="https://github.com/siuserxiaowei/Codex-Bugfire-Skin/discussions">展示你的 Pack</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="shell"><span>BUGFIRE · PATCH DRAGON · MIT LICENSE</span><span>非 OpenAI 官方产品 · 本地成长演示不代表专业能力认证</span></div></footer>
+
+  <script>
+    const stage = document.getElementById("demo-stage");
+    const note = document.getElementById("demo-note");
+    const tabs = [...document.querySelectorAll("[data-shot]")];
+    const labels = { home: "01 / HOME", cabin: "02 / PET CABIN", level: "03 / LEVEL UP" };
+    tabs.forEach((tab) => tab.addEventListener("click", () => {
+      tabs.forEach((item) => item.setAttribute("aria-selected", String(item === tab)));
+      stage.classList.add("is-changing");
+      const next = new Image();
+      next.onload = () => {
+        stage.src = tab.dataset.src;
+        stage.alt = `BUGFIRE 默认效果：${tab.textContent.trim()}`;
+        note.innerHTML = `<strong>${labels[tab.dataset.shot]}</strong> · ${tab.dataset.note}`;
+        stage.classList.remove("is-changing");
+      };
+      next.src = tab.dataset.src;
+    }));
+  </script>
+</body>
+</html>
