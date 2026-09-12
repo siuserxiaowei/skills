@@ -24,3 +24,7 @@ npm run validate:sources
 npm run check:links
 npm run smoke
 ```
+
+## 专题资料统一维护入口
+
+[collections/](collections/README.md) 已收纳相关独立资料仓库的完整文件与来源记录。后续更新在这里完成，停止为同主题的单份资料重复建仓库；原网站入口在迁移清单中保留。

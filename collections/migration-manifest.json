@@ -1,0 +1,52 @@
+[
+  {
+    "source": "ai-coding-knowledge-framework",
+    "target": "hr-agent-reading-hub",
+    "title": "AI 编程知识框架",
+    "path": "collections/ai-coding",
+    "sourceCommit": "f7483ed8190ef3d73f299bbb1129df036b8ac7a5",
+    "originalPage": "https://siuserxiaowei.github.io/ai-coding-knowledge-framework/",
+    "files": [
+      {
+        "path": ".nojekyll",
+        "sha256": "8d1a198b9e4776041b517f07367ea0a1e47b9cbbe48f2523e96aed53c17fe735",
+        "bytes": 47
+      },
+      {
+        "path": "README.md",
+        "sha256": "d029664cb8f0b96891afac1da85961b58766aac7d14862a4055c106cfb77ec50",
+        "bytes": 5100
+      },
+      {
+        "path": "assets/v2.css",
+        "sha256": "6372fb3558018e1e1a94451f285406e2ed165dc7147dc8fe8cce52925cd1bb27",
+        "bytes": 14253
+      },
+      {
+        "path": "blueprint.html",
+        "sha256": "bce17ef9336498da9861f8612c599a99d0aea4c6e676e52c95d7075bed393d14",
+        "bytes": 21297
+      },
+      {
+        "path": "index.html",
+        "sha256": "ae35fdcf656fc671ee59848333bf53ca72f60ec73b183c913ce08298f2e3471f",
+        "bytes": 7823
+      },
+      {
+        "path": "magazine.html",
+        "sha256": "6b7a888574fe4f3aab05ede5f5a9f5194a554022088af882706f7cfc47545121",
+        "bytes": 21026
+      },
+      {
+        "path": "research.html",
+        "sha256": "b6939ec3f93c2400f4bb3d44fb2a7d7133ffeb6c6b74dff33ea33b0aa3e32933",
+        "bytes": 21555
+      },
+      {
+        "path": "scripts/build-v2-pages.mjs",
+        "sha256": "93091c1b2371ba9fb6f0e561c00ffa9c7f0b27c4ff4a733ab8f9075974558f46",
+        "bytes": 35724
+      }
+    ]
+  }
+]
