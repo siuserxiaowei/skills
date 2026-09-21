@@ -1,6 +1,6 @@
 # Skill 使用说明索引
 
-本页是 58 个 Skill 的统一入口。先按任务选择 Skill，阅读“使用说明”确认适用范围、必要输入、权限边界和验收方式；只有需要具体场景时再打开“案例”。案例中的路径、账号、对象 ID、日期和命令参数都是示意，执行时必须替换为用户确认的真实值。
+本页是 59 个 Skill 的统一入口。先按任务选择 Skill，阅读“使用说明”确认适用范围、必要输入、权限边界和验收方式；只有需要具体场景时再打开“案例”。案例中的路径、账号、对象 ID、日期和命令参数都是示意，执行时必须替换为用户确认的真实值。
 
 使用时遵循四条共同原则：
 
@@ -22,6 +22,17 @@
 | Skill | 使用说明 | 案例 |
 |---|---|---|
 | `oil-video-pipeline` | [打开入口](skills/oil-video-pipeline/SKILL.md) | [正向、边界与失败恢复](skills/oil-video-pipeline/references/examples.md) |
+
+## 视频分发
+
+| Skill | 使用说明 | 案例 |
+|---|---|---|
+| `xiaowei-aibeike-distribution` | [打开入口](skills/xiaowei-aibeike-distribution/SKILL.md) | [正向、边界与失败恢复](skills/xiaowei-aibeike-distribution/references/examples.md) |
+
+## Agent 工具
+
+| Skill | 使用说明 | 案例 |
+|---|---|---|
 | `skill-vetter` | [打开入口](skills/skill-vetter/SKILL.md) | [正向、边界与失败恢复](skills/skill-vetter/references/examples.md) |
 
 ## 微信 / 企业微信
@@ -112,8 +123,8 @@
 从仓库根目录运行：
 
 ```bash
-python3 skills/skill-vetter/scripts/audit_collection.py . --expected-count 58
-python3 skills/skill-vetter/scripts/audit_usage_docs.py . --expected-count 58
+python3 skills/skill-vetter/scripts/audit_collection.py . --expected-count 59
+python3 skills/skill-vetter/scripts/audit_usage_docs.py . --expected-count 59
 ```
 
 这些检查用于发现缺文件、断链、薄弱案例或缺失的输入/流程/边界/验收信号；技术事实、真实账号行为和最终使用效果仍需结合对应 Skill 的测试与人工验证。

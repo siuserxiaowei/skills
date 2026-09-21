@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "as_of": "2026-09-21",
-  "claim_scope": "当前仓库内 58 个 Skill 的入口说明、参考资料、自有脚本、测试和随包自有案例。",
+  "claim_scope": "当前仓库内 59 个 Skill 的入口说明、参考资料、自有脚本、测试和随包自有案例。",
   "not_claimed": [
     "外部产品、API、协议、命令行工具和软件依赖",
     "研究记录引用的一手规范或上游项目",
@@ -15,7 +15,7 @@
     "baseline_scope": "该 Git commit 保存重建前进入本仓库的已知 Skill 制品；扫描只读 Git 对象，不执行基线代码。",
     "gate": "skills/skill-vetter/scripts/audit_originality.py",
     "default_failure_level": "unreviewed",
-    "verification_date": "2026-08-31",
+    "verification_date": "2026-09-21",
     "thresholds": {
       "exact_blob_min_bytes": 96,
       "window_size": 16,
@@ -159,6 +159,11 @@
       "first_commit": "9c9897fe89d0b235aa661bdf2d0fc5c536492b51",
       "anchor": "skills/oil-video-pipeline/SKILL.md",
       "basis": "本轮新增 Skill；基于本地视频、字幕、封面、ChatCut、Remotion、FFmpeg 工作流与公开官方规范独立整合，不捆绑第三方代码或媒体资产。"
+    },
+    "xiaowei-aibeike-distribution": {
+      "first_commit": "2a4e1afb77ae29a3d569ee9daf4720c0baad4698",
+      "anchor": "skills/xiaowei-aibeike-distribution/SKILL.md",
+      "basis": "独立设计的本地优先视频分发控制层；吸收公开案例中的草稿闸门、平台适配、幂等重试和新鲜验证原则，不捆绑第三方代码、模板或媒体资产。"
     }
   },
   "reviewed_similarity_findings": [
@@ -195,7 +200,8 @@
     "repository_authored_baseline_current": [],
     "new_original": [
       "oil-video-pipeline",
-      "vintage-pencil-card"
+      "vintage-pencil-card",
+      "xiaowei-aibeike-distribution"
     ],
     "independently_rebuilt": [
       "agent-memory",

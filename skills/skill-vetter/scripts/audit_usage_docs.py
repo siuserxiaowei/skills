@@ -173,7 +173,7 @@ def audit(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("root", nargs="?", default=str(Path(__file__).resolve().parents[3]))
-    parser.add_argument("--expected-count", type=int, default=57)
+    parser.add_argument("--expected-count", type=int, default=59)
     parser.add_argument("--min-case-chars", type=int, default=220)
     parser.add_argument("--min-usage-chars", type=int, default=220)
     parser.add_argument("--format", choices=("text", "json"), default="text")

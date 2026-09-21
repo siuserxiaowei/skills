@@ -39,7 +39,7 @@ It compares only `independently_rebuilt` entries against the frozen commit decla
 For a collection-wide documentation release, verify that every Skill entry routes to actionable, skill-specific usage cases:
 
 ```bash
-python3 skills/skill-vetter/scripts/audit_usage_docs.py . --expected-count 57
+python3 skills/skill-vetter/scripts/audit_usage_docs.py . --expected-count 59
 ```
 
 This gate checks the entrypoint's input/workflow/boundary/verification signals and requires each positive, boundary, and recovery case to include its own preparation, process, output or recovery, and observable evidence. A passing structure still needs human review for technical accuracy and usefulness.

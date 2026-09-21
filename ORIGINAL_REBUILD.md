@@ -20,6 +20,8 @@ python3 skills/skill-vetter/scripts/audit_originality.py . --fail-on unreviewed
 
 状态含义：`queued` 尚未开始；`researching` 正在建立对标和验收条件；`original-v1` 已独立重写并通过首轮自动验证；`original-verified` 已完成真实任务前向测试和最终归属审计。
 
+本轮追加（2026-09-21）：在原有 58 个 Skill 基础上新增 `xiaowei-aibeike-distribution`，用于爱贝壳多平台视频分发。该 Skill 以 2a4e1afb77ae29a3d569ee9daf4720c0baad4698 为首次加入提交，采用独立的发布包、平台状态、幂等重试和人工发布闸门；当前集合为 59 个 Skill。
+
 ## 统一质量门槛
 
 - 触发描述能区分相邻任务，不使用吸走无关请求的万能描述。

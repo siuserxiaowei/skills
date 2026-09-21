@@ -262,7 +262,7 @@ def audit(root: Path, expected_count: int) -> tuple[list[Finding], dict]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("root", nargs="?", default=str(Path(__file__).resolve().parents[3]))
-    parser.add_argument("--expected-count", type=int, default=57)
+    parser.add_argument("--expected-count", type=int, default=59)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     findings, summary = audit(Path(args.root), args.expected_count)

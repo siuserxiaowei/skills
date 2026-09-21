@@ -117,7 +117,7 @@ Read these references only when needed:
 
 - `references/adapter-contract.md` for the package schema and state transitions;
 - `references/platform-profiles.md` for cautious platform defaults;
-- `references/examples.md` for positive, boundary, and recovery cases;
+- [references/examples.md](references/examples.md) for positive, boundary, and recovery cases;
 - `references/research-synthesis.md` for the independent design rationale and source links.
 
 ## Minimal invocation
