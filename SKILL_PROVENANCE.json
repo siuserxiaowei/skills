@@ -156,7 +156,7 @@
       "basis": "Git 首次加入记录；现版本不捆绑照片、字体或其他媒体资产。"
     },
     "oil-video-pipeline": {
-      "first_commit": "2d34c86546f24bd27db5c3be268646de96e8bd5b",
+      "first_commit": "9c9897fe89d0b235aa661bdf2d0fc5c536492b51",
       "anchor": "skills/oil-video-pipeline/SKILL.md",
       "basis": "本轮新增 Skill；基于本地视频、字幕、封面、ChatCut、Remotion、FFmpeg 工作流与公开官方规范独立整合，不捆绑第三方代码或媒体资产。"
     }
