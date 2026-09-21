@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "as_of": "2026-08-31",
-  "claim_scope": "当前仓库内 57 个 Skill 的入口说明、参考资料、自有脚本、测试和随包自有案例。",
+  "as_of": "2026-09-21",
+  "claim_scope": "当前仓库内 58 个 Skill 的入口说明、参考资料、自有脚本、测试和随包自有案例。",
   "not_claimed": [
     "外部产品、API、协议、命令行工具和软件依赖",
     "研究记录引用的一手规范或上游项目",
@@ -44,7 +44,9 @@
     {
       "source": "clawhub.ai skill-vetter artifact",
       "locator": "https://clawhub.ai/",
-      "skills": ["skill-vetter"]
+      "skills": [
+        "skill-vetter"
+      ]
     },
     {
       "source": "tanweai/pua",
@@ -100,37 +102,51 @@
     {
       "source": "Leonxlnx/taste-skill",
       "locator": "https://github.com/Leonxlnx/taste-skill",
-      "skills": ["imagegen-frontend-web"]
+      "skills": [
+        "imagegen-frontend-web"
+      ]
     },
     {
       "source": "pbakaus/impeccable",
       "locator": "https://github.com/pbakaus/impeccable",
-      "skills": ["impeccable"]
+      "skills": [
+        "impeccable"
+      ]
     },
     {
       "source": "tw93/Kami",
       "locator": "https://github.com/tw93/Kami",
-      "skills": ["kami"]
+      "skills": [
+        "kami"
+      ]
     },
     {
       "source": "zarazhangrui/beautiful-html-templates",
       "locator": "https://github.com/zarazhangrui/beautiful-html-templates",
-      "skills": ["beautiful-html-templates"]
+      "skills": [
+        "beautiful-html-templates"
+      ]
     },
     {
       "source": "joeseesun/qiaomu-skill-publisher",
       "locator": "https://github.com/joeseesun/qiaomu-skill-publisher",
-      "skills": ["skill-publisher"]
+      "skills": [
+        "skill-publisher"
+      ]
     },
     {
       "source": "joeseesun/qiaomu-goal-meta-skill",
       "locator": "https://github.com/joeseesun/qiaomu-goal-meta-skill",
-      "skills": ["goal-meta-skill"]
+      "skills": [
+        "goal-meta-skill"
+      ]
     },
     {
       "source": "Tencent/WeChatReading",
       "locator": "https://github.com/Tencent/WeChatReading",
-      "skills": ["wechat-reading"]
+      "skills": [
+        "wechat-reading"
+      ]
     }
   ],
   "new_original_evidence": {
@@ -138,6 +154,11 @@
       "first_commit": "1dc9bf8bbebd495f3e46b5a1f7adee0266931e0b",
       "anchor": "skills/vintage-pencil-card/SKILL.md",
       "basis": "Git 首次加入记录；现版本不捆绑照片、字体或其他媒体资产。"
+    },
+    "oil-video-pipeline": {
+      "first_commit": "2d34c86546f24bd27db5c3be268646de96e8bd5b",
+      "anchor": "skills/oil-video-pipeline/SKILL.md",
+      "basis": "本轮新增 Skill；基于本地视频、字幕、封面、ChatCut、Remotion、FFmpeg 工作流与公开官方规范独立整合，不捆绑第三方代码或媒体资产。"
     }
   },
   "reviewed_similarity_findings": [
@@ -173,6 +194,7 @@
   "origin_groups": {
     "repository_authored_baseline_current": [],
     "new_original": [
+      "oil-video-pipeline",
       "vintage-pencil-card"
     ],
     "independently_rebuilt": [
@@ -228,10 +250,10 @@
       "web-research",
       "wechat-local-vault",
       "wechat-mp-batch-exporter",
+      "wechat-reading",
       "wecom-local-vault",
       "wecom-operations",
-      "x-article-draft-uploader",
-      "wechat-reading"
+      "x-article-draft-uploader"
     ]
   },
   "resolved_exceptions": [

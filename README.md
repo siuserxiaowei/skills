@@ -1,24 +1,24 @@
 # skills — 自用 Agent Skill 合集
 
-把高频使用的 Agent Skill 收进一个仓库统一管理。共 **57 个 Skill**，覆盖全网调研、微信/企业微信本地数据、飞书全家桶、设计前端和 Agent 效率工具。
+把高频使用的 Agent Skill 收进一个仓库统一管理。共 **58 个 Skill**，覆盖全网调研、视频后期、微信/企业微信本地数据、飞书全家桶、设计前端和 Agent 效率工具。
 
 说明：
 
-- 仓库中的 **57 个 Skill 当前制品均按功能需求独立设计或独立重建**。这里的“原创”指具体文案、代码组织、示例、模板和随包资产可由仓库证据支持，不表示功能思想、公开 API 或通用术语由本仓库首创。完整定义、证据等级和停止条件见 [`ORIGINALITY_POLICY.md`](ORIGINALITY_POLICY.md)。
+- 仓库中的 **58 个 Skill 当前制品均按功能需求独立设计或独立重建**。这里的“原创”指具体文案、代码组织、示例、模板和随包资产可由仓库证据支持，不表示功能思想、公开 API 或通用术语由本仓库首创。完整定义、证据等级和停止条件见 [`ORIGINALITY_POLICY.md`](ORIGINALITY_POLICY.md)。
 - 其中最初收录的第三方 Skill 已完成原创首轮重建：重新研究当前官方资料，保留必要能力，删除上游文字、代码、模板和资产，不把“换措辞”当成重建。
-- 57 个 Skill 的入口与正向、边界、失败恢复案例可从 [USAGE_GUIDE.md](USAGE_GUIDE.md) 逐项打开。
+- 58 个 Skill 的入口与正向、边界、失败恢复案例可从 [USAGE_GUIDE.md](USAGE_GUIDE.md) 逐项打开。
 - `lark-` 系列不复制官方 CLI 内置 Skill 的静态参数手册，而以运行中 `lark-cli --help` / `schema` 为命令事实，并加入 profile/identity、最小权限、时区、分页、外部内容隔离、高风险确认、未知结果恢复和写后回读合同。
-- 合集本体与全部 57 个 Skill 采用顶层 `LICENSE`（MIT）。当前不捆绑第三方文案、代码、模板、字体或媒体素材；外部依赖、研究引用与用户输入不属于原创声明范围。机器可读归属见 [`SKILL_PROVENANCE.json`](SKILL_PROVENANCE.json)，重建证据见 [`ORIGINAL_REBUILD.md`](ORIGINAL_REBUILD.md)，边界说明见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
+- 合集本体与全部 58 个 Skill 采用顶层 `LICENSE`（MIT）。当前不捆绑第三方文案、代码、模板、字体或媒体素材；外部依赖、研究引用与用户输入不属于原创声明范围。机器可读归属见 [`SKILL_PROVENANCE.json`](SKILL_PROVENANCE.json)，重建证据见 [`ORIGINAL_REBUILD.md`](ORIGINAL_REBUILD.md)，边界说明见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
 
 ## 案例与详细说明
 
-每个 Skill 都在入口顶部链接自己的 `references/examples.md`，至少包含一个正向案例、一个边界案例、一个失败恢复场景，以及可观察的验收证据。入口保留共同决策与硬约束，案例按需读取，避免把 57 套细节一次性塞进上下文。
+每个 Skill 都在入口顶部链接自己的 `references/examples.md`，至少包含一个正向案例、一个边界案例、一个失败恢复场景，以及可观察的验收证据。入口保留共同决策与硬约束，案例按需读取，避免把 58 套细节一次性塞进上下文。
 
 可复跑集合审计：
 
 ```bash
-python3 skills/skill-vetter/scripts/audit_collection.py . --expected-count 57
-python3 skills/skill-vetter/scripts/audit_usage_docs.py . --expected-count 57
+python3 skills/skill-vetter/scripts/audit_collection.py . --expected-count 58
+python3 skills/skill-vetter/scripts/audit_usage_docs.py . --expected-count 58
 python3 skills/skill-vetter/scripts/audit_originality.py . --fail-on unreviewed
 ```
 
@@ -96,6 +96,12 @@ cp -R skills/<skill-name> ~/.agents/skills/
 | `lark-workflow-meeting-summary` | 在有界时间范围内汇总会议证据，给结论和行动项绑定来源，不默认发布 |
 | `lark-workflow-standup-report` | 结合日程与任务生成日期安全、可追溯的站会摘要，不默认改状态或发群 |
 
+### 视频与媒体（1 个）
+
+| Skill | 用途 |
+|---|---|
+| `oil-video-pipeline` | 把已录制或已剪辑视频整理成带证据的字幕成片、字幕文件、封面和平台交付包；按能力、字幕、音频、平台和人工复核闸门执行 |
+
 ### dbs 商业分析与内容创作系列（0 个）
 
 | Skill | 用途 |
@@ -145,7 +151,7 @@ cp -R skills/<skill-name> ~/.agents/skills/
 
 ## 许可说明
 
-- 合集本体与全部 57 个原创 Skill：MIT（见顶层 `LICENSE`）。
+- 合集本体与全部 58 个原创 Skill：MIT（见顶层 `LICENSE`）。
 - 各 Skill 的依赖（如 `lark-cli`、`wecom-cli`、本地微信数据库、浏览器登录态等）以其 `SKILL.md` 说明为准；涉及本地隐私数据的 Skill 全部在本机运行，不外传数据。
 
 ## 安全说明
